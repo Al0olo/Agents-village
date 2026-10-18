@@ -10,10 +10,11 @@ paths:
 Purpose: let a human watch, pause, inspect and kill a village without being part of any
 citizen's loop. Rules are in `.claude/rules/frontend.md`.
 
-1. Read the observer requirements in `docs/prd.md` (sections 5 and 6) and the current
-   stack decision in `docs/HANDOFF.md`. If no stack is recorded, propose one to the owner
-   (default proposal: TypeScript strict, React with Vite, plain CSS variables, Vitest,
-   Playwright) and record the decision before building.
+1. Read the observer requirements in `docs/prd.md` (sections 5 and 6). Stack is decided:
+   TypeScript and Next.js (App Router) in `apps/observer/`, pnpm, Vitest, Playwright,
+   zod for payload validation. First time only: scaffold with
+   `pnpm create next-app@latest apps/observer --ts --eslint --app --src-dir --use-pnpm`,
+   enable `"strict": true`, add `typecheck`, `test` and `build` scripts, and add the CI job.
 2. Define the typed client for the kernel's event stream first; all views read from it.
 3. Views in priority order: live event stream and cost per citizen; citizen detail with
    memory tiers and hearsay versus fact; provenance trace for a claim (event ids and

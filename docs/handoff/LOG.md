@@ -5,6 +5,7 @@ this file is history, so a future agent can see how decisions were reached.
 
 ## 2026-10-18 · Claude Sonnet 5.5 · rules, skills and handoff system
 
+- Owner decided the frontend stack: TypeScript with Next.js. Updated `.claude/rules/frontend.md`, the `frontend-observer` skill and the handoff.
 - Added `AGENTS.md`/`CLAUDE.md` at the root and `CLAUDE.md` imports in key directories,
   path-scoped rules in `.claude/rules/`, ten skills in `.claude/skills/`, hooks
   (SessionStart context, Stop handoff check), `scripts/check-handoff.sh` and a CI job.

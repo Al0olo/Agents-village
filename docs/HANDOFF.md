@@ -24,6 +24,7 @@ funding is a later concern.
 - Done: README with hero image (PR #3), research sources with reading levels (PR #5),
   README and AGENTS file in every directory (PR #5), social preview image (PR #4).
 - In progress: this branch adds the agent rules, skills, hooks and handoff system (this PR).
+- Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
   the real kernel (M1), the observer UI.
 
@@ -49,8 +50,6 @@ kernel admission against the better prompt arm). Get the owner's review before a
 
 ## Open decisions (owner)
 
-- Frontend stack for the observer UI (proposal: TypeScript strict, React with Vite, Vitest,
-  Playwright). Nothing is built; do not add a frontend build to CI until chosen.
 - License is Apache-2.0, chosen by the agent without asking; confirm.
 - Model mix for RQ1: two frontier models and one pinned open-weight model; which ones.
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
