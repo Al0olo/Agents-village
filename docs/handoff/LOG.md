@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · closing the base-policy decision and the echo gap
+
+- PR #17 (T7, T8) was merged. The owner asked to close the two items I had raised before starting T15. I took my own recommendation for the decision and changed the policy for the gap, since no pre-registration exists and no run has started; both are recorded so they can be revisited before S2-T1 freezes the design.
+- Gap: `admit` now ignores a told event whose origins include the writer. Via `Messenger` the case was unreachable, but the policy should not depend on that. Tests first (two failed before the change), then the rule in `admission.py`, and the statement of the rule updated in the module docstring, `README.md`, `docs/prd.md`, the `village-memory` doc comment and the kernel-invariants skill. The Rust gate (fmt, clippy, test) was run because a crate comment changed. One mutant survives and is equivalent (`admit` already filters cited events to the writer's own).
+- Decision: ADR-0003, the shared base village runs without defense until the fork. `arms.BASE` is arm A. The arms tests now build the base that way, check the kernel only on writes after the fork, and assert that the base's unbacked entries exist and that arm D never reclassifies them. The pre-registration is to report, per block, the share of core and shared entries at the fork that the kernel's rule would have refused.
+- Rewrote `docs/HANDOFF.md` as current state: it had grown past the length limit and kept gotchas that were no longer true (Village refusing a non-empty log, T7 being smaller than planned).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T7 and S1-T8 arms D and A
 
 - PR #16 (T13) was merged. Added `arms.py`: an arm is a memory policy plus a prompt; arm D is `admission.admit`, arm A is `admit_all`; both use the baseline prompt so the policy is the only difference. `admission.py` is untouched.

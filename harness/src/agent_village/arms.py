@@ -4,6 +4,9 @@ Arms differ only in these two values, which ``fork.fork`` takes, so every arm st
 the same state and shares the same model, citizens, scheduler and loop. Changing an arm
 changes the experiment: update the tests and the pre-registration first, and never after
 runs start.
+
+The shared base village runs as ``BASE`` until the planting event and the arms start at
+the fork (ADR-0003).
 """
 
 from __future__ import annotations
@@ -28,5 +31,7 @@ def admit_all(claim: Claim, evidence: dict[str, Event]) -> Admission:
 
 NO_DEFENSE = Arm("A", admit_all, BASELINE)
 KERNEL_ADMISSION = Arm("D", admit, BASELINE)
+
+BASE = NO_DEFENSE
 
 ARMS = {arm.name: arm for arm in (NO_DEFENSE, KERNEL_ADMISSION)}
