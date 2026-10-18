@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 to T6 done.
+**Status:** 🚧 In progress. T1 to T6 and T13 done.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -25,7 +25,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T10 | Arm C: hedge-preserving consolidation | ⏳ | |
 | T11 | Arm E: volume-matched random-block control | ⏳ | |
 | T12 | Consolidation job (two per 3-day run) | ⏳ | |
-| T13 | Snapshot and fork at the planting event; forks identical until arms diverge | ⏳ | |
+| T13 | Snapshot and fork at the planting event; forks identical until arms diverge | ✅ | `harness/src/agent_village/fork.py`, `eventlog.py` (`fork`, `head_at`), `village.py` and `runner.py` (rebuild from a log); tests `test_fork.py`, `test_village.py`, `test_eventlog.py`, `test_runner.py`. A snapshot is the log position, its head hash and the rng state, taken between ticks. A fork starts in exactly the base's state, continues exactly like a base that never forked, shares the log prefix byte for byte, and diverges only through the arm's policy, prompt or backend. The planting event itself is T17. `pytest -q tests/test_fork.py` |
 | T14 | Audit and counterfactual replay from recorded outputs | ⏳ | |
 | T15 | Simultaneous launch controller; fallbacks off | ⏳ | |
 | T16 | Fictional fact generator (counterbalanced plausibility and planter status) | ⏳ | |

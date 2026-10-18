@@ -72,11 +72,18 @@ class Runner:
         self._specs = {s.name: s for s in specs}
         self._cursor: dict[str, int] = {}
         self._queued: set[str] = set()
-        for spec in specs:
-            village.add_citizen(spec.name)
-        start = village.state().tick + 1
-        for spec in specs:
-            village.request_wake(spec.name, start, "start")
+        if village.state().citizens:
+            if set(village.state().citizens) != set(self._specs):
+                raise ValueError("specs must name exactly the citizens already in the log")
+            for event in log:
+                if event.kind == "step":
+                    self._cursor[event.writer] = event.payload["through"]
+        else:
+            for spec in specs:
+                village.add_citizen(spec.name)
+            start = village.state().tick + 1
+            for spec in specs:
+                village.request_wake(spec.name, start, "start")
 
     def tick(self) -> tuple[str, ...]:
         chosen = self._village.step()
@@ -85,6 +92,10 @@ class Runner:
             self._queued.discard(name)
             self._turn(name)
         return chosen
+
+    def cursors(self) -> dict[str, int]:
+        """The last log position each citizen has been shown, by citizen."""
+        return dict(self._cursor)
 
     def run(self, ticks: int) -> None:
         for _ in range(ticks):

@@ -97,6 +97,21 @@ class EventLog:
         self._events.append(event)
         return event
 
+    def head_at(self, count: int) -> str:
+        """The head hash after the first ``count`` events."""
+        if not 0 <= count <= len(self._events):
+            raise ValueError(f"the log has {len(self._events)} events, not {count}")
+        return self._events[count - 1].hash if count else GENESIS
+
+    def fork(self, dest: Path | str, upto: int | None = None) -> EventLog:
+        """Copy the first ``upto`` events (default all) byte for byte into a new log."""
+        count = len(self._events) if upto is None else upto
+        self.head_at(count)
+        lines = self._path.read_text(encoding="utf-8").splitlines(keepends=True)[:count]
+        with Path(dest).open("x", encoding="utf-8") as f:
+            f.writelines(lines)
+        return EventLog(dest)
+
     def __len__(self) -> int:
         return len(self._events)
 

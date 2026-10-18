@@ -3,6 +3,7 @@ from collections import deque
 from dataclasses import dataclass
 
 import pytest
+from villages import NAMES, behave, remember, say
 
 from agent_village.admission import Admission, Kind, admit
 from agent_village.eventlog import EventLog
@@ -21,18 +22,6 @@ from agent_village.village import SimClock, Village
 
 SLEEP = '{"action": "sleep", "ticks": 10}'
 ONE_TICK = '{"action": "sleep", "ticks": 1}'
-
-
-def say(to, text):
-    return f'{{"action": "say", "to": "{to}", "text": "{text}"}}'
-
-
-def remember(text, kind="seen", cites=(), tier="core"):
-    cited = ", ".join(str(c) for c in cites)
-    return (
-        f'{{"action": "remember", "text": "{text}", "kind": "{kind}", '
-        f'"cites": [{cited}], "tier": "{tier}"}}'
-    )
 
 
 class Scripted:
@@ -552,22 +541,6 @@ def test_runner_needs_unique_named_citizens(tmp_path):
         Runner(*args, [Spec("ada", "m"), Spec("ada", "m")], BASELINE)
 
 
-NAMES = ("ada", "bo", "cy", "di", "ed", "flo", "gus", "hal")
-
-
-def behave(request):
-    """A reply fixed by the request content, so a village built from it is deterministic."""
-    h = int(request.hash, 16)
-    me = request.messages[0].content.split(".")[0].removeprefix("You are ")
-    others = [n for n in NAMES if n != me]
-    choice = h % 4
-    if choice == 0:
-        return say(others[(h >> 8) % len(others)], f"news {h % 97}")
-    if choice == 1:
-        return remember(f"note {h % 89}", "told", [], "shared" if h % 2 else "core")
-    return f'{{"action": "sleep", "ticks": {1 + (h >> 4) % 9}}}'
-
-
 def village_run(tmp_path, file, seed=0, backend=None):
     w = build(
         tmp_path,
@@ -619,3 +592,34 @@ def test_audit_replay_from_recorded_outputs_reproduces_the_village(tmp_path):
     )
     assert replay.log.head == live.log.head
     assert len(replay.log) == len(live.log)
+
+
+def test_a_runner_resumes_over_an_existing_log_with_the_same_cursors(tmp_path):
+    w = build(tmp_path, names=NAMES, backend=FakeBackend(behave), cap=3)
+    w.runner.run(12)
+    log = EventLog(tmp_path / "v.jsonl")
+    village = Village(log, SimClock(), random.Random(), 3)
+    resumed = Runner(
+        village,
+        log,
+        Memory(log, admit),
+        Messenger(log),
+        Model(FakeBackend(behave), log),
+        [Spec(n, "fake/model") for n in NAMES],
+        BASELINE,
+    )
+    assert resumed.cursors() == w.runner.cursors()
+    assert resumed.cursors()
+    assert len(of_kind(log, "born")) == len(NAMES)
+
+
+def test_resuming_with_different_citizens_is_rejected(tmp_path):
+    w = build(tmp_path, names=("ada", "bo"), cap=2)
+    w.runner.run(2)
+    log = EventLog(tmp_path / "v.jsonl")
+    village = Village(log, SimClock(), random.Random(), 2)
+    args = (village, log, Memory(log, admit), Messenger(log), Model(FakeBackend(), log))
+    with pytest.raises(ValueError):
+        Runner(*args, [Spec("ada", "m"), Spec("cy", "m")], BASELINE)
+    with pytest.raises(ValueError):
+        Runner(*args, [Spec("ada", "m")], BASELINE)

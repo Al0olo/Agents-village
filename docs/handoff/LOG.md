@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T13 snapshot and fork
+
+- PR #15 (T4) was merged. Inventoried all mutable state: `Village` (citizens, awake, pending, clock, rng), `Runner` (cursors, a queued set that is empty between ticks), `Memory` (a fold of the log). Everything except the rng state is derivable from the log, so a snapshot is the log position, its head and the rng state.
+- Design: `Village.__init__` now folds an existing log, and every mutator appends then applies through the same `_apply`, so live and rebuilt state agree by construction. `Runner` resumes over a non-empty log and rebuilds cursors from `step` events. `EventLog.fork` copies a prefix byte for byte (refuses to overwrite). `fork.fork` verifies the head, copies the prefix, restores the rng and rebuilds with the arm's policy, prompt and backend. A failed fork deletes its destination.
+- Tests (70 new): fork at ticks 0, 1, 5, 17, 40 over several seeds; start state equals base; the fork continues exactly like a base that never forked; two forks of one arm stay identical; arms share the prefix byte for byte and diverge only afterwards, at a `step` event when the prompt differs; independence of files; a wrong rng state makes forks diverge (the hidden-state risk is real); refusal of foreign, short, tampered or colliding inputs; a fork replays recorded outputs to the base's head.
+- Mutation-checked: dropping the rng restore, head check, mid-tick check, cursor restore, citizen check, prefix length, no-overwrite, pending cleanup, clock restore and snapshot field validation each fail tests. Survivors that were real: a dead length check in `fork` (removed) and untested snapshot validation, which coverage exposed as unreachable because my bad cases used an invalid rng state (fixed).
+- Mistake of mine: the S1-T4 PR committed `harness/.coverage` through `git add -A`. Untracked and ignored here.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T4 citizen loop
 
 - PR #14 (T6) was merged. Owner asked for T4 with everything tested. Designed from the PRD (FR2 loop, step budget from MAST, no hypothesis leakage) and the existing modules; split into `actions.py` (strict parser), `prompts.py` (versioned, hashed) and `runner.py` (the loop) so each is tested alone.
