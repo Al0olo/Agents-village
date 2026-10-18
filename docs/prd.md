@@ -194,8 +194,8 @@ Use Rust for the village kernel and everything long-lived; keep prompts and pers
 | Kernel and runtime | Rust, tokio | Cheap concurrent tasks, predictable memory over weeks of uptime, one static binary | Elixir/BEAM (see below) |
 | Citizen processes | One actor per citizen (Ractor; spike against Kameo in M1) | Mailboxes, supervision trees, restart on crash; AutoAgents already builds agents on Ractor | Plain tokio tasks with our own mailbox |
 | LLM access | Rig behind our own `Model` trait; OpenRouter via its OpenAI-compatible endpoint | Provider abstraction without lock-in; swap Rig out without touching citizens | Direct HTTP client |
-| State | Postgres with pgvector, event-sourced; SQLite for local dev | One store for log, ledger, memory index and vectors; replay by design | None needed |
-| Citizen memory files | Markdown per citizen in object storage | Human-readable, diffable, git-friendly | Postgres rows |
+| State | Event-sourced and owned by us: SQLite (WAL, FTS5, sqlite-vec) in the Python harness, Postgres with tsvector and pgvector in the kernel; same schema, parity-tested | One store for log, ledger, memory projections and vectors; replay and forks by design. See [ADR-0001](adr/0001-storage-and-memory.md) | None needed |
+| Citizen memory files | Content-addressed markdown blobs referenced from events | Human-readable, diffable, shared by forks | Postgres rows |
 | Tool sandbox | wasmtime for tools; container (gVisor or Firecracker) for citizen workspaces | Untrusted code isolated; Rust's WASM story is first class | Containers only |
 | Messaging | In-process channels now; NATS JetStream when we go multi-node | Do not pay for distribution before it is needed | Postgres LISTEN/NOTIFY |
 | Durable execution | None in v1 (event log plus idempotent handlers); evaluate Restate in M3 | Restate is a Rust runtime with a Rust SDK; Temporal's Rust SDK is still prerelease | Temporal via another language |
@@ -229,6 +229,8 @@ Memory is the part most likely to decide whether citizens stay coherent for week
 - **Provenance on every memory.** Each entry records whether the citizen saw it, did it, or was told it. Hearsay is stored as hearsay. Tags shown to the model are not trusted on their own, since one study found models treat attributed, unattributed and forged claims alike. The kernel's admission policy therefore keeps hearsay out of core and shared memory unless a seen or did event, or two independent tellers, back it. RQ1 tests this against prompt-only tags.
 - **Commitments live outside the model.** Orders, debts, promises and deadlines are rows in the ledger and a commitments table, which the citizen reads but cannot rewrite by prose. This directly addresses the forgotten-order failures.
 - **Start simple.** One review reports that Letta's file-based agents beat Mem0's specialized tools on a long-conversation memory benchmark (74% against 68.5%), so v1 uses files plus vector search before any graph memory ([summary](https://tessl.io/registry/skills/github/muratcankoylan/Agent-Skills-for-Context-Engineering/memory-systems)).
+
+**Storage.** Memory is a projection of an append-only, hash-chained event log that we own; claims, tiers, ledger and commitments are rebuilt from it, retrieval results are logged so replay does not drift, and a fork is a new stream sharing the parent's log up to an event. No memory layer puts a model in the write path. Details and alternatives are in [ADR-0001](adr/0001-storage-and-memory.md).
 
 **Identity.** Each citizen has a stable id, an Ed25519 keypair that signs its messages and payments, and a genome file (persona seed, values, skills, parent id). Persona drift is measured by periodically asking a fixed set of probe questions and diffing the answers over time.
 

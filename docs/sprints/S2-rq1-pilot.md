@@ -2,7 +2,7 @@
 
 **Weeks:** 5–8  
 **Team:** 1 owner + agents  
-**Total points:** ~47  
+**Total points:** ~65  
 **Exit criterion:** A pre-registration the owner has approved and a 2-block pilot that fixes the block count, the cost, and the coding reliability.
 
 ## Goal
@@ -44,6 +44,16 @@ Ticket ids are `S2-T<n>`. Branch names `S2/<area>/<slug>`; PRs say `Closes S2-T<
 | --- | --- | --- | --- |
 | T5 | Gateway config: OpenRouter routing, snapshot pinning, provider logging, fallback off, hard spend cap and kill switch | 5 | S1 T3 |
 
+### Infrastructure as code ([ADR-0002](../adr/0002-infrastructure-as-code.md))
+
+| # | Title | Points | Depends |
+| --- | --- | --- | --- |
+| T13 | Confirm ADR-0002 (cloud and tool); `infra/` skeleton with remote state | 3 | owner |
+| T14 | Versioned object storage for logs and blobs; secrets for model keys; budget alarms and spend kill switch | 5 | T13 |
+| T15 | Batch runner: ECS Fargate or EC2 spot task that launches all arms of a block together | 5 | T13,T17 |
+| T16 | GitHub Actions deploy through OIDC, no static keys; egress allow-listed to the model gateway | 3 | T13 |
+| T17 | Dockerfile and image build for the harness | 2 | S1 |
+
 ### Pilot
 
 | # | Title | Points | Depends |
@@ -60,6 +70,7 @@ Ticket ids are `S2-T<n>`. Branch names `S2/<area>/<slug>`; PRs say `Closes S2-T<
 - Block count set from pilot data, with the power calculation attached
 - Cost per citizen-day measured and budget approved
 - Judge agreement with the human sample meets the threshold in the pre-registration
+- Infrastructure created only from `infra/` (no hand-built resources), with the spend kill switch tested
 - Pilot logs archived; handoff updated
 
 ## Risks and mitigations

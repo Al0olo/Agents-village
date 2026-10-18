@@ -25,3 +25,10 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T12 | Port admission policy; shared test vectors read by Rust and Python | ⏳ | |
 | T13 | 72-hour, 10-citizen run; measure cost per citizen-day | ⏳ | |
 | T14 | Stack decision memo | ⏳ | |
+| T15 | Postgres schema mirroring SQLite | ⏳ | |
+| T16 | tsvector and pgvector retrieval, results recorded | ⏳ | |
+| T17 | Projection snapshots and fork-by-prefix | ⏳ | |
+| T18 | SQLite and Postgres schema parity test | ⏳ | |
+| T19 | RDS Postgres 16 and networking | ⏳ | |
+| T20 | Kernel image and service | ⏳ | |
+| T21 | Observability export | ⏳ | |

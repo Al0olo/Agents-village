@@ -1,7 +1,7 @@
 # S0 — Foundations (implementation audit)
 
 **Source of intent:** [`docs/sprints/S0-foundations.md`](../sprints/S0-foundations.md)  
-**Status:** ✅ Complete once this PR merges.
+**Status:** ✅ Complete.
 
 ## TL;DR
 
@@ -24,7 +24,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T4 | Social preview image | ✅ | PR #4. `assets/social-preview.png` (1280x640). The owner uploads it in repository settings. |
 | T5 | Research sources and per-directory README and AGENTS | ✅ | PR #5. `docs/research/sources.md`; README and AGENTS in each directory (not `.github/`, not skill folders). |
 | T6 | Agent rules, skills, hooks, enforced handoff | ✅ | PR #6. `AGENTS.md`, `CLAUDE.md`, `.claude/rules`, ten skills, hooks, `scripts/check-handoff.sh`, CI `handoff` job, `docs/HANDOFF.md`. |
-| T7 | Sprint plan and implementation audit docs | 🚧 | This PR. Sprint and implementation docs. |
+| T7 | Sprint plan and implementation audit docs | ✅ | PR #7. `docs/sprints/`, `docs/implementation/`, `sprint-workflow` skill. |
 
 ## Deferred or open
 

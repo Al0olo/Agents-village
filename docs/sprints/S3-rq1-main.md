@@ -2,7 +2,7 @@
 
 **Weeks:** 9–16  
 **Team:** 1 owner + agents + 1 human coder  
-**Total points:** ~59  
+**Total points:** ~62  
 **Exit criterion:** A complete, honest write-up of RQ1 with released code and logs, whichever way the result goes.
 
 ## Goal
@@ -51,6 +51,7 @@ Ticket ids are `S3-T<n>`. Branch names `S3/<area>/<slug>`; PRs say `Closes S3-T<
 | T10 | Release code, configs and logs with canary string | 3 | T6 |
 | T11 | Two external reviewers read the draft | 3 | T9 |
 | T12 | Choose venue and submit | 2 | T11 |
+| T13 | Scale the batch runner to all blocks; cost dashboard and alarms from `infra/` | 3 | S2 T15 |
 
 ## Definition of done
 

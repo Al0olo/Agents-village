@@ -23,8 +23,9 @@ funding is a later concern.
   reference admission policy (`harness/src/agent_village/admission.py`), CI, community files.
 - Done: README with hero image (PR #3), research sources with reading levels (PR #5),
   README and AGENTS file in every directory (PR #5), social preview image (PR #4).
-- Done: agent rules, skills, hooks and handoff system (PR #6).
-- In progress: sprint plan and implementation audits in `docs/sprints/` and `docs/implementation/` (this PR).
+- Done: agent rules, skills, hooks and handoff system (PR #6); sprint plan and implementation audits (PR #7).
+- In progress: ADR-0001 storage and memory (S1-T25 to T31, S4-T15 to T18) and ADR-0002 infrastructure as code, proposed (S2-T13 to T17, S3-T13, S4-T19 to T21) (this PR).
+- Decided: memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
   the real kernel (M1), the observer UI.
@@ -33,7 +34,7 @@ funding is a later concern.
 
 Start sprint S1 (`docs/sprints/S1-rq1-harness.md`) with ticket S1-T1: the append-only event
 log in `harness/src/agent_village/` (JSONL, ids, hash chain) with tests, on branch
-`S1/harness/event-log`. Then T2, T3, T5 in that order. The pre-registration is S2-T1 and
+`S1/harness/event-log`. Then T2, T3, T5, and the storage tickets T25 to T31 (the store underlies everything after T1). The pre-registration is S2-T1 and
 comes after the harness exists; do not run anything live before it is approved.
 
 ## Queue
@@ -44,6 +45,7 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 ## Open decisions (owner)
 
+- Confirm ADR-0002: Terraform on AWS (the owner's existing stack) for `infra/`, or another cloud or tool. IaC was missing from the plan and is now ticketed in S2 to S4.
 - License is Apache-2.0, chosen by the agent without asking; confirm.
 - Model mix for RQ1: two frontier models and one pinned open-weight model; which ones.
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
