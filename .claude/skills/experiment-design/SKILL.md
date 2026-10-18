@@ -13,6 +13,7 @@ Read `docs/prd.md` section 1 first. RQ1 is the flagship; RQ2 and RQ3 are deferre
 
 - Question, hypothesis and the result that would refute it.
 - Arms and the primary contrast (RQ1: kernel admission against the better prompt arm).
+- The base village runs without defense until the fork (ADR-0003); report the share of core and shared entries at the fork that the kernel's rule would have refused.
 - Unit of analysis: the village or paired block. Blocks, forks and their number, with the
   pilot that sets it.
 - Measures, how each is coded, who or what codes it (blinded judge plus human-validated sample).

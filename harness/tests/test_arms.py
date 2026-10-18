@@ -4,7 +4,7 @@ import pytest
 from villages import NAMES, gossip
 
 from agent_village.admission import Admission, Claim, Event, Kind, admit
-from agent_village.arms import ARMS, KERNEL_ADMISSION, NO_DEFENSE, admit_all
+from agent_village.arms import ARMS, BASE, KERNEL_ADMISSION, NO_DEFENSE, admit_all
 from agent_village.eventlog import EventLog
 from agent_village.fork import build, fork
 from agent_village.memory import Tier
@@ -34,9 +34,7 @@ def drive(world, ticks):
 def arms_run(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("arms")
     log = EventLog(tmp / "base.jsonl")
-    base = build(
-        log, random.Random(5), FakeBackend(gossip), admit, KERNEL_ADMISSION.prompt, specs(), 3
-    )
+    base = build(log, random.Random(5), FakeBackend(gossip), BASE.policy, BASE.prompt, specs(), 3)
     drive(base, 24)
     snap = base.snapshot()
     worlds = {}
@@ -69,7 +67,9 @@ def oracle(log, claim):
     if any(e.kind in ("saw", "did") for e in cited):
         return "fact"
     tellers = [
-        set(e.payload["origins"]) for e in cited if e.kind == "told" and e.payload["origins"]
+        set(e.payload["origins"])
+        for e in cited
+        if e.kind == "told" and e.payload["origins"] and e.writer not in e.payload["origins"]
     ]
     independent = any(a.isdisjoint(b) for i, a in enumerate(tellers) for b in tellers[i + 1 :])
     return "fact" if independent else "hearsay"
@@ -123,29 +123,60 @@ def test_arms_start_identical_and_diverge_only_after_the_fork(arms_run):
 
 
 def test_kernel_admission_matches_an_independent_recomputation(arms_run):
-    _, worlds = arms_run
+    snap, worlds = arms_run
     kernel = worlds["D"]
-    for claim in claims(kernel):
+    after = claims(kernel, snap.events)
+    assert after
+    for claim in after:
         assert claim.payload["admission"] == oracle(kernel.log, claim), claim.id
 
 
-def test_no_hearsay_reaches_core_or_shared_under_the_kernel(arms_run):
-    _, worlds = arms_run
+def test_no_hearsay_written_under_the_kernel_reaches_core_or_shared(arms_run):
+    snap, worlds = arms_run
     kernel = worlds["D"]
     stored = list(kernel.memory.entries(Tier.SHARED))
     stored += [e for n in NAMES for e in kernel.memory.entries(Tier.CORE, n)]
-    assert stored
-    for entry in stored:
+    written = [e for e in stored if e.id >= snap.events]
+    assert written
+    for entry in written:
         assert entry.admission is Admission.FACT
         assert oracle(kernel.log, kernel.log[entry.id]) == "fact"
 
 
 def test_hearsay_is_kept_in_recall_not_discarded(arms_run):
-    _, worlds = arms_run
+    snap, worlds = arms_run
     kernel = worlds["D"]
-    hearsay = [e for e in claims(kernel) if e.payload["admission"] == "hearsay"]
-    recalled = sum(len(kernel.memory.entries(Tier.RECALL, n)) for n in NAMES)
-    assert hearsay and recalled == len(hearsay)
+    hearsay = [e for e in claims(kernel, snap.events) if e.payload["admission"] == "hearsay"]
+    recalled = [
+        e for n in NAMES for e in kernel.memory.entries(Tier.RECALL, n) if e.id >= snap.events
+    ]
+    assert hearsay and len(recalled) == len(hearsay)
+
+
+def test_the_base_village_runs_without_defense():
+    assert BASE is NO_DEFENSE
+    assert BASE.policy is admit_all
+
+
+def test_everything_the_base_stored_is_fact_and_some_of_it_has_no_backing(arms_run):
+    snap, worlds = arms_run
+    before = [e for e in claims(worlds["D"]) if e.id < snap.events]
+    assert before
+    assert {e.payload["admission"] for e in before} == {"fact"}
+    assert any(oracle(worlds["D"].log, e) == "hearsay" for e in before)
+
+
+def test_the_kernel_does_not_reclassify_what_the_base_stored(arms_run):
+    snap, worlds = arms_run
+    kernel = worlds["D"]
+    unbacked = [
+        e for e in claims(kernel) if e.id < snap.events and oracle(kernel.log, e) == "hearsay"
+    ]
+    assert unbacked
+    for claim in unbacked:
+        tier = Tier(claim.payload["stored"])
+        held = kernel.memory.entries(tier, claim.writer)
+        assert any(entry.id == claim.id for entry in held)
 
 
 def test_no_defense_stores_every_claim_as_fact_after_the_fork(arms_run):
@@ -157,10 +188,13 @@ def test_no_defense_stores_every_claim_as_fact_after_the_fork(arms_run):
     assert all(e.payload["stored"] == e.payload["requested"] for e in after)
 
 
-def test_the_kernel_keeps_less_in_shared_memory_than_no_defense(arms_run):
-    _, worlds = arms_run
-    shared = {name: len(w.memory.entries(Tier.SHARED)) for name, w in worlds.items()}
-    assert shared["D"] < shared["A"]
+def test_the_kernel_adds_less_to_shared_memory_than_no_defense(arms_run):
+    snap, worlds = arms_run
+    added = {
+        name: len([e for e in w.memory.entries(Tier.SHARED) if e.id >= snap.events])
+        for name, w in worlds.items()
+    }
+    assert added["D"] < added["A"]
 
 
 def test_origins_in_the_log_follow_the_forward_chain_exactly(arms_run):

@@ -2,8 +2,8 @@
 //!
 //! The policy under test in RQ1: a claim reaches core or shared memory as fact
 //! only if it cites at least one first-hand event in the writer's own log, or at
-//! least two told-events whose origin sets are disjoint. Everything else is kept
-//! as hearsay in recall. The reference implementation lives in
+//! least two told-events whose origin sets are disjoint and do not include the
+//! writer. Everything else is kept as hearsay in recall. The reference implementation lives in
 //! `harness/src/agent_village/admission.py`; this crate will port it once the
 //! Python results fix the semantics.
 

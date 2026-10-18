@@ -165,3 +165,44 @@ def test_admission_is_pure():
     claim = Claim("x", "ada", ("e1",))
     assert admit(claim, l) is admit(claim, l)
     assert l == before
+
+
+def test_a_told_event_that_originates_with_the_writer_is_not_evidence():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"ada", "bo"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"cy"})),
+    )
+    assert admit(Claim("x", "ada", ("e1", "e2")), l) is Admission.HEARSAY
+
+
+def test_two_echoes_of_the_writers_own_claim_are_not_two_sources():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"ada", "bo"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"ada", "cy"})),
+    )
+    assert admit(Claim("x", "ada", ("e1", "e2")), l) is Admission.HEARSAY
+
+
+def test_an_echo_does_not_block_a_genuine_pair():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"ada", "bo"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"cy"})),
+        Event("e3", "ada", Kind.TOLD, frozenset({"di"})),
+    )
+    assert admit(Claim("x", "ada", ("e1", "e2", "e3")), l) is Admission.FACT
+
+
+def test_the_writer_as_the_only_origin_is_an_echo_too():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"ada"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"bo"})),
+    )
+    assert admit(Claim("x", "ada", ("e1", "e2")), l) is Admission.HEARSAY
+
+
+def test_an_echo_does_not_cancel_first_hand_evidence():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"ada", "bo"})),
+        Event("e2", "ada", Kind.SEEN),
+    )
+    assert admit(Claim("x", "ada", ("e1", "e2")), l) is Admission.FACT

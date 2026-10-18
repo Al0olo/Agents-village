@@ -17,8 +17,8 @@ These must hold after every change. Add a test for any you touch.
    only through explicit mint and burn entries. A balance never goes negative. Integer credits.
 4. **Spend is kernel-enforced.** Per-citizen and per-lineage caps live in the kernel.
 5. **Admission is deterministic and model-free.** A claim becomes fact only with a
-   first-hand event in the writer's own log or two told-events with disjoint origins;
-   otherwise it is stored as hearsay. Rejected writes fail silently as hearsay. Origins
+   first-hand event in the writer's own log or two told-events with disjoint origins, none
+   of which originates with the writer; otherwise it is stored as hearsay. Rejected writes fail silently as hearsay. Origins
    are tracked through forwards so they cannot be laundered.
 6. **Replay is honest.** Audit replay and counterfactual forks use recorded model outputs.
    Never claim bit-for-bit reproducibility; hosted models are not deterministic.
