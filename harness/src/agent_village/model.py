@@ -106,15 +106,22 @@ class Model:
 
 
 class RecordedBackend:
-    """Replays the responses recorded in a log, per request, in recorded order."""
+    """Replays the responses recorded in a log, per request, in recorded order.
+
+    ``from_log`` can start part way through a log, so a fork replays only the calls made
+    after the fork point.
+    """
 
     def __init__(self, responses: dict[str, deque[Response]]) -> None:
         self._responses = responses
 
     @classmethod
-    def from_log(cls, log: EventLog) -> RecordedBackend:
+    def from_log(cls, log: EventLog, start: int = 0) -> RecordedBackend:
+        if not 0 <= start <= len(log):
+            raise ValueError(f"the log has {len(log)} events, not {start}")
         responses: dict[str, deque[Response]] = defaultdict(deque)
-        for event in log:
+        for index in range(start, len(log)):
+            event = log[index]
             if event.kind == "model_call":
                 p: Any = event.payload
                 responses[p["request_hash"]].append(

@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T14 audit and counterfactual replay
+
+- PR #19 (T15) was merged. The GitHub tools disconnected for a moment at the start of the session and came back; nothing was lost.
+- Fixed the gotcha I had recorded: `RecordedBackend.from_log(log, start)` replays only calls after a start position. Added `replay.py`: `audit` re-drives a recorded run from a seed or from the snapshot an arm was forked from (ticks run the real runner on recorded outputs; `saw`, `did` and `launch` events are re-appended; every produced event is compared with the original and the first difference is reported), and `branch` replays to a tick boundary to recover state and rng, then continues as a different arm, reusing recorded outputs for identical requests and counting reused and fresh calls (`ReplayBackend`). A replayed log is byte-identical to the original. Audits check the arm, config hash and prompt hash against the `launch` event.
+- Design findings: (1) a branch must not append a marker event, because that shifts every later event number and no recorded output would match; (2) prompts carry global event numbers, so after a branch's numbering diverges nothing more is reused. The honest value of a counterfactual is therefore recovering exact state at any past tick boundary without paying for the prefix again, plus exact audit; not cheap exploration. Recorded in the handoff with the option (per-citizen numbers) and why I did not take it.
+- Bugs found by my own tests: when a replay diverged, the next request was usually unrecorded and the runner raised before I compared the events already produced, so the report named a later symptom; fixed by comparing what was produced first. A branch test used a cut before the arm's snapshot. A defensive 'input did not reproduce' branch was unreachable by induction and was removed. Coverage found it.
+- Tests first, 38 new (34 replay, 4 model), including logs tampered with a valid chain (an event removed or inserted via a rebuilt log) so only the replay comparison can catch them. Mutation-checked 20 mutants: all real ones caught after adding tests for the launch marker's prompt hash and for a same-size renamed setup. Equivalent survivors: the two `from_log` scoping arguments in `replay.py`, because every prompt embeds its tick so no request repeats across a fork (the scoping itself is unit-tested in `test_model.py`).
+- Not verified: replay against real recorded model outputs (all tests use fake backends).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T15 launch controller
 
 - PR #18 (echo gap, ADR-0003) was merged. T15 is the in-process controller; the cloud batch runner is S2-T15 and the run monitor S3-T3, so I kept this to launch, lockstep and a minimal abort rule.

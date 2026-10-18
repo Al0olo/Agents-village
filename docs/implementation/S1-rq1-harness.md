@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 to T8, T13 and T15 done.
+**Status:** 🚧 In progress. T1 to T8 and T13 to T15 done.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -26,7 +26,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T11 | Arm E: volume-matched random-block control | ⏳ | |
 | T12 | Consolidation job (two per 3-day run) | ⏳ | |
 | T13 | Snapshot and fork at the planting event; forks identical until arms diverge | ✅ | `harness/src/agent_village/fork.py`, `eventlog.py` (`fork`, `head_at`), `village.py` and `runner.py` (rebuild from a log); tests `test_fork.py`, `test_village.py`, `test_eventlog.py`, `test_runner.py`. A snapshot is the log position, its head hash and the rng state, taken between ticks. A fork starts in exactly the base's state, continues exactly like a base that never forked, shares the log prefix byte for byte, and diverges only through the arm's policy, prompt or backend. The planting event itself is T17. `pytest -q tests/test_fork.py` |
-| T14 | Audit and counterfactual replay from recorded outputs | ⏳ | |
+| T14 | Audit and counterfactual replay from recorded outputs | ✅ | `harness/src/agent_village/replay.py`, `model.py` (`RecordedBackend.from_log(log, start)`); tests `test_replay.py`, `test_model.py`. `audit(original, dest, start, arm, config)` re-drives a recorded run from a seed or from the snapshot an arm was forked from, runs the real runner against recorded outputs, re-appends `saw`, `did` and `launch` events, and reports the first differing event. `branch(...)` replays to a tick boundary, then continues under a changed arm, reusing recorded outputs for identical requests and counting reused and fresh calls. A replayed log is byte-identical to the original. Only `saw`, `did` and `launch` events may be appended between ticks. `pytest -q tests/test_replay.py` |
 | T15 | Simultaneous launch controller; fallbacks off | ✅ | `harness/src/agent_village/launch.py`, `harness/tests/test_launch.py`. `launch(snapshot, source, directory, arms, make_backend, config)` forks every arm all or nothing with one `RunConfig` and one backend factory, and appends a `launch` event (arm, snapshot head, config hash, prompt version and hash) to each log. `Launch.run` advances the arms one tick at a time behind a barrier, on threads or one after another with identical results. A failed arm or detected drift (a requested model that served more than one snapshot or provider, base run included) stops and excludes the block. Fallbacks are off in `OpenRouterBackend` (S1-T3). The cloud batch runner that calls this is S2-T15; the run monitor is S3-T3. `pytest -q tests/test_launch.py` |
 | T16 | Fictional fact generator (counterbalanced plausibility and planter status) | ⏳ | |
 | T17 | Planting event and colluding-planter arm | ⏳ | |
