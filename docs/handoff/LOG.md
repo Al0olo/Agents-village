@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T3 model interface
+
+- PR #11 (T2) was merged. Owner asked me to open PRs myself from now on; they review and merge.
+- Read OpenRouter's docs (provider routing, API overview, get a generation): fallbacks are `provider.allow_fallbacks` (default true), restriction is `provider.only`, the served model is `response.model`. The routed provider is documented only as `data.provider_name` on `GET /generation?id=`; the chat response schema shows no `provider` field. The backend uses a `provider` field if present, else the generation record, else raises.
+- Implemented `model.py` (request validation incl. `max_tokens >= 1`, fake, logging `Model`, `RecordedBackend`) and `openrouter.py` (injected transport, stdlib `urllib` transport). `canonical_hash` moved into `eventlog.py` so request and event hashes share one canonical form; the pinned event hash is unchanged.
+- Tests first, 26 cases, including audit replay (replaying recorded outputs gives an identical log head). Mutation-checked: fallbacks on, silent "unknown" provider, non-consuming replay, request model logged as served, and `max_tokens` bound each fail tests.
+- Not verified: any real OpenRouter call. Not done: spend cap and kill switch (S2-T5), usage accounting (T23).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T2 village state and scheduler
 
 - PR #10 (T1) was merged; restarted the session branch from `main` at `21736e7`.
