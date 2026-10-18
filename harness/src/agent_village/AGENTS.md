@@ -8,6 +8,8 @@ Memory writes go through `Memory.write_claim` with an injected policy. Evidence 
 
 Messages go through `Messenger`. Origins only grow along a forward, and a message never goes to one of its own origins; do not add a path that writes a `told` event any other way.
 
+The prompt text in `prompts.py` and the rendering in `runner.py` (`_render`) are part of the treatment, like `admission.py`: a change needs a new prompt version, an updated pinned-prompt test and a note in the pre-registration, and never happens after runs start. Acting is not evidence: do not log `did` events for messages or memory writes, or a citizen could back a claim by having said it. A model error must stop the run, not be retried silently.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.

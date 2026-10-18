@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T4 citizen loop
+
+- PR #14 (T6) was merged. Owner asked for T4 with everything tested. Designed from the PRD (FR2 loop, step budget from MAST, no hypothesis leakage) and the existing modules; split into `actions.py` (strict parser), `prompts.py` (versioned, hashed) and `runner.py` (the loop) so each is tested alone.
+- Decisions: one JSON action per model reply with four actions (`say`, `forward`, `remember`, `sleep`); invalid replies and failed actions are logged and shown to the citizen as a neutral notice, and burn a step; a write's admission result is never shown; every turn ends asleep (voluntary or by budget); sleep length is clamped; messages wake the recipient unless they still act this tick. Acting logs `message` and `claim` events, never `did`, so a citizen cannot cite its own utterance as evidence. Model errors stop the run.
+- Found while re-reading my tests: a wake request to a recipient who has not yet acted this tick cost a pointless model call next tick; fixed with a queued set and a seed-swept test for both orders. Also found a flawed test that depended on turn order within a tick.
+- Verified: 221 tests, 100% line and branch coverage (pytest-cov installed ad hoc), and hand mutation of 17 behaviors in the runner and parser; every real mutant is caught (a comment-only mutant is equivalent). One survivor (core and wiki limits untested) led to a new test. The T1 coverage gap (unreadable records in the event log) got a test too.
+- Not verified: behavior with a real model; whether the baseline prompt reads naturally to frontier models; any live call.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T6 message passing
 
 - PR #13 (T5) was merged. Owner asked about T4 versus T6; T4 was unblocked (depends on T2 and T3) but I recommended T6 first so the loop's perception is designed once around real messages; the owner agreed.

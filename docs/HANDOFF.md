@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `628618b`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `0aab10a`
 
 ## Objective
 
@@ -30,7 +30,8 @@ funding is a later concern.
 - Done: S1-T2, village state and deterministic scheduler (`harness/src/agent_village/village.py`, 20 tests): injected `SimClock` and `random.Random`, awake cap, oldest wake request first with seeded tie-break, every change a log event. Merged in PR #11.
 - Done: S1-T3, model interface (`model.py`: `Request`, `Response`, `FakeBackend`, `Model`, `RecordedBackend`; `openrouter.py`: live backend, fallbacks always off, 26 tests). `Model` logs `model_call` events with requested and served model and routed provider; `RecordedBackend.from_log` replays them. Merged in PR #12.
 - Done: S1-T5, memory tiers with structured claim writes (`harness/src/agent_village/memory.py`, 21 tests): `Memory(log, policy).write_claim(writer, text, kind, cites, tier)`, tiers core, recall and shared, decision logged as a `claim` event, state rebuilds from the log without rerunning the policy. Merged in PR #13.
-- Done: S1-T6, message passing with origin tracking (`harness/src/agent_village/messages.py`, 19 tests): `Messenger.send/forward/received`; a send logs a `message` event and the recipient's `told` event; forwards add the forwarder to the origins and never remove one; a message cannot go to its own origins. Tested end to end with `Memory` and `admit`. PR #14 (`claude/gracious-albattani-osio94`).
+- Done: S1-T6, message passing with origin tracking (`harness/src/agent_village/messages.py`, 19 tests): `Messenger.send/forward/received`; a send logs a `message` event and the recipient's `told` event; forwards add the forwarder to the origins and never remove one; a message cannot go to its own origins. Tested end to end with `Memory` and `admit`. Merged in PR #14.
+- Done: S1-T4, the citizen loop (`runner.py`, `actions.py`, `prompts.py`; 114 new tests, 221 in all, 100% line and branch coverage measured with pytest-cov, which is not a project dependency yet). Each wake is a turn of at most `max_steps` model calls; a reply parses to `say`, `forward`, `remember` or `sleep`; the step budget, clamped sleeps, logged `invalid_action` and `turn_end` events bound every loop. A fake-backend village of 8 citizens runs 72 ticks end to end and replays from recorded outputs to an identical log head. PR open on branch `claude/gracious-albattani-osio94`.
 - Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
@@ -38,19 +39,18 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T6 PR is merged, restart the branch from `main` and take S1-T4 (citizen loop:
-wake, perceive, act, write memory; versioned prompts; 8 points, the largest ticket). It
-composes what exists: `Village.step()` returns who wakes, `Messenger.received(citizen,
-after=cursor)` and the citizen's own `saw` events are the perception, `Model.complete`
-makes the call, `Memory.write_claim` stores the result, and `Village.sleep(citizen, until)`
-ends the turn. Decide in the design: where the per-citizen cursor lives (it must be
-derivable from the log), how a delivery wakes the recipient (`Village.request_wake` with
-reason `message`; `Messenger` does not do it), the action vocabulary (`say`, `forward`,
-`remember`, `sleep`), and how prompts are versioned and hashed into the log. Split the
-ticket in the sprint file first if it will not fit in one PR. Then T7, T14, T13 and the
-storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before
-it is approved. Open the PR yourself with the template filled in; the owner reviews and
-merges.
+Once the S1-T4 PR is merged, restart the branch from `main` and take S1-T13 (snapshot and
+fork at the planting event; forks identical until arms diverge), the riskiest remaining
+ticket and the one that unblocks T15 and T17. State a fork must carry: the log prefix
+(files), `Village` (clock, pending wakes, awake set, and the `random.Random` state via
+`getstate()`), and `Runner._cursor`, which is rebuildable from the `step` events' `through`
+field. `Village` currently refuses a non-empty log, so T13 must add a way to restore one;
+T29 (projection rebuild) overlaps, so decide there which ticket owns it. Quick follow-ups
+that are now small: T7 (make `admit` selectable as an arm policy; its forward and collusion
+tests exist) and T8 (arm A: a policy that admits everything, 1 point). Then T14, T9, T16,
+T18 and the storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything
+live before it is approved. Open the PR yourself with the template filled in; the owner
+reviews and merges.
 
 ## Queue
 
@@ -99,6 +99,13 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - `Messenger` does not know who the citizens are and does not wake the recipient; the T4 loop and `Village` own both.
 - The colluding-senders test in `tests/test_messages.py` documents a known limit of kernel admission, not a bug: two distinct liars are two origins. The colluding-planter arm (T17) measures it.
 - S1-T7 is smaller than planned: forward and collusion tests already exist in `test_messages.py`. What remains is making `admit` selectable as an arm policy.
+
+- Acting is not evidence (S1-T4): the loop logs `message` and `claim` events but never `did` events for what a citizen says or writes. A `did` for `say` would let a citizen cite its own utterance as first-hand evidence for what it said, which defeats arm D. First-hand events must come from the environment (planting, tool receipts, ledger).
+- Defaults in `LoopConfig` (4 steps, sleep 6 of at most 24 ticks, 400 tokens, temperature 0.7, 20 memory lines per tier) and the text of `BASELINE` are placeholders. The owner reviews arm prompts at the S1 gate; the pre-registration freezes them.
+- A model error propagates out of `Runner.tick()` and leaves every woken citizen awake. That run is dead by design (exclusion rules cover crashed villages); there is no retry.
+- A message to a citizen who has not yet acted this tick does not wake them again; they see it on their turn. Tested for both orders.
+- Message and memory text is flattened to one line when rendered, so a message cannot forge an event line such as `[999] You saw: ...`. Evidence is by log id, so forging a line never fools the kernel, only the model.
+- `python3 -m pytest` is needed for coverage flags in this sandbox; plain `pytest` ignores the pytest-cov plugin.
 
 ## How to verify
 
