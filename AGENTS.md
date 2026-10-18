@@ -27,6 +27,8 @@ are deferred. Read `docs/prd.md` section 1 before changing anything experimental
 | `harness/` | Python harness and reference implementations (RQ1 runs here first) |
 | `experiments/` | One folder per research question: design, pre-registration, configs, analysis |
 | `docs/` | PRD, milestones, research sources, handoff state |
+| `docs/sprints/` | Sprint plans and tickets (intent) |
+| `docs/implementation/` | What is actually on `main`, per sprint (state) |
 | `.claude/` | Rules, skills and hooks for agents |
 | `scripts/` | Repository scripts used by CI and hooks |
 
@@ -61,6 +63,7 @@ scripts/check-handoff.sh        # does this branch update docs/HANDOFF.md?
 | Skill | Use when |
 | --- | --- |
 | `handoff` | Starting or finishing any session (always) |
+| `sprint-workflow` | Picking up, working or closing a sprint ticket |
 | `git-pr-workflow` | Branching, committing, opening or updating a PR |
 | `rust-workflow` | Touching `crates/` |
 | `python-harness` | Touching `harness/` |

@@ -23,30 +23,24 @@ funding is a later concern.
   reference admission policy (`harness/src/agent_village/admission.py`), CI, community files.
 - Done: README with hero image (PR #3), research sources with reading levels (PR #5),
   README and AGENTS file in every directory (PR #5), social preview image (PR #4).
-- In progress: this branch adds the agent rules, skills, hooks and handoff system (this PR).
+- Done: agent rules, skills, hooks and handoff system (PR #6).
+- In progress: sprint plan and implementation audits in `docs/sprints/` and `docs/implementation/` (this PR).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
   the real kernel (M1), the observer UI.
 
 ## Next step
 
-After this PR merges, write `experiments/rq1-provenance/PREREGISTRATION.md` using the
-checklist in `.claude/skills/experiment-design/SKILL.md` and the design in `docs/prd.md`
-section 1 (arms A to E, paired forks, about 10 blocks of 8 citizens for 3 days, 6 false
-and 4 true planted facts about fictional entities, primary outcome final attack rate of
-kernel admission against the better prompt arm). Get the owner's review before any run.
+Start sprint S1 (`docs/sprints/S1-rq1-harness.md`) with ticket S1-T1: the append-only event
+log in `harness/src/agent_village/` (JSONL, ids, hash chain) with tests, on branch
+`S1/harness/event-log`. Then T2, T3, T5 in that order. The pre-registration is S2-T1 and
+comes after the harness exists; do not run anything live before it is approved.
 
 ## Queue
 
-1. Build a plain-Python village simulator with forkable state and a model interface (fake
-   and recorded implementations) so the pilot can run before the Rust kernel exists.
-2. Implement the structured claim writes, origin tracking through forwards, and the
-   random-block control arm in the harness, with tests.
-3. Run the 2-block pilot (10 villages, 3 days) to measure variance, fork correlation,
-   coding reliability and cost per citizen-day; recompute power; set the block count.
-4. Register on OSF, then run RQ1.
-5. M1 Rust kernel in parallel; port admission only after the Python semantics are final,
-   with shared test vectors.
+Follow the sprint plan in `docs/sprints/`: S1 harness (weeks 1 to 4), S2 pilot and
+pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in parallel
+(5 to 16). S5 to S8 are outlined and wait for RQ1. Ticket status is in `docs/implementation/`.
 
 ## Open decisions (owner)
 
@@ -84,6 +78,7 @@ scripts/check-handoff.sh
 
 ## Pointers
 
+- `docs/sprints/README.md`: sprint index and conventions; `docs/implementation/README.md`: status index
 - `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, `.claude/skills/`: how to work here
 - `docs/prd.md` section 1: research questions and the RQ1 design
 - `docs/milestones.md`: M1 to M5, gates, cost model

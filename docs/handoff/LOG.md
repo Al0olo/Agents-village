@@ -3,6 +3,12 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · sprint plan and implementation audits
+
+- Modelled on the layout of the owner's `Al0olo/hakim` repo: `docs/sprints/` holds intent (goal, tickets with points and dependencies, definition of done, risks, demo, go/no-go) and `docs/implementation/` holds state per sprint. Adapted for research: sprints S1 to S3 run RQ1 on a Python harness, S4 builds the Rust kernel in parallel, S5 to S8 are outlined for after RQ1.
+- Branch naming changed to `S<n>/<area>/<slug>`; PRs say `Closes S<n>-T<m>`. Added the `sprint-workflow` skill.
+- Point totals: S1 about 100, S2 about 47, S3 about 59, S4 about 79; these are planning estimates, not measured.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · rules, skills and handoff system
 
 - Owner decided the frontend stack: TypeScript with Next.js. Updated `.claude/rules/frontend.md`, the `frontend-observer` skill and the handoff.

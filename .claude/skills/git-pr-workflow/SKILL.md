@@ -7,7 +7,7 @@ description: Branch, commit and open pull requests in this repo. Use whenever cr
 
 1. Sync: `git fetch origin main && git checkout main && git reset --hard FETCH_HEAD`
    (the clone may be shallow; `origin/main` can fail to resolve).
-2. Branch: `git checkout -b <type>/<short-slug>` with type in feat, fix, docs, exp, chore.
+2. Branch: `git checkout -b S<n>/<area>/<slug>` for a sprint ticket (see `docs/sprints/`), otherwise `fix/`, `docs/` or `chore/` plus a slug.
 3. Work in small commits. Gate before each: see `AGENTS.md` Commands.
 4. Update `docs/HANDOFF.md` in the same PR (skill `handoff`).
 5. Commit message:
