@@ -31,8 +31,8 @@ funding is a later concern.
   until the fork (`arms.BASE`, which is arm A).
 - Done, PR #19: S1-T15, the launch controller (`launch.py`).
 - In progress: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` now takes a
-  start position; 38 new tests, 388 in all, 100% line and branch coverage). PR open on branch
-  `claude/gracious-albattani-osio94`.
+  start position; 38 new tests, 388 in all, 100% line and branch coverage). PR #20
+  (`claude/gracious-albattani-osio94`).
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
