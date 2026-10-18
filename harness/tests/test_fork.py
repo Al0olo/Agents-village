@@ -6,6 +6,7 @@ import pytest
 from villages import NAMES, behave
 
 from agent_village.admission import Admission, admit
+from agent_village.arms import admit_all
 from agent_village.eventlog import EventLog
 from agent_village.fork import Snapshot, build, fork
 from agent_village.model import FakeBackend, RecordedBackend
@@ -15,10 +16,6 @@ from agent_village.runner import Spec
 
 def specs():
     return [Spec(n, "fake/model") for n in NAMES]
-
-
-def allow_all(claim, events):
-    return Admission.FACT
 
 
 def base(tmp_path, ticks, seed=0, name="base.jsonl", policy=admit):
@@ -161,7 +158,7 @@ def test_arms_with_different_policies_share_the_prefix_and_diverge_after_it(tmp_
     world = base(tmp_path, 20)
     snap = world.snapshot()
     a = arm(tmp_path, snap, world.log, "a.jsonl", policy=admit)
-    b = arm(tmp_path, snap, world.log, "b.jsonl", policy=allow_all)
+    b = arm(tmp_path, snap, world.log, "b.jsonl", policy=admit_all)
     assert a.state() == b.state()
     a.runner.run(40)
     b.runner.run(40)
@@ -187,7 +184,7 @@ def test_the_policy_only_applies_to_writes_after_the_fork(tmp_path):
     world = base(tmp_path, 30)
     snap = world.snapshot()
     before = world.state()["memory"]
-    forked = arm(tmp_path, snap, world.log, "fork.jsonl", policy=allow_all)
+    forked = arm(tmp_path, snap, world.log, "fork.jsonl", policy=admit_all)
     assert forked.state()["memory"] == before
     assert any(e.admission is Admission.HEARSAY for e in before)
 
