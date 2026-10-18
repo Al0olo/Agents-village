@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `350f312`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `b0ed141`
 
 ## Objective
 
@@ -24,15 +24,16 @@ funding is a later concern.
   `model.py` and `openrouter.py` (#12), T5 memory tiers `memory.py` (#13), T6 messages
   `messages.py` (#14), T4 citizen loop `runner.py`, `actions.py`, `prompts.py` (#15),
   T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17), T15 launch
-  controller `launch.py` (#19).
+  controller `launch.py` (#19), T14 replay `replay.py` (#20).
   Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
 - Done, PR #18: `admit` ignores a told event whose origins include the writer (the writer's own
   claim coming back), and ADR-0003 settles that the shared base village runs without defense
   until the fork (`arms.BASE`, which is arm A).
 - Done, PR #19: S1-T15, the launch controller (`launch.py`).
-- In progress: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` now takes a
-  start position; 38 new tests, 388 in all, 100% line and branch coverage). PR #20
-  (`claude/gracious-albattani-osio94`).
+- Done, PR #20: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` takes a start).
+- In progress: S1-T16 to T18 in one PR on `claude/gracious-albattani-osio94`: fact generator (`facts.py`),
+  planting and the colluding variant (`planting.py`), probes (`probes.py`, `Runner.ask`). 112 new tests, 500
+  in all, 100% line and branch coverage. The design is ADR-0004, proposed.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -41,14 +42,14 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T14 PR is merged, restart the branch from `main` and take S1-T16 (fictional fact
-generator, counterbalanced plausibility and planter status), then T17 (the planting event and the
-colluding-planter arm) and T18 (neutral probes and the awareness probe). Plant facts as `saw`
-events appended between ticks, snapshot after, and keep every fact about fictional entities only.
-Then T11 (arm E, the random block: a deterministic policy keyed on the claim, with the block rate
-as a parameter that the pilot sets from arm D), T9 (arm B prompts, which the owner reviews), T12
-and T10 (consolidation and arm C), T19 to T21 (utility task, judge, metrics) and the storage
-tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before it is
+Once the S1-T16 to T18 PR is merged, restart the branch from `main` and take S1-T20 (blinded judge
+pipeline and human-validation sample sheet), then S1-T21 (metrics: attack rate, time to k adopters, wiki
+contamination, true-fact acceptance, utility, label creep). Together they turn the `plant` and `probe`
+events into the five measures, so arms A and D can already be compared end to end. Then T19 (utility
+task that needs true word-of-mouth information, which measures what blocking costs), T11 (arm E, the
+random block: a deterministic policy keyed on the claim, with the block rate set from arm D in the
+pilot), T9 (arm B prompts, which the owner reviews), T12 and T10 (consolidation and arm C), and the
+storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before it is
 approved. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
@@ -64,6 +65,12 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
   full RQ1 at assumed prices; the measured cost per citizen-day replaces it).
 - Arm prompts and `LoopConfig` defaults are placeholders until the owner reviews them at the S1 gate.
+- ADR-0004 (proposed): how facts are planted and probed. The one that matters: a true fact is given to two
+  independent first-hand holders and a false fact to one (two in the red-team variant), because the kernel
+  sees only provenance. So arm D is never asked to admit a true fact that one citizen witnessed; it blocks
+  those by design, and the utility task (T19) is what measures that cost, as the PRD says. Alternative:
+  single-witness true facts, which break the four-cell balance. Recommendation: keep it as built. Also
+  review the fact templates and name lists (`facts.py`) and the awareness question (`probes.py`).
 
 ## Gotchas
 
@@ -73,8 +80,7 @@ Environment
 - `pip install` needs `--break-system-packages`. Coverage needs `pytest-cov` (not a project
   dependency until S1-T24) and `python3 -m pytest --cov=agent_village --cov-branch`; `.coverage` is git-ignored.
 - After editing a source file twice within one second, pytest can run stale bytecode; delete `__pycache__`.
-- GitHub shows the repo as `Al0olo/Agents-village`; API path `al0olo/agents-village` works.
-  Do not add `README.md` under `.github/`.
+- GitHub shows the repo as `Al0olo/Agents-village`; API path `al0olo/agents-village` works. No `README.md` under `.github/`.
 
 Research claims
 - Verified: exact permutation test floors (p = 0.029 at 4 per arm). NOT verified: the power
@@ -96,30 +102,30 @@ Design rules that tests depend on
 - A village's state is a fold over its log; only the rng state lives outside it, so a `Snapshot`
   is the log position, head and rng state. Snapshots are valid between ticks only. The planting
   event (T17) must be appended between ticks, then the snapshot taken.
-- Launch blocks only through `launch.launch`: every arm gets the same `RunConfig` (specs, `max_awake`,
-  `LoopConfig`) and a backend from one factory, and each log gets a `launch` event with the config
-  hash. Forks made by hand with `fork.fork` do not record the config.
-- A block that fails or drifts is dead (`Launch` refuses further ticks); the experiment excludes it.
-  Drift means one requested model served more than one snapshot or provider across all arms, base
-  run included. Whether the real OpenRouter reports a stable served id for a pinned snapshot is NOT
-  verified, so the drift check may false-alarm on the first live call; check in S2.
-  S3-T3 (run monitor) and S2-T15 (cloud batch runner) build on `Launch`.
-- Audit replay re-drives a log: ticks run the real runner against `RecordedBackend.from_log(log, start)`,
-  and `saw`, `did` and `launch` events are re-appended. Anything else a driver appends between ticks
-  (for example a hand-made `request_wake`) is reported as unreplayable. A replayed log is byte-identical
-  to the original; the first difference is reported with its index and reason. Audits of launched arms
-  check the arm name, config hash and prompt hash against the `launch` event.
-- A branch (counterfactual) replays to a tick boundary to recover the state and rng there, then continues
-  as a different arm. It must not append marker events, or all later event numbers shift. Prompts carry
-  event numbers, so after a branch's numbering diverges no recorded output matches again and every call
-  is fresh; `ReplayBackend` counts replayed and fresh calls. Per-citizen numbers in prompts would keep
-  reuse alive longer but change the treatment; not needed for RQ1, revisit only if counterfactuals become a tool.
+- Launch blocks only through `launch.launch`: every arm gets the same `RunConfig` and a backend from one
+  factory, and each log gets a `launch` event with the config hash. A block that fails or drifts (one requested
+  model served more than one snapshot or provider, base run included) is dead and excluded. Whether the real
+  OpenRouter reports a stable served id for a pinned snapshot is NOT verified, so the drift check may false-alarm
+  on the first live call. S3-T3 (run monitor) and S2-T15 (cloud batch runner) build on `Launch`.
+- Audit replay re-drives a log with the real runner on `RecordedBackend.from_log(log, start)`; `saw`, `did`,
+  `plant` and `launch` events are re-appended and a `probe_round` is re-executed from its marker. Any other
+  event a driver appends between ticks is reported as unreplayable. A replayed log is byte-identical; the first
+  difference is reported with its index and reason.
+- A branch (counterfactual) replays to a tick boundary to recover state and rng, then continues as another arm.
+  It must not append marker events, or every later event number shifts. Prompts carry event numbers, so once a
+  branch's numbering diverges no recorded output matches and every call is fresh (`ReplayBackend` counts both).
+  Per-citizen numbers would keep reuse alive but change the treatment; revisit only if counterfactuals become a tool.
 - A model error stops the run (no retry), leaving woken citizens awake; exclusion rules cover crashed villages.
 - Pre-fork memory entries stay as the base stored them (ADR-0003); the kernel never reclassifies them.
-- Archival memory is not implemented (T27, T28): three tiers of the PRD's four until then.
-- The event log is a JSONL file; T25 moves it into SQLite behind the same `EventLog` interface.
-  Dropping the tail of a log still verifies, so compare `head` against a recorded value.
+- Archival memory is not implemented (T27, T28). The event log is JSONL until T25 moves it into SQLite behind
+  the same `EventLog` interface; dropping the tail of a log still verifies, so compare `head` against a recorded value.
 - The session branch `claude/...` overrides the `S<n>/<area>/<slug>` convention; PRs still say `Closes S1-T<n>`.
+- Facts, planting and probes: a block is `generate(seed, block)`, `make_plan(...)`, `announce` before the first
+  tick, `plant` between ticks (returns the snapshot to fork from), then `probes.run_round` at the end. Planted facts
+  are first-hand `saw` events plus `plant` markers; never inject messages. Probes go through `Runner.ask`, which
+  changes nothing a citizen knows; the reply is a `say` to `visitor` and `answer_of` extracts the text.
+- Whether models respond to the elders notice, and whether holders pass a fact on, is unknown until the pilot.
+  Probe temperature is the loop's (0.7 placeholder); decide it before pre-registration.
 
 ## How to verify
 

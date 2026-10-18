@@ -17,9 +17,7 @@ import random
 from dataclasses import dataclass
 
 from agent_village.facts import Fact, Level
-from agent_village.fork import Snapshot, World
-
-ENVIRONMENT = "environment"
+from agent_village.fork import ENVIRONMENT, Snapshot, World
 
 
 @dataclass(frozen=True)

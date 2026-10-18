@@ -18,6 +18,8 @@ Launch a block only with `launch.launch`: it gives every arm the same `RunConfig
 
 Replay re-drives a log, so anything a driver appends between ticks must be a `saw`, `did` or `launch` event; any other kind is reported as unreplayable. A new environment event kind goes into `replay.ENVIRONMENT` with a replay test. Never add an event to a branch log that the original did not have, or every later event number shifts and no recorded output matches.
 
+Facts, planting and probes are part of the treatment (ADR-0004). Plant only through `planting.plant` as first-hand `saw` events, never as injected messages; keep every fact about invented entities; keep fact wording neutral (a test checks it); and ask probes only through `probes.run_round`, which changes nothing a citizen knows. Do not edit the templates or the awareness question after runs start.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.
