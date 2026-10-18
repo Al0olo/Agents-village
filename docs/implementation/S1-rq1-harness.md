@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 to T3 done.
+**Status:** 🚧 In progress. T1 to T3 and T5 done.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -17,7 +17,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T2 | Village state and deterministic scheduler (injected clock, rng) | ✅ | `harness/src/agent_village/village.py`, `harness/tests/test_village.py`. Awake cap, oldest request first, seeded tie-break; every change is a log event. Rebuilding a village from an existing log is T29. `pytest -q tests/test_village.py` |
 | T3 | Model interface: fake, recorded, live backends; log snapshot id and provider | ✅ | `harness/src/agent_village/model.py`, `openrouter.py`; tests `test_model.py`, `test_openrouter.py`. The live backend is tested against a fake transport and a local HTTP server; it has not called OpenRouter. Spend cap and kill switch are S2-T5. |
 | T4 | Citizen loop: wake, perceive, act, write memory; versioned prompts | ⏳ | |
-| T5 | Memory tiers with structured claim writes | ⏳ | |
+| T5 | Memory tiers with structured claim writes | ✅ | `harness/src/agent_village/memory.py`, `harness/tests/test_memory.py`. Core, recall and shared tiers; archival waits for T27 and T28. The admission policy is injected; `admission.admit` is arm D, wired in T7. `pytest -q tests/test_memory.py` |
 | T6 | Message passing with origin tracking through forwards | ⏳ | |
 | T7 | Arm D: wire `admission.py`; extend tests with forwards and collusion | ⏳ | |
 | T8 | Arm A: no defense baseline | ⏳ | |

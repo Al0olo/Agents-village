@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T5 memory tiers
+
+- PR #12 (T3) was merged. Implemented `memory.py` from PRD section 1 (the mechanism) and section 8 (tiers): structured claim writes with an injected admission policy, so arms can swap the policy later and `admission.admit` is arm D.
+- Choices: the declared kind is stored (the label-creep metric needs it) but never used for the decision; a rejected write lands in the writer's recall as hearsay with no error; core and recall are private, shared is global; the decision is logged and the projection rebuilds from the log without calling the policy. Only `saw`, `did` and `told` events are evidence, so a claim, a model call or any other kind cannot launder itself into fact.
+- Left out on purpose: the archival tier (no behavior to test before T27 and T28), tool-receipt and ledger evidence, consolidation (T12), bi-temporal fields (T30).
+- Tests first, 21 cases. Mutation-checked: storing hearsay in the requested tier, letting claims count as evidence, leaking private tiers, dropping told origins and rebuilding with a hard-coded decision each fail tests.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T3 model interface
 
 - PR #11 (T2) was merged. Owner asked me to open PRs myself from now on; they review and merge.
