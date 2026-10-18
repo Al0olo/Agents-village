@@ -25,7 +25,7 @@ funding is a later concern.
   `messages.py` (#14), T4 citizen loop `runner.py`, `actions.py`, `prompts.py` (#15),
   T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17).
   Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
-- In progress, this PR (number below once opened): the owner asked to close two open items from #17.
+- In progress, PR #18 (`claude/gracious-albattani-osio94`): the owner asked to close two open items from #17.
   (1) `admit` now ignores a told event whose origins include the writer (the writer's own
   claim coming back); every statement of the rule was updated (`admission.py`, README, PRD,
   `village-memory` doc comment, kernel-invariants skill). (2) ADR-0003: the shared base
