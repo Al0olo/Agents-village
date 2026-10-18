@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `cb91803`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `628618b`
 
 ## Objective
 
@@ -29,7 +29,8 @@ funding is a later concern.
 - Done: S1-T1, the append-only hash-chained JSONL event log (`harness/src/agent_village/eventlog.py`, 15 tests). It verifies the chain on open, so S1-T26 now covers Ed25519 signatures only. Merged in PR #10.
 - Done: S1-T2, village state and deterministic scheduler (`harness/src/agent_village/village.py`, 20 tests): injected `SimClock` and `random.Random`, awake cap, oldest wake request first with seeded tie-break, every change a log event. Merged in PR #11.
 - Done: S1-T3, model interface (`model.py`: `Request`, `Response`, `FakeBackend`, `Model`, `RecordedBackend`; `openrouter.py`: live backend, fallbacks always off, 26 tests). `Model` logs `model_call` events with requested and served model and routed provider; `RecordedBackend.from_log` replays them. Merged in PR #12.
-- Done: S1-T5, memory tiers with structured claim writes (`harness/src/agent_village/memory.py`, 21 tests): `Memory(log, policy).write_claim(writer, text, kind, cites, tier)`, tiers core, recall and shared, decision logged as a `claim` event, state rebuilds from the log without rerunning the policy. PR #13 (`claude/gracious-albattani-osio94`).
+- Done: S1-T5, memory tiers with structured claim writes (`harness/src/agent_village/memory.py`, 21 tests): `Memory(log, policy).write_claim(writer, text, kind, cites, tier)`, tiers core, recall and shared, decision logged as a `claim` event, state rebuilds from the log without rerunning the policy. Merged in PR #13.
+- Done: S1-T6, message passing with origin tracking (`harness/src/agent_village/messages.py`, 19 tests): `Messenger.send/forward/received`; a send logs a `message` event and the recipient's `told` event; forwards add the forwarder to the origins and never remove one; a message cannot go to its own origins. Tested end to end with `Memory` and `admit`. Branch `claude/gracious-albattani-osio94`, PR open.
 - Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
@@ -37,14 +38,19 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T5 PR is merged, restart the branch from `main` and take S1-T6 (message passing
-with origin tracking through forwards) in `harness/src/agent_village/`. It must write
-`told` events on the recipient's log with `origins` in the payload, because `memory.py`
-reads exactly that; a forward adds the forwarder to the origins it received, never removes
-any. Then T7 (wire `admission.admit` into `Memory`), T4, T14 and the storage tickets
-T25 to T31. The pre-registration is S2-T1 and comes after the harness exists; do not run
-anything live before it is approved. Open the PR yourself with the template filled in; the
-owner reviews and merges.
+Once the S1-T6 PR is merged, restart the branch from `main` and take S1-T4 (citizen loop:
+wake, perceive, act, write memory; versioned prompts; 8 points, the largest ticket). It
+composes what exists: `Village.step()` returns who wakes, `Messenger.received(citizen,
+after=cursor)` and the citizen's own `saw` events are the perception, `Model.complete`
+makes the call, `Memory.write_claim` stores the result, and `Village.sleep(citizen, until)`
+ends the turn. Decide in the design: where the per-citizen cursor lives (it must be
+derivable from the log), how a delivery wakes the recipient (`Village.request_wake` with
+reason `message`; `Messenger` does not do it), the action vocabulary (`say`, `forward`,
+`remember`, `sleep`), and how prompts are versioned and hashed into the log. Split the
+ticket in the sprint file first if it will not fit in one PR. Then T7, T14, T13 and the
+storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before
+it is approved. Open the PR yourself with the template filled in; the owner reviews and
+merges.
 
 ## Queue
 
@@ -89,6 +95,10 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 - Evidence convention (S1-T5): `saw` and `did` events are written by the citizen; `told` events are written by the recipient with `origins` in the payload. Tool receipts and ledger entries are not evidence yet; add their kinds with a forgery test when those tickets land.
 - Archival memory is not implemented (T27, T28); the PRD's four tiers are three here until then.
+
+- `Messenger` does not know who the citizens are and does not wake the recipient; the T4 loop and `Village` own both.
+- The colluding-senders test in `tests/test_messages.py` documents a known limit of kernel admission, not a bug: two distinct liars are two origins. The colluding-planter arm (T17) measures it.
+- S1-T7 is smaller than planned: forward and collusion tests already exist in `test_messages.py`. What remains is making `admit` selectable as an arm policy.
 
 ## How to verify
 

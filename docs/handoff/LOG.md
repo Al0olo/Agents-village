@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T6 message passing
+
+- PR #13 (T5) was merged. Owner asked about T4 versus T6; T4 was unblocked (depends on T2 and T3) but I recommended T6 first so the loop's perception is designed once around real messages; the owner agreed.
+- Implemented `messages.py`. A first-hand send has the sender as its only origin; a forward copies the text and adds the forwarder to the received origins. Origins are the kernel's tracked forwards only: a citizen who retypes hearsay in their own words becomes a new origin, and two colluding liars count as independent sources. Both are limits of the mechanism as the PRD specifies it, and the colluding-planter arm (T17) exists to measure them.
+- Added a rule not in the ticket: a message cannot go to one of its own origins. Without it, a citizen could message themselves and pair that echo with one real teller to reach two disjoint origins.
+- Tests first, 19 cases, including end-to-end checks through `Memory` and `admit`. Mutation-checked: forwards not adding the forwarder, forwards resetting origins, dropping the origin-return rule, letting a citizen forward someone else's `told` event, `received` ignoring the recipient and accepting negative ids each fail tests.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T5 memory tiers
 
 - PR #12 (T3) was merged. Implemented `memory.py` from PRD section 1 (the mechanism) and section 8 (tiers): structured claim writes with an injected admission policy, so arms can swap the policy later and `admission.admit` is arm D.
