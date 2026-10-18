@@ -137,3 +137,11 @@ def test_empty_kind_or_writer_is_rejected(tmp_path, kind, writer):
     with pytest.raises(ValueError):
         log.append(kind, writer, {})
     assert len(log) == 0
+
+
+@pytest.mark.parametrize("bad", ["not json", '{"id": 0}', "[1, 2]", '{"id": 0, "extra": 1}'])
+def test_unreadable_records_are_detected(tmp_path, bad):
+    path = tmp_path / "v.jsonl"
+    path.write_text(bad + "\n")
+    with pytest.raises(LogCorruptError):
+        EventLog(path)
