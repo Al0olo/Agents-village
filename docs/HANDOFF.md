@@ -31,7 +31,7 @@ funding is a later concern.
   until the fork (`arms.BASE`, which is arm A).
 - Done, PR #19: S1-T15, the launch controller (`launch.py`).
 - Done, PR #20: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` takes a start).
-- In progress: S1-T16 to T18 in one PR on `claude/gracious-albattani-osio94`: fact generator (`facts.py`),
+- In progress: S1-T16 to T18 in PR #21 (`claude/gracious-albattani-osio94`): fact generator (`facts.py`),
   planting and the colluding variant (`planting.py`), probes (`probes.py`, `Runner.ask`). 112 new tests, 500
   in all, 100% line and branch coverage. The design is ADR-0004, proposed.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
