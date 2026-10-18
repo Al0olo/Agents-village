@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 done.
+**Status:** 🚧 In progress. T1 and T2 done.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -14,7 +14,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | # | Title | Status | Notes |
 | --- | --- | --- | --- |
 | T1 | Append-only event log (JSONL, ids, hash chain) | ✅ | `harness/src/agent_village/eventlog.py`, `harness/tests/test_eventlog.py`. Chain verification on open is included, so T26 covers signatures only. `pytest -q tests/test_eventlog.py` |
-| T2 | Village state and deterministic scheduler (injected clock, rng) | ⏳ | |
+| T2 | Village state and deterministic scheduler (injected clock, rng) | ✅ | `harness/src/agent_village/village.py`, `harness/tests/test_village.py`. Awake cap, oldest request first, seeded tie-break; every change is a log event. Rebuilding a village from an existing log is T29. `pytest -q tests/test_village.py` |
 | T3 | Model interface: fake, recorded, live backends; log snapshot id and provider | ⏳ | |
 | T4 | Citizen loop: wake, perceive, act, write memory; versioned prompts | ⏳ | |
 | T5 | Memory tiers with structured claim writes | ⏳ | |

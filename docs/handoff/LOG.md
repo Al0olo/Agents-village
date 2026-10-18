@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T2 village state and scheduler
+
+- PR #10 (T1) was merged; restarted the session branch from `main` at `21736e7`.
+- Implemented `harness/src/agent_village/village.py`: `SimClock`, `VillageState`, `Village` (`add_citizen`, `request_wake`, `sleep`, `step`, `state`). Design choices: one pending wake per citizen (earliest wins); a due citizen who is still awake keeps its request until it sleeps, so no wake is lost; the awake cap is the OASIS-style subset idea from the PRD; order within the cap is oldest request, then a seeded draw, then name, so nobody starves and a seed fixes the order. Reasons (message, timer, event) are recorded for audit.
+- Tests first, 20 cases. Mutation-checked by hand: removing the cap, ranking by random first, ignoring awake citizens and keeping the latest wake each fail tests. A stale `.pyc` briefly made a restored file look broken; clearing `__pycache__` fixed it.
+- Not done: rebuilding a village from a log (T29), forks (T13), wake-on-message (T6). Seeds are not logged by the village; the run layer must record them with the config hash.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T1 event log
 
 - Handoff header was stale (named a merged branch and an old base); corrected to `main` at `fe6b1af`. No open PRs at the start.
