@@ -14,6 +14,8 @@ A village's state is a fold over its log; only the random generator's state live
 
 An arm in `arms.py` is a memory policy plus a prompt and nothing else; arms must share the loop, model, citizens and scheduler. New arms go in `ARMS` with a test that they differ from the others only where intended. Like `admission.py`, an arm is the treatment: no change after runs start. The shared base village runs as `arms.BASE` until the fork (ADR-0003); the kernel never reclassifies what the base stored.
 
+Launch a block only with `launch.launch`: it gives every arm the same `RunConfig` and a backend from one factory, so the arm is the only difference, and it records the config hash in each log. Do not give `make_backend` arm-specific behavior. A failed or drifting block is excluded, never resumed.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.

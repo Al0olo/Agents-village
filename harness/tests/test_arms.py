@@ -1,7 +1,7 @@
 import random
 
 import pytest
-from villages import NAMES, gossip
+from villages import NAMES, drive, gossip, specs
 
 from agent_village.admission import Admission, Claim, Event, Kind, admit
 from agent_village.arms import ARMS, BASE, KERNEL_ADMISSION, NO_DEFENSE, admit_all
@@ -9,25 +9,6 @@ from agent_village.eventlog import EventLog
 from agent_village.fork import build, fork
 from agent_village.memory import Tier
 from agent_village.model import FakeBackend
-from agent_village.runner import Spec
-
-
-def specs():
-    return [Spec(n, "fake/model") for n in NAMES]
-
-
-def observe(world, tick):
-    """Environment observations, identical for every arm because they depend only on the tick."""
-    rng = random.Random(tick)
-    if rng.random() < 0.5:
-        who = NAMES[rng.randrange(len(NAMES))]
-        world.log.append("saw", who, {"text": f"observation {tick}"})
-
-
-def drive(world, ticks):
-    for _ in range(ticks):
-        observe(world, world.village.state().tick + 1)
-        world.runner.tick()
 
 
 @pytest.fixture(scope="module")
