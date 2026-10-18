@@ -28,7 +28,7 @@ from agent_village.fork import Snapshot, World, build, fork
 from agent_village.launch import RunConfig
 from agent_village.model import Backend, NotRecordedError, RecordedBackend, Request, Response
 
-ENVIRONMENT = frozenset({"saw", "did"})
+ENVIRONMENT = frozenset({"saw", "did", "plant"})
 INPUTS = ENVIRONMENT | {"launch"}
 
 
