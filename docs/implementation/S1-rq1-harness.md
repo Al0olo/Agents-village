@@ -42,3 +42,4 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T29 | Projection rebuild; replay equals live state | ⏳ | |
 | T30 | Bi-temporal claims | ⏳ | |
 | T31 | Single writer per village | ⏳ | |
+| T32 | Arm F (exploratory): Mem0 OSS adapter | ⏳ | |

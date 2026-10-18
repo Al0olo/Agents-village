@@ -2,7 +2,7 @@
 
 **Weeks:** 1–4  
 **Team:** 1 owner + agents (Python)  
-**Total points:** ~128  
+**Total points:** ~133  
 **Exit criterion:** A Python village can run to the planting event, fork into five arms, and record everything needed to replay and analyze it, using fake and recorded model backends.
 
 ## Goal
@@ -81,6 +81,7 @@ Ticket ids are `S1-T<n>`. Branch names `S1/<area>/<slug>`; PRs say `Closes S1-T<
 | T29 | Projection rebuild from the log; property test that replay equals live state | 5 | T25,T14 |
 | T30 | Bi-temporal claims (event time and record time) | 3 | T5,T25 |
 | T31 | Single writer per village, serialized through the village actor | 2 | T25 |
+| T32 | Arm F (exploratory): Mem0 OSS adapter, pinned version and models, its memory writes mirrored as events | 5 | T4,T25 |
 
 ### Quality
 

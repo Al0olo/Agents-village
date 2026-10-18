@@ -30,7 +30,7 @@ are deferred. Read `docs/prd.md` section 1 before changing anything experimental
 | `docs/sprints/` | Sprint plans and tickets (intent) |
 | `docs/implementation/` | What is actually on `main`, per sprint (state) |
 | `.claude/` | Rules, skills and hooks for agents |
-| `infra/` | Infrastructure as code (Terraform), planned in ADR-0002 |
+| `infra/` | Infrastructure as code (OpenTofu), see ADR-0002 |
 | `scripts/` | Repository scripts used by CI and hooks |
 
 ## Non-negotiables

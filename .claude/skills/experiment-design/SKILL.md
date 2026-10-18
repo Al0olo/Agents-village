@@ -18,6 +18,7 @@ Read `docs/prd.md` section 1 first. RQ1 is the flagship; RQ2 and RQ3 are deferre
 - Measures, how each is coded, who or what codes it (blinded judge plus human-validated sample).
 - Model mix, pinned snapshot ids, routed provider, fallbacks off, arms launched together.
 - Planted facts: fictional entities only, counterbalanced plausibility and planter status.
+- Exploratory arms (for example F, off-the-shelf memory) are labelled exploratory, excluded from the primary contrast and from multiplicity correction.
 - Controls: awareness probe, prompt-paraphrase control, volume-matched random-block control.
 - Exclusion rules for crashed villages, stopping rule, plan for deprecated models.
 - Analysis: paired within-block differences, effect sizes with intervals, correction for

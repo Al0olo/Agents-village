@@ -24,8 +24,9 @@ funding is a later concern.
 - Done: README with hero image (PR #3), research sources with reading levels (PR #5),
   README and AGENTS file in every directory (PR #5), social preview image (PR #4).
 - Done: agent rules, skills, hooks and handoff system (PR #6); sprint plan and implementation audits (PR #7).
-- In progress: ADR-0001 storage and memory (S1-T25 to T31, S4-T15 to T18) and ADR-0002 infrastructure as code, proposed (S2-T13 to T17, S3-T13, S4-T19 to T21) (this PR).
-- Decided: memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
+- Done: ADR-0001 storage and memory and ADR-0002 IaC (PR #8).
+- In progress: decisions finalized (this PR): ADR-0002 accepted as OpenTofu on AWS with ECS Fargate on-demand runners; RQ1 gets an exploratory arm F (Mem0 OSS) after the pilot, ticket S1-T32.
+- Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
   the real kernel (M1), the observer UI.
@@ -45,7 +46,6 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 ## Open decisions (owner)
 
-- Confirm ADR-0002: Terraform on AWS (the owner's existing stack) for `infra/`, or another cloud or tool. IaC was missing from the plan and is now ticketed in S2 to S4.
 - License is Apache-2.0, chosen by the agent without asking; confirm.
 - Model mix for RQ1: two frontier models and one pinned open-weight model; which ones.
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
