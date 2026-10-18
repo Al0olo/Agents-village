@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `477185d`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `cb91803`
 
 ## Objective
 
@@ -28,7 +28,8 @@ funding is a later concern.
 - Done: decisions finalized (PR #9): ADR-0002 accepted as OpenTofu on AWS with ECS Fargate on-demand runners; RQ1 gets an exploratory arm F (Mem0 OSS) after the pilot, ticket S1-T32.
 - Done: S1-T1, the append-only hash-chained JSONL event log (`harness/src/agent_village/eventlog.py`, 15 tests). It verifies the chain on open, so S1-T26 now covers Ed25519 signatures only. Merged in PR #10.
 - Done: S1-T2, village state and deterministic scheduler (`harness/src/agent_village/village.py`, 20 tests): injected `SimClock` and `random.Random`, awake cap, oldest wake request first with seeded tie-break, every change a log event. Merged in PR #11.
-- Done: S1-T3, model interface (`model.py`: `Request`, `Response`, `FakeBackend`, `Model`, `RecordedBackend`; `openrouter.py`: live backend, fallbacks always off, 26 tests). `Model` logs `model_call` events with requested and served model and routed provider; `RecordedBackend.from_log` replays them. PR #12 (`claude/gracious-albattani-osio94`).
+- Done: S1-T3, model interface (`model.py`: `Request`, `Response`, `FakeBackend`, `Model`, `RecordedBackend`; `openrouter.py`: live backend, fallbacks always off, 26 tests). `Model` logs `model_call` events with requested and served model and routed provider; `RecordedBackend.from_log` replays them. Merged in PR #12.
+- Done: S1-T5, memory tiers with structured claim writes (`harness/src/agent_village/memory.py`, 21 tests): `Memory(log, policy).write_claim(writer, text, kind, cites, tier)`, tiers core, recall and shared, decision logged as a `claim` event, state rebuilds from the log without rerunning the policy. PR #13 (`claude/gracious-albattani-osio94`).
 - Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
@@ -36,11 +37,14 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T3 PR is merged, restart the branch from `main` and take S1-T5 (memory tiers
-with structured claim writes) in `harness/src/agent_village/`, using `admission.py` as the
-write gate. Then T6, T4, T14 and the storage tickets T25 to T31. The pre-registration is
-S2-T1 and comes after the harness exists; do not run anything live before it is approved.
-Open the PR yourself with the template filled in; the owner reviews and merges.
+Once the S1-T5 PR is merged, restart the branch from `main` and take S1-T6 (message passing
+with origin tracking through forwards) in `harness/src/agent_village/`. It must write
+`told` events on the recipient's log with `origins` in the payload, because `memory.py`
+reads exactly that; a forward adds the forwarder to the origins it received, never removes
+any. Then T7 (wire `admission.admit` into `Memory`), T4, T14 and the storage tickets
+T25 to T31. The pre-registration is S2-T1 and comes after the harness exists; do not run
+anything live before it is approved. Open the PR yourself with the template filled in; the
+owner reviews and merges.
 
 ## Queue
 
@@ -82,6 +86,9 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 - OpenRouter: only the request side (`provider.allow_fallbacks`, `provider.only`) and the generation record (`data.provider_name`) are documented. Whether the chat response carries a `provider` field, and how soon the generation record is readable after a call, are NOT verified; the backend tolerates both and fails if neither names the provider. Check on the first live call in S2.
 - The live backend has no spend cap or kill switch. Do not call it outside S2-T5's gateway.
+
+- Evidence convention (S1-T5): `saw` and `did` events are written by the citizen; `told` events are written by the recipient with `origins` in the payload. Tool receipts and ledger entries are not evidence yet; add their kinds with a forgery test when those tickets land.
+- Archival memory is not implemented (T27, T28); the PRD's four tiers are three here until then.
 
 ## How to verify
 

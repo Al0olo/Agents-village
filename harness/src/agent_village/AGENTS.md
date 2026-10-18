@@ -4,6 +4,8 @@
 
 Model calls go through `Model`, which logs the served snapshot and routed provider; a backend that cannot name the provider raises instead. Never enable provider fallbacks, and never read an API key inside the package: pass a transport in.
 
+Memory writes go through `Memory.write_claim` with an injected policy. Evidence is only log events of kind `saw`, `did` and `told` (with `origins`); a new evidence kind needs a test that it cannot be forged, and the declared kind of a claim is never trusted.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.
