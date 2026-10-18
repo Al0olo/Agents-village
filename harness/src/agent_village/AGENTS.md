@@ -1,6 +1,6 @@
 # Agent instructions
 
-**Scope:** `harness/src/agent_village`. The `agent_village` package. `admission.py` is the reference implementation of the RQ1 kernel admission policy. `eventlog.py` is the append-only, hash-chained JSONL event log.
+**Scope:** `harness/src/agent_village`. The `agent_village` package. `admission.py` is the reference implementation of the RQ1 kernel admission policy. `eventlog.py` is the append-only, hash-chained JSONL event log. `village.py` holds village state and the deterministic wake scheduler: time, randomness and the log are injected, and every state change is an event.
 
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 

@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `fe6b1af`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `21736e7`
 
 ## Objective
 
@@ -26,7 +26,8 @@ funding is a later concern.
 - Done: agent rules, skills, hooks and handoff system (PR #6); sprint plan and implementation audits (PR #7).
 - Done: ADR-0001 storage and memory and ADR-0002 IaC (PR #8).
 - Done: decisions finalized (PR #9): ADR-0002 accepted as OpenTofu on AWS with ECS Fargate on-demand runners; RQ1 gets an exploratory arm F (Mem0 OSS) after the pilot, ticket S1-T32.
-- Done: S1-T1, the append-only hash-chained JSONL event log (`harness/src/agent_village/eventlog.py`, 15 tests). It verifies the chain on open, so S1-T26 now covers Ed25519 signatures only. On branch `claude/gracious-albattani-osio94`, not yet in a PR.
+- Done: S1-T1, the append-only hash-chained JSONL event log (`harness/src/agent_village/eventlog.py`, 15 tests). It verifies the chain on open, so S1-T26 now covers Ed25519 signatures only. Merged in PR #10.
+- Done: S1-T2, village state and deterministic scheduler (`harness/src/agent_village/village.py`, 20 tests): injected `SimClock` and `random.Random`, awake cap, oldest wake request first with seeded tie-break, every change a log event. On branch `claude/gracious-albattani-osio94`, not yet in a PR.
 - Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
@@ -34,11 +35,11 @@ funding is a later concern.
 
 ## Next step
 
-Open the PR for S1-T1 (`Closes S1-T1`; REST API command in `.claude/rules/git.md`), then
-take S1-T2 (village state and deterministic scheduler with injected clock and rng) on
-branch `S1/harness/scheduler`. After that T3, T5 and the storage tickets T25 to T31.
-The pre-registration is S2-T1 and comes after the harness exists; do not run anything live
-before it is approved.
+Open the PR for S1-T2 (`Closes S1-T2`; REST API command in `.claude/rules/git.md`), then
+take S1-T3 (model interface with fake, recorded and live backends; log snapshot id and
+routed provider) in `harness/src/agent_village/`. After that T5, T6, T4 and the storage
+tickets T25 to T31. The pre-registration is S2-T1 and comes after the harness exists; do
+not run anything live before it is approved.
 
 ## Queue
 
@@ -74,6 +75,9 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 - The event log is a plain JSONL file with no database yet. T25 moves events into SQLite; keep `EventLog` as the interface so callers do not change. Dropping the tail of a log still verifies, so compare `head` against a recorded value.
 - The session branch name `claude/...` overrides the `S<n>/<area>/<slug>` convention when the harness assigns one; the PR still says `Closes S1-T<n>`.
+
+- `Village` refuses a non-empty log: rebuilding state from a log is T29, not T2. Its tick events are the only record of the clock, so keep them.
+- After editing a source file twice within one second, pytest can run stale bytecode (found while mutation-testing). Delete `__pycache__` if a result contradicts the source.
 
 ## How to verify
 
