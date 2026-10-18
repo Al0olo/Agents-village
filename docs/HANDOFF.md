@@ -29,7 +29,7 @@ funding is a later concern.
   claim coming back), and ADR-0003 settles that the shared base village runs without defense
   until the fork (`arms.BASE`, which is arm A).
 - In progress: S1-T15, the launch controller (`launch.py`, 24 tests; 350 in all, 100% line and
-  branch coverage). PR open on branch `claude/gracious-albattani-osio94`.
+  branch coverage). PR #19 (`claude/gracious-albattani-osio94`).
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
