@@ -16,6 +16,8 @@ An arm in `arms.py` is a memory policy plus a prompt and nothing else; arms must
 
 Launch a block only with `launch.launch`: it gives every arm the same `RunConfig` and a backend from one factory, so the arm is the only difference, and it records the config hash in each log. Do not give `make_backend` arm-specific behavior. A failed or drifting block is excluded, never resumed.
 
+Replay re-drives a log, so anything a driver appends between ticks must be a `saw`, `did` or `launch` event; any other kind is reported as unreplayable. A new environment event kind goes into `replay.ENVIRONMENT` with a replay test. Never add an event to a branch log that the original did not have, or every later event number shifts and no recorded output matches.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.

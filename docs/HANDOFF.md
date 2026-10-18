@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `dba12a0`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `350f312`
 
 ## Objective
 
@@ -23,13 +23,16 @@ funding is a later concern.
   T1 event log `eventlog.py` (#10), T2 scheduler `village.py` (#11), T3 model interface
   `model.py` and `openrouter.py` (#12), T5 memory tiers `memory.py` (#13), T6 messages
   `messages.py` (#14), T4 citizen loop `runner.py`, `actions.py`, `prompts.py` (#15),
-  T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17).
+  T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17), T15 launch
+  controller `launch.py` (#19).
   Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
 - Done, PR #18: `admit` ignores a told event whose origins include the writer (the writer's own
   claim coming back), and ADR-0003 settles that the shared base village runs without defense
   until the fork (`arms.BASE`, which is arm A).
-- In progress: S1-T15, the launch controller (`launch.py`, 24 tests; 350 in all, 100% line and
-  branch coverage). PR #19 (`claude/gracious-albattani-osio94`).
+- Done, PR #19: S1-T15, the launch controller (`launch.py`).
+- In progress: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` now takes a
+  start position; 38 new tests, 388 in all, 100% line and branch coverage). PR #20
+  (`claude/gracious-albattani-osio94`).
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -38,14 +41,15 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T15 PR is merged, restart the branch from `main` and take S1-T14 (audit and
-counterfactual replay from recorded outputs). Fix the `RecordedBackend` problem first (see
-the gotcha): replay only the calls after the fork point, one backend per fork. Then T11 (arm
-E, the random block, which needs D's measured block rate as a parameter), T16 to T18
-(fictional facts, planting and the colluding-planter arm, probes), T9 (arm B prompts, which
-the owner reviews) and the storage tickets T25 to T31. The pre-registration is S2-T1; do not
-run anything live before it is approved. Open the PR yourself with the template filled in;
-the owner reviews and merges.
+Once the S1-T14 PR is merged, restart the branch from `main` and take S1-T16 (fictional fact
+generator, counterbalanced plausibility and planter status), then T17 (the planting event and the
+colluding-planter arm) and T18 (neutral probes and the awareness probe). Plant facts as `saw`
+events appended between ticks, snapshot after, and keep every fact about fictional entities only.
+Then T11 (arm E, the random block: a deterministic policy keyed on the claim, with the block rate
+as a parameter that the pilot sets from arm D), T9 (arm B prompts, which the owner reviews), T12
+and T10 (consolidation and arm C), T19 to T21 (utility task, judge, metrics) and the storage
+tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before it is
+approved. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -100,8 +104,16 @@ Design rules that tests depend on
   run included. Whether the real OpenRouter reports a stable served id for a pinned snapshot is NOT
   verified, so the drift check may false-alarm on the first live call; check in S2.
   S3-T3 (run monitor) and S2-T15 (cloud batch runner) build on `Launch`.
-- `RecordedBackend.from_log` replays every `model_call` in a log, including those before a fork, and
-  is consumed as it replays: T14 should replay only calls after the fork point, one backend per fork.
+- Audit replay re-drives a log: ticks run the real runner against `RecordedBackend.from_log(log, start)`,
+  and `saw`, `did` and `launch` events are re-appended. Anything else a driver appends between ticks
+  (for example a hand-made `request_wake`) is reported as unreplayable. A replayed log is byte-identical
+  to the original; the first difference is reported with its index and reason. Audits of launched arms
+  check the arm name, config hash and prompt hash against the `launch` event.
+- A branch (counterfactual) replays to a tick boundary to recover the state and rng there, then continues
+  as a different arm. It must not append marker events, or all later event numbers shift. Prompts carry
+  event numbers, so after a branch's numbering diverges no recorded output matches again and every call
+  is fresh; `ReplayBackend` counts replayed and fresh calls. Per-citizen numbers in prompts would keep
+  reuse alive longer but change the treatment; not needed for RQ1, revisit only if counterfactuals become a tool.
 - A model error stops the run (no retry), leaving woken citizens awake; exclusion rules cover crashed villages.
 - Pre-fork memory entries stay as the base stored them (ADR-0003); the kernel never reclassifies them.
 - Archival memory is not implemented (T27, T28): three tiers of the PRD's four until then.

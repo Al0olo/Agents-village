@@ -126,3 +126,33 @@ def test_recorded_response_keeps_provider_and_snapshot(tmp_path):
     Model(Pinned(), log).complete("ada", ask())
     got = RecordedBackend.from_log(log).complete(ask())
     assert (got.model, got.provider) == ("vendor/model-2026-01-01", "acme")
+
+
+def test_recorded_backend_can_start_part_way_through_a_log(tmp_path):
+    log = EventLog(tmp_path / "v.jsonl")
+    texts = iter(["early", "late"])
+    model = Model(FakeBackend(lambda r: next(texts)), log)
+    model.complete("ada", ask())
+    start = len(log)
+    model.complete("ada", ask())
+
+    from_start = RecordedBackend.from_log(log, start)
+    assert from_start.complete(ask()).text == "late"
+    with pytest.raises(NotRecordedError):
+        from_start.complete(ask())
+    assert RecordedBackend.from_log(log).complete(ask()).text == "early"
+
+
+def test_a_start_at_the_end_records_nothing(tmp_path):
+    log = EventLog(tmp_path / "v.jsonl")
+    Model(FakeBackend(), log).complete("ada", ask())
+    with pytest.raises(NotRecordedError):
+        RecordedBackend.from_log(log, len(log)).complete(ask())
+
+
+@pytest.mark.parametrize("start", [-1, 2])
+def test_a_start_outside_the_log_is_rejected(tmp_path, start):
+    log = EventLog(tmp_path / "v.jsonl")
+    Model(FakeBackend(), log).complete("ada", ask())
+    with pytest.raises(ValueError):
+        RecordedBackend.from_log(log, start)
