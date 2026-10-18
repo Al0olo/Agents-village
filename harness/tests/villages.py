@@ -1,6 +1,9 @@
 """Helpers shared by the village tests."""
 
+import random
 import re
+
+from agent_village.runner import Spec
 
 
 def say(to, text):
@@ -59,3 +62,21 @@ def gossip(request):
     if choice == 4:
         return remember(f"guess {h % 89}", "seen", [], "shared")
     return f'{{"action": "sleep", "ticks": {1 + (h >> 4) % 3}}}'
+
+
+def specs():
+    return [Spec(n, "fake/model") for n in NAMES]
+
+
+def observe(world, tick):
+    """Environment observations, identical for every arm because they depend only on the tick."""
+    rng = random.Random(tick)
+    if rng.random() < 0.5:
+        who = NAMES[rng.randrange(len(NAMES))]
+        world.log.append("saw", who, {"text": f"observation {tick}"})
+
+
+def drive(world, ticks):
+    for _ in range(ticks):
+        observe(world, world.village.state().tick + 1)
+        world.runner.tick()

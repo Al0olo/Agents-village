@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T15 launch controller
+
+- PR #18 (echo gap, ADR-0003) was merged. T15 is the in-process controller; the cloud batch runner is S2-T15 and the run monitor S3-T3, so I kept this to launch, lockstep and a minimal abort rule.
+- Design: `launch.launch` forks every arm from one snapshot, all or nothing (files are removed on any failure), with one `RunConfig` and a backend from one zero-argument factory, so an arm cannot be given different settings. A `launch` event in each log records arm, snapshot head, config hash and prompt version and hash, which also closes the earlier gap that `max_awake` and `LoopConfig` were not logged. `Launch.run` advances all arms one tick at a time behind a barrier, concurrently on threads, or one after another on a single worker; both go through the same code and give identical logs. Any arm failing, or drift, marks the block dead.
+- Drift is defined without assuming how OpenRouter names things: a requested model that served more than one (served model, provider) pair across all calls in all arms, base run included. It aborts by default and can be tolerated and reported. The scan is incremental.
+- Tests first: 24, including a threading barrier that only passes if arms really run concurrently (and a negative control that breaks in sequential mode), lockstep ordering, thread/sequential equality, arm-order independence, all-or-nothing launch, failure propagation, drift from a changed snapshot, a provider switch, drift since the base run, tolerated drift, per-model checking, and an arm with its own prompt. Mutation-checked 20 mutants; every real one is caught. Two survivors are equivalent (`wait` is redundant with `f.exception()`; a scan offset that skips only a `tick` event).
+- Mistakes caught on re-read: three mutants I wrote referenced undefined names and failed for the wrong reason, so I redid them; a test compared an event id with a hash; several drift tests assumed a call at an exact tick and now compute the tick from the log.
+- Not verified: behavior against the real OpenRouter (stable served ids, provider names).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · closing the base-policy decision and the echo gap
 
 - PR #17 (T7, T8) was merged. The owner asked to close the two items I had raised before starting T15. I took my own recommendation for the decision and changed the policy for the gap, since no pre-registration exists and no run has started; both are recorded so they can be revisited before S2-T1 freezes the design.

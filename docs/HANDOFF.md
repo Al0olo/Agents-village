@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `6baedc7`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `dba12a0`
 
 ## Objective
 
@@ -25,12 +25,11 @@ funding is a later concern.
   `messages.py` (#14), T4 citizen loop `runner.py`, `actions.py`, `prompts.py` (#15),
   T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17).
   Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
-- In progress, PR #18 (`claude/gracious-albattani-osio94`): the owner asked to close two open items from #17.
-  (1) `admit` now ignores a told event whose origins include the writer (the writer's own
-  claim coming back); every statement of the rule was updated (`admission.py`, README, PRD,
-  `village-memory` doc comment, kernel-invariants skill). (2) ADR-0003: the shared base
-  village runs without defense until the fork (`arms.BASE`, which is arm A); the tests build
-  the base that way. 326 tests, 100% line and branch coverage.
+- Done, PR #18: `admit` ignores a told event whose origins include the writer (the writer's own
+  claim coming back), and ADR-0003 settles that the shared base village runs without defense
+  until the fork (`arms.BASE`, which is arm A).
+- In progress: S1-T15, the launch controller (`launch.py`, 24 tests; 350 in all, 100% line and
+  branch coverage). PR #19 (`claude/gracious-albattani-osio94`).
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -39,14 +38,14 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main` and take S1-T15 (simultaneous launch
-controller; fallbacks off): start every arm's fork together from one snapshot using
-`fork.fork` and `arms.ARMS`, drive them in lockstep, and refuse to launch if any arm's
-config differs from the others in anything but the arm. Then S1-T14 (audit and
-counterfactual replay; see the `RecordedBackend` gotcha), T11 (arm E, the random block),
-T16 to T18 (facts, planting, probes), T9 (arm B prompts, which the owner reviews) and the
-storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before
-it is approved. Open the PR yourself with the template filled in; the owner reviews and merges.
+Once the S1-T15 PR is merged, restart the branch from `main` and take S1-T14 (audit and
+counterfactual replay from recorded outputs). Fix the `RecordedBackend` problem first (see
+the gotcha): replay only the calls after the fork point, one backend per fork. Then T11 (arm
+E, the random block, which needs D's measured block rate as a parameter), T16 to T18
+(fictional facts, planting and the colluding-planter arm, probes), T9 (arm B prompts, which
+the owner reviews) and the storage tickets T25 to T31. The pre-registration is S2-T1; do not
+run anything live before it is approved. Open the PR yourself with the template filled in;
+the owner reviews and merges.
 
 ## Queue
 
@@ -93,8 +92,14 @@ Design rules that tests depend on
 - A village's state is a fold over its log; only the rng state lives outside it, so a `Snapshot`
   is the log position, head and rng state. Snapshots are valid between ticks only. The planting
   event (T17) must be appended between ticks, then the snapshot taken.
-- `max_awake` and `LoopConfig` are not logged; give every arm the same values and record them with
-  the config hash in the run layer.
+- Launch blocks only through `launch.launch`: every arm gets the same `RunConfig` (specs, `max_awake`,
+  `LoopConfig`) and a backend from one factory, and each log gets a `launch` event with the config
+  hash. Forks made by hand with `fork.fork` do not record the config.
+- A block that fails or drifts is dead (`Launch` refuses further ticks); the experiment excludes it.
+  Drift means one requested model served more than one snapshot or provider across all arms, base
+  run included. Whether the real OpenRouter reports a stable served id for a pinned snapshot is NOT
+  verified, so the drift check may false-alarm on the first live call; check in S2.
+  S3-T3 (run monitor) and S2-T15 (cloud batch runner) build on `Launch`.
 - `RecordedBackend.from_log` replays every `model_call` in a log, including those before a fork, and
   is consumed as it replays: T14 should replay only calls after the fork point, one backend per fork.
 - A model error stops the run (no retry), leaving woken citizens awake; exclusion rules cover crashed villages.
