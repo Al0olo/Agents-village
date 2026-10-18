@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T1 event log
+
+- Handoff header was stale (named a merged branch and an old base); corrected to `main` at `fe6b1af`. No open PRs at the start.
+- Implemented `harness/src/agent_village/eventlog.py`: JSONL, sequential ids, SHA-256 over a canonical JSON form that includes the previous hash, verified on open; payloads are normalised through JSON so live events equal reloaded ones. Tests first, 15 cases including edit, delete, reorder and truncation. The pinned hash vector was computed independently of the implementation.
+- Scope choice: chain verification landed in T1 because the chain cannot be tested without it; T26 keeps signatures. Not done: single-writer locking (T31), SQLite (T25).
+- Did not install the optional third-party skills: unaudited, and nothing in T1 needs them. The project skills in `.claude/skills/` were the reference.
+- Verified: `ruff check`, `ruff format --check`, `pytest -q` (21 passed) in `harness/`. Cargo gate not run; no Rust changed.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · decisions: OpenTofu and the memory arm
 
 - Owner delegated both open decisions. Read OpenTofu's site and repository (MPL-2.0, LF-stewarded, native state encryption, drop-in for Terraform) and Mem0's README (Apache-2.0, LLM in the write path, benchmark scores vendor-reported for the managed platform). Chose OpenTofu on AWS with ECS Fargate on-demand (no Spot: interruptions invalidate blocks), and an exploratory arm F with Mem0 OSS after the pilot, excluded from the primary contrast. The BUSL status of Terraform comes from OpenTofu's own page, not an independent source.
