@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T16, T17 and T18 facts, planting and probes
+
+- PR #20 (T14) was merged. The owner asked for T16 to T18 together; I did them as three commits in one PR because planting and probing only make sense once the generator exists and each commit has its own tests.
+- Read the PRD's RQ1 section and milestones first. The docs fix counts, counterbalancing, the red-team variant and the measures, and leave open how truth, status, collusion and probes are realized inside a village. I resolved those in ADR-0004 (proposed, for the owner): truth is corroboration (two independent first-hand holders for a true fact, one for a false fact, two when colluding), status is a notice that names the elders, the plan is recorded in `plant` events citizens never see, and probes are independent out-of-band questions under the arm's prompt, answered as a `say` to a visitor. Rejected: injected messages (audit replay cannot reproduce them), instructing a citizen to lie, single-witness true facts (break the four-cell balance; the utility task measures that cost), and an in-world visitor.
+- T16: ten templates, six false and four true per block, counterbalanced within a block, over four blocks and over twenty (tests check each). T17: `announce`, `make_plan`, `plant`; tests run the real kernel on planted facts (a true fact told by both holders is admitted, a single holder's false fact is hearsay, two colluders get through). T18: `Runner.ask`, `probes.run_round`, and replay support so audit and branches re-execute a probe round from its marker.
+- 112 new tests, 500 in all, 100% line and branch coverage. Mutation-checked about 60 mutants across the three modules and replay. Real gaps my tests had and I fixed: the generator ignoring the block in its seed gave every block the same names (found by a mutant); the load-balance test measured only citizens who held something; duplicate-citizen, awake-announce and colluding-marker cases were untested. Several mutants I wrote used undefined names and failed for the wrong reason; I redid them.
+- Not verified: anything with a real model (whether holders pass facts on, whether the elders notice changes behavior), and the invented names against any real-world source.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T14 audit and counterfactual replay
 
 - PR #19 (T15) was merged. The GitHub tools disconnected for a moment at the start of the session and came back; nothing was lost.

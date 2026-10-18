@@ -23,6 +23,8 @@ from agent_village.prompts import Prompt
 from agent_village.runner import LoopConfig, Runner, Spec
 from agent_village.village import SimClock, Village
 
+ENVIRONMENT = "environment"
+
 
 @dataclass(frozen=True)
 class Snapshot:

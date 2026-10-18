@@ -23,6 +23,8 @@ from agent_village.model import Message, Model, Request
 from agent_village.prompts import Prompt
 from agent_village.village import Village
 
+VISITOR = "visitor"
+
 
 @dataclass(frozen=True)
 class Spec:
@@ -93,6 +95,17 @@ class Runner:
             self._turn(name)
         return chosen
 
+    def ask(self, name: str, question: str) -> str:
+        """Put a visitor's question to a citizen; nothing it knows or remembers changes."""
+        tick = self._village.state().tick
+        through = len(self._log) - 1
+        closing = (
+            f"A visitor asks you: {_one(question)}\n"
+            f'Answer with a say action addressed to "{VISITOR}".'
+        )
+        user = self._render(name, tick, self._cursor.get(name, -1), through, [], closing)
+        return self._model.complete(name, self._request(name, user)).text
+
     def cursors(self) -> dict[str, int]:
         """The last log position each citizen has been shown, by citizen."""
         return dict(self._cursor)
@@ -102,7 +115,6 @@ class Runner:
             self.tick()
 
     def _turn(self, name: str) -> None:
-        spec = self._specs[name]
         tick = self._village.state().tick
         notes: list[str] = []
         for step in range(self._config.max_steps):
@@ -120,21 +132,21 @@ class Runner:
                 },
             )
             self._cursor[name] = through
-            request = Request(
-                spec.model,
-                (
-                    Message("system", f"You are {name}.\n\n{self._prompt.system}"),
-                    Message("user", user),
-                ),
-                self._config.max_tokens,
-                self._config.temperature,
-            )
-            outcome = self._act(name, self._model.complete(name, request).text)
+            outcome = self._act(name, self._model.complete(name, self._request(name, user)).text)
             if isinstance(outcome, Sleep):
                 self._end(name, tick, "sleep", step + 1, outcome.ticks)
                 return
             notes.append(outcome)
         self._end(name, tick, "budget", self._config.max_steps, self._config.default_sleep)
+
+    def _request(self, name: str, user: str) -> Request:
+        system = f"You are {name}.\n\n{self._prompt.system}"
+        return Request(
+            self._specs[name].model,
+            (Message("system", system), Message("user", user)),
+            self._config.max_tokens,
+            self._config.temperature,
+        )
 
     def _end(self, name: str, tick: int, reason: str, steps: int, ticks: int) -> None:
         self._log.append("turn_end", name, {"tick": tick, "reason": reason, "steps": steps})
@@ -174,7 +186,15 @@ class Runner:
         self._log.append("invalid_action", name, {"reason": reason})
         return f"That did not work: {reason}."
 
-    def _render(self, name: str, tick: int, after: int, through: int, notes: list[str]) -> str:
+    def _render(
+        self,
+        name: str,
+        tick: int,
+        after: int,
+        through: int,
+        notes: list[str],
+        closing: str = "What do you do?",
+    ) -> str:
         limit = self._config.memory_limit
         core = self._memory.entries(Tier.CORE, name)[-limit:]
         wiki = self._memory.entries(Tier.SHARED)[-limit:]
@@ -194,7 +214,7 @@ class Runner:
                 _section("Recall", [f"[{e.id}] {_one(e.text)}" for e in recall]),
                 _section("New since you last acted", fresh),
                 _section("This turn so far", [f"- {n}" for n in notes], "(nothing yet)"),
-                "What do you do?",
+                closing,
             ]
         )
 

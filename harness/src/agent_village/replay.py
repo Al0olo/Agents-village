@@ -27,8 +27,9 @@ from agent_village.eventlog import EventLog, LogEvent
 from agent_village.fork import Snapshot, World, build, fork
 from agent_village.launch import RunConfig
 from agent_village.model import Backend, NotRecordedError, RecordedBackend, Request, Response
+from agent_village.probes import PROBE_ROUND, Question, run_round
 
-ENVIRONMENT = frozenset({"saw", "did"})
+ENVIRONMENT = frozenset({"saw", "did", "plant"})
 INPUTS = ENVIRONMENT | {"launch"}
 
 
@@ -72,7 +73,7 @@ class ReplayBackend:
 
 
 class Branch:
-    def __init__(self, world: World, backend: ReplayBackend, steps: deque[LogEvent | None]) -> None:
+    def __init__(self, world: World, backend: ReplayBackend, steps: deque[LogEvent]) -> None:
         self.world = world
         self.backend = backend
         self._steps = steps
@@ -81,8 +82,10 @@ class Branch:
         """Replay the rest of the original's ticks and environment events."""
         while self._steps:
             step = self._steps.popleft()
-            if step is None:
+            if step.kind == "tick":
                 self.world.runner.tick()
+            elif step.kind == PROBE_ROUND:
+                run_round(self.world, _asked(step))
             else:
                 self.world.log.append(step.kind, step.writer, step.payload)
 
@@ -141,9 +144,9 @@ def branch(
         config.loop,
     )
     steps = deque(
-        None if event.kind == "tick" else event
+        event
         for event in (original[i] for i in range(cut, len(original)))
-        if event.kind == "tick" or event.kind in ENVIRONMENT
+        if event.kind in ENVIRONMENT | {"tick", PROBE_ROUND}
     )
     return Branch(branched, backend, steps)
 
@@ -189,9 +192,12 @@ def _redrive(
         return prefix, 0
     while index < stop:
         event = original[index]
-        if event.kind == "tick":
+        if event.kind in ("tick", PROBE_ROUND):
             try:
-                world.runner.tick()
+                if event.kind == "tick":
+                    world.runner.tick()
+                else:
+                    run_round(world, _asked(event))
             except NotRecordedError:
                 at = len(log)
                 earlier = _differ_common(
@@ -221,6 +227,10 @@ def _redrive(
     return None, index
 
 
+def _asked(event: LogEvent) -> list[Question]:
+    return [Question(**question) for question in event.payload["questions"]]
+
+
 def _launched_as(event: LogEvent, arm: Arm, config: RunConfig) -> bool:
     p = event.payload
     return (
@@ -232,7 +242,11 @@ def _launched_as(event: LogEvent, arm: Arm, config: RunConfig) -> bool:
 
 def _segment_end(original: EventLog, index: int) -> int:
     end = index + 1
-    while end < len(original) and original[end].kind != "tick" and original[end].kind not in INPUTS:
+    while (
+        end < len(original)
+        and original[end].kind not in ("tick", PROBE_ROUND)
+        and original[end].kind not in INPUTS
+    ):
         end += 1
     return end
 
