@@ -7,6 +7,7 @@ purpose: rules sit in `.claude/rules/`, and long references can be added next to
 | Skill | Use when |
 | --- | --- |
 | `handoff` | Starting or finishing any session (always) |
+| `sprint-workflow` | Picking up, working or closing a sprint ticket |
 | `git-pr-workflow` | Branching, committing, opening or updating a PR |
 | `rust-workflow` | Touching `crates/` |
 | `python-harness` | Touching `harness/` or `experiments/` |

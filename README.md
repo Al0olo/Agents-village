@@ -79,6 +79,7 @@ Design phase. The documents are living drafts:
 
 - [Product requirements](docs/prd.md): research questions and evidence first, then the framework
 - [Milestones and lessons learned](docs/milestones.md): M1 to M5, experiment gates, cost model
+- [Sprint plan](docs/sprints/README.md): sprints S0 to S8 with tickets; [implementation audits](docs/implementation/README.md) show what is on `main`
 
 ## Development
 
