@@ -69,7 +69,9 @@ def oracle(log, claim):
     if any(e.kind in ("saw", "did") for e in cited):
         return "fact"
     tellers = [
-        set(e.payload["origins"]) for e in cited if e.kind == "told" and e.payload["origins"]
+        set(e.payload["origins"])
+        for e in cited
+        if e.kind == "told" and e.payload["origins"] and e.writer not in e.payload["origins"]
     ]
     independent = any(a.isdisjoint(b) for i, a in enumerate(tellers) for b in tellers[i + 1 :])
     return "fact" if independent else "hearsay"

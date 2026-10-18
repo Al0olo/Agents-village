@@ -30,7 +30,8 @@ missing is causal, replicated measurement of specific questions about them.
 > defense, without blocking true information?
 
 A claim reaches core or shared memory as **fact** only if it cites at least one first-hand
-event in the writer's own log, or at least two told-events whose origins are disjoint.
+event in the writer's own log, or at least two told-events whose origins are disjoint and
+do not include the writer.
 Everything else is stored as **hearsay**. The check is deterministic, with no model in the
 loop. The reference implementation is
 [`harness/src/agent_village/admission.py`](harness/src/agent_village/admission.py).

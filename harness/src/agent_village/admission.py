@@ -5,7 +5,9 @@ A claim reaches core or shared memory as *fact* only if it cites
 * at least one first-hand event in the writer's own log (an observation, an
   action the writer took, a tool receipt or a ledger entry), or
 * at least two told-events whose origin sets are disjoint, where the origin is
-  the root source the kernel tracks through every forward.
+  the root source the kernel tracks through every forward. A told-event whose
+  origins include the writer is the writer's own claim coming back and does not
+  count.
 
 Everything else is stored as *hearsay* in recall. The policy checks citation
 provenance, not truth, and no model is involved in the decision.
@@ -51,7 +53,7 @@ def admit(claim: Claim, log: dict[str, Event]) -> Admission:
     if any(e.kind in (Kind.SEEN, Kind.DID) for e in cited):
         return Admission.FACT
 
-    told = [e for e in cited if e.kind is Kind.TOLD and e.origins]
+    told = [e for e in cited if e.kind is Kind.TOLD and e.origins and claim.writer not in e.origins]
     for i, a in enumerate(told):
         for b in told[i + 1 :]:
             if a.origins.isdisjoint(b.origins):
