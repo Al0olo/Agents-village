@@ -33,15 +33,17 @@ class LogEvent:
     hash: str
 
 
-def _digest(id: int, kind: str, writer: str, payload: Mapping[str, Any], prev: str) -> str:
+def canonical_hash(value: Any) -> str:
     canonical = json.dumps(
-        {"id": id, "kind": kind, "writer": writer, "payload": payload, "prev": prev},
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-        allow_nan=False,
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _digest(id: int, kind: str, writer: str, payload: Mapping[str, Any], prev: str) -> str:
+    return canonical_hash(
+        {"id": id, "kind": kind, "writer": writer, "payload": payload, "prev": prev}
+    )
 
 
 def _normalise(payload: Mapping[str, Any]) -> dict[str, Any]:
