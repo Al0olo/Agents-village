@@ -1,0 +1,10 @@
+[package]
+name = "village-ledger"
+description = "Double-entry credit ledger that charges citizens for their own inference"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true

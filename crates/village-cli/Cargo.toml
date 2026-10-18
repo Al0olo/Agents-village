@@ -1,0 +1,19 @@
+[package]
+name = "village-cli"
+description = "Observer and operator command line for Agent Village"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "village"
+path = "src/main.rs"
+
+[dependencies]
+village-kernel = { path = "../village-kernel" }
+village-ledger = { path = "../village-ledger" }
+village-memory = { path = "../village-memory" }
+
+[lints]
+workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "village-kernel"
+description = "Citizen actors, scheduler and event log for Agent Village"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
