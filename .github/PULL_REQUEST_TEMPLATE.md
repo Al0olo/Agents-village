@@ -6,5 +6,6 @@
 
 - [ ] `cargo fmt`, `cargo clippy` and `cargo test` pass (Rust changes)
 - [ ] `ruff check` and `pytest` pass (harness changes)
+- [ ] `docs/HANDOFF.md` updated and an entry added to `docs/handoff/LOG.md` (CI enforces this)
 - [ ] Docs updated where behavior or a design decision changed
 - [ ] If this touches an experiment: the pre-registration is unchanged, or the change is explained and dated
