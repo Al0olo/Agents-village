@@ -12,6 +12,8 @@ The prompt text in `prompts.py` and the rendering in `runner.py` (`_render`) are
 
 A village's state is a fold over its log; only the random generator's state lives outside it. Do not add state to `Village`, `Runner` or `Memory` that a fold of the log cannot rebuild, and change the log only through the methods that apply the event they append. If something genuinely cannot be rebuilt, add it to `Snapshot` and to `World.state()` so `test_fork.py` compares it. Make forks only with `fork.fork`, never by copying files.
 
+An arm in `arms.py` is a memory policy plus a prompt and nothing else; arms must share the loop, model, citizens and scheduler. New arms go in `ARMS` with a test that they differ from the others only where intended. Like `admission.py`, an arm is the treatment: no change after runs start.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.

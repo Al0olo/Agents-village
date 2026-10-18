@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `412b24e`
+Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `079768a`
 
 ## Objective
 
@@ -32,7 +32,8 @@ funding is a later concern.
 - Done: S1-T5, memory tiers with structured claim writes (`harness/src/agent_village/memory.py`, 21 tests): `Memory(log, policy).write_claim(writer, text, kind, cites, tier)`, tiers core, recall and shared, decision logged as a `claim` event, state rebuilds from the log without rerunning the policy. Merged in PR #13.
 - Done: S1-T6, message passing with origin tracking (`harness/src/agent_village/messages.py`, 19 tests): `Messenger.send/forward/received`; a send logs a `message` event and the recipient's `told` event; forwards add the forwarder to the origins and never remove one; a message cannot go to its own origins. Tested end to end with `Memory` and `admit`. Merged in PR #14.
 - Done: S1-T4, the citizen loop (`runner.py`, `actions.py`, `prompts.py`; 114 new tests, 221 in all, 100% line and branch coverage measured with pytest-cov, which is not a project dependency yet). Each wake is a turn of at most `max_steps` model calls; a reply parses to `say`, `forward`, `remember` or `sleep`; the step budget, clamped sleeps, logged `invalid_action` and `turn_end` events bound every loop. A fake-backend village of 8 citizens runs 72 ticks end to end and replays from recorded outputs to an identical log head. Merged in PR #15.
-- Done: S1-T13, snapshot and fork (`fork.py`; `EventLog.fork` and `head_at`; `Village` and `Runner` now rebuild from an existing log). A `Snapshot` is the log position, its head and the rng state, taken between ticks; `fork(snapshot, source, dest, backend, policy, prompt, specs, max_awake)` copies the verified log prefix and rebuilds the world with the arm's own policy, prompt and backend. 291 tests, 100% line and branch coverage. PR #16 (`claude/gracious-albattani-osio94`).
+- Done: S1-T13, snapshot and fork (`fork.py`; `EventLog.fork` and `head_at`; `Village` and `Runner` now rebuild from an existing log). A `Snapshot` is the log position, its head and the rng state, taken between ticks; `fork(snapshot, source, dest, backend, policy, prompt, specs, max_awake)` copies the verified log prefix and rebuilds the world with the arm's own policy, prompt and backend. 291 tests, 100% line and branch coverage. Merged in PR #16.
+- Done: S1-T7 and S1-T8, arms D and A (`arms.py`: `Arm`, `KERNEL_ADMISSION`, `NO_DEFENSE`, `ARMS`; 27 new tests, 318 in all, 100% line and branch coverage). Both arms use the baseline prompt and differ only in the memory policy. `admission.py` is unchanged. PR open on branch `claude/gracious-albattani-osio94`.
 - Decided: IaC is OpenTofu on AWS in `infra/`; the owner delegated the choice. Memory is a projection of an event log we own; SQLite in the harness, Postgres in the kernel, same schema, forks by log prefix (`docs/adr/0001-storage-and-memory.md`).
 - Decided: observer UI is TypeScript with Next.js (App Router) in `apps/observer/`, pnpm. Not scaffolded yet; add the CI job when it is.
 - Not started: RQ1 pre-registration, the 2-block pilot, the paired-fork village runner,
@@ -40,15 +41,15 @@ funding is a later concern.
 
 ## Next step
 
-Once the S1-T13 PR is merged, restart the branch from `main` and take S1-T7 and S1-T8 as
-one small arms module (`arms.py`): a named arm is a memory policy plus a prompt. Arm D is
-`admission.admit` with the baseline prompt (its forward and collusion tests exist in
-`test_messages.py`); arm A admits everything with the same prompt. Keep them separate
-commits or PRs if the owner prefers one ticket per PR. Then S1-T15 (simultaneous launch
-controller using `fork.fork`, fallbacks off), T14 (audit and counterfactual replay), T9,
-T16, T18 and the storage tickets T25 to T31. The pre-registration is S2-T1; do not run
-anything live before it is approved. Open the PR yourself with the template filled in; the
-owner reviews and merges.
+Once the S1-T7/T8 PR is merged, restart the branch from `main` and take S1-T15 (simultaneous
+launch controller; fallbacks off): start every arm's fork together from one snapshot using
+`fork.fork` and `arms.ARMS`, drive them in lockstep, and refuse to launch if any
+arm's config differs from the others in anything but the arm. Then S1-T14 (audit and
+counterfactual replay; see the gotcha about `RecordedBackend`), T11 (arm E, the random
+block), T16 to T18 (facts, planting, probes), T9 (arm B prompts, which the owner reviews)
+and the storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live
+before it is approved. Open the PR yourself with the template filled in; the owner
+reviews and merges.
 
 ## Queue
 
@@ -58,6 +59,7 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 ## Open decisions (owner)
 
+- Which memory policy the shared base village uses before the planting event. It decides what memory looks like when the arms fork. Treatment starts at the fork, so my recommendation is no defense (`admit_all`) for the base: nothing is defended before the treatment. Either choice biases against arm D (a polluted start for D, or a cleaner start for A), which is the conservative direction for the flagship claim. To be settled in the pre-registration (S2-T1). The tests use the kernel policy for the base only as scaffolding.
 - License is Apache-2.0, chosen by the agent without asking; confirm.
 - Model mix for RQ1: two frontier models and one pinned open-weight model; which ones.
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
@@ -110,6 +112,9 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - `RecordedBackend.from_log` replays every `model_call` in a log, including those before a fork. Prompts embed the tick, so identical requests across ticks do not occur today, but T14 should replay only calls after the fork point. Arms with a recorded backend need one `RecordedBackend` per fork: it is consumed as it replays.
 - Arms must be built by passing a different policy, prompt or backend to `fork.fork`. `max_awake` and `LoopConfig` are not logged; every arm must be given the same values, and the run layer should record them with the config hash.
 - Coverage: `python3 -m pytest --cov=agent_village --cov-branch` works if `pytest-cov` is installed (it is not a project dependency until T24). `.coverage` is now git-ignored; it was committed by mistake in the S1-T4 PR and removed here.
+
+- `admit` cannot be fooled by a told event whose origins include the writer through `Messenger`, because `Messenger` refuses to send a message to one of its origins. The policy itself does not check this, so a kernel port that accepts told events from another path must. Add it to the Rust test vectors in S4 rather than changing `admission.py` now.
+- Known limit, documented by tests: two colluding senders are two independent origins, and many colluders are many. The colluding-planter arm (S1-T17) measures it.
 
 ## How to verify
 

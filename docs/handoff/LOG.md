@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · S1-T7 and S1-T8 arms D and A
+
+- PR #16 (T13) was merged. Added `arms.py`: an arm is a memory policy plus a prompt; arm D is `admission.admit`, arm A is `admit_all`; both use the baseline prompt so the policy is the only difference. `admission.py` is untouched.
+- Beyond the ticket text: 12 policy-level cases in `test_admission.py` (duplicate citations, chain overlap, partial overlap, empty origins, other citizens' events, unknown ids, colluders, order independence, purity) and a village-level test. A gossiping 8-citizen village (forwards, cited claims, environment observations) runs 24 ticks, is snapshotted, forks into A and D, and runs 48 more. Two independent oracles check the result from the log alone: every logged admission decision, and every message's origins against its forward chain. No hearsay reaches core or shared memory under D; A stores every claim as fact; D keeps less in shared memory; hearsay is kept in recall, not dropped.
+- Mutation-checked 11 mutants across `admission.py`, `messages.py` and `arms.py` (inverted disjointness, dropped writer filter, empty origins counted, `did` dropped, `told` counted as evidence, always-fact, forwarder not added, origin-return allowed, wrong arm policies and prompt); all are caught.
+- Raised for the owner: the base-run policy before the planting event is a design choice for the pre-registration. Noted a gap in the policy that `Messenger` closes but `admit` does not (a told event whose origins include the writer); recorded for the Rust port instead of changing the treatment.
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T13 snapshot and fork
 
 - PR #15 (T4) was merged. Inventoried all mutable state: `Village` (citizens, awake, pending, clock, rng), `Runner` (cursors, a queued set that is empty between ticks), `Memory` (a fold of the log). Everything except the rng state is derivable from the log, so a snapshot is the log position, its head and the rng state.
