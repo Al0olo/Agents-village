@@ -179,10 +179,70 @@ def test_sleep_until_a_past_tick_is_rejected_without_logging(tmp_path):
     assert (village.state(), len(log)) == before
 
 
-def test_construction_is_validated(tmp_path):
-    log = EventLog(tmp_path / "v.jsonl")
+def test_max_awake_must_be_positive(tmp_path):
     with pytest.raises(ValueError):
-        Village(log, SimClock(), random.Random(0), 0)
-    log.append("born", "village", {"citizen": "ada"})
-    with pytest.raises(ValueError):
-        Village(log, SimClock(), random.Random(0), 1)
+        Village(EventLog(tmp_path / "v.jsonl"), SimClock(), random.Random(0), 0)
+
+
+def history(tmp_path, name="v.jsonl"):
+    village, log = make(tmp_path, max_awake=2, name=name)
+    village.request_wake("ada", 3, "timer")
+    village.request_wake("ada", 2, "message")
+    village.request_wake("ada", 9, "timer")
+    village.request_wake("bo", 1, "start")
+    village.request_wake("cy", 1, "start")
+    village.request_wake("di", 4, "start")
+    village.step()
+    village.step()
+    return village, log
+
+
+def test_a_village_is_rebuilt_from_its_log(tmp_path):
+    live, log = history(tmp_path)
+    rebuilt = Village(log, SimClock(), random.Random(0), 2)
+    assert rebuilt.state() == live.state()
+    assert rebuilt.state().pending != ()
+
+
+def test_rebuilding_keeps_the_awake_set_of_an_unfinished_tick(tmp_path):
+    live, log = history(tmp_path)
+    assert live.state().awake != ()
+    assert Village(log, SimClock(), random.Random(0), 2).state().awake == live.state().awake
+
+
+def test_rebuilding_sets_the_clock_to_the_last_tick(tmp_path):
+    _, log = history(tmp_path)
+    clock = SimClock()
+    Village(log, clock, random.Random(0), 2)
+    assert clock.now == 2
+
+
+def test_a_rebuilt_village_continues_like_the_original(tmp_path):
+    live, log = history(tmp_path)
+    rng = random.Random()
+    rng.setstate(live.rng_state())
+    rebuilt = Village(log, SimClock(), rng, 2)
+    for name in live.state().awake:
+        live.sleep(name)
+        rebuilt.sleep(name)
+    for _ in range(6):
+        chosen = live.step()
+        assert rebuilt.step() == chosen
+        for name in chosen:
+            live.sleep(name, until=live.state().tick + 2)
+            rebuilt.sleep(name, until=rebuilt.state().tick + 2)
+    assert rebuilt.state() == live.state()
+
+
+def test_rebuilding_an_empty_log_gives_an_empty_village(tmp_path):
+    village, _ = make(tmp_path, names=())
+    assert village.state().tick == 0
+    assert village.state().citizens == ()
+
+
+def test_rng_state_is_a_plain_tuple_that_restores_the_generator(tmp_path):
+    village, _ = make(tmp_path, seed=4)
+    state = village.rng_state()
+    other = random.Random()
+    other.setstate(state)
+    assert other.random() == random.Random(4).random()

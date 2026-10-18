@@ -145,3 +145,63 @@ def test_unreadable_records_are_detected(tmp_path, bad):
     path.write_text(bad + "\n")
     with pytest.raises(LogCorruptError):
         EventLog(path)
+
+
+def test_head_at_gives_the_head_after_a_prefix(tmp_path):
+    log = EventLog(tmp_path / "v.jsonl")
+    fill(log)
+    events = list(log)
+    assert log.head_at(0) == GENESIS
+    assert [log.head_at(n) for n in (1, 2, 3)] == [e.hash for e in events]
+
+
+@pytest.mark.parametrize("count", [-1, 4])
+def test_head_at_rejects_a_count_outside_the_log(tmp_path, count):
+    log = EventLog(tmp_path / "v.jsonl")
+    fill(log)
+    with pytest.raises(ValueError):
+        log.head_at(count)
+
+
+def test_fork_copies_a_prefix_byte_for_byte(tmp_path):
+    source = EventLog(tmp_path / "a.jsonl")
+    fill(source)
+    forked = source.fork(tmp_path / "b.jsonl", 2)
+    assert len(forked) == 2
+    assert forked.head == source.head_at(2)
+    lines = (tmp_path / "a.jsonl").read_bytes().splitlines(keepends=True)
+    assert (tmp_path / "b.jsonl").read_bytes() == b"".join(lines[:2])
+
+
+def test_fork_defaults_to_the_whole_log_and_can_be_empty(tmp_path):
+    source = EventLog(tmp_path / "a.jsonl")
+    fill(source)
+    assert source.fork(tmp_path / "all.jsonl").head == source.head
+    empty = source.fork(tmp_path / "none.jsonl", 0)
+    assert (len(empty), empty.head) == (0, GENESIS)
+
+
+def test_forks_continue_the_chain_independently(tmp_path):
+    source = EventLog(tmp_path / "a.jsonl")
+    fill(source)
+    forked = source.fork(tmp_path / "b.jsonl", 2)
+    before = (tmp_path / "a.jsonl").read_bytes()
+    forked.append("did", "bo", {"act": "rest"})
+    source.append("did", "ada", {"act": "work"})
+    assert forked[2].prev == source[1].hash
+    assert forked.head != source.head
+    assert (tmp_path / "a.jsonl").read_bytes().startswith(before)
+    assert len(EventLog(tmp_path / "b.jsonl")) == 3
+
+
+def test_fork_refuses_to_overwrite_and_rejects_a_bad_count(tmp_path):
+    source = EventLog(tmp_path / "a.jsonl")
+    fill(source)
+    (tmp_path / "taken.jsonl").write_text("keep")
+    with pytest.raises(FileExistsError):
+        source.fork(tmp_path / "taken.jsonl", 1)
+    assert (tmp_path / "taken.jsonl").read_text() == "keep"
+    for count in (-1, 4):
+        with pytest.raises(ValueError):
+            source.fork(tmp_path / f"bad{count}.jsonl", count)
+        assert not (tmp_path / f"bad{count}.jsonl").exists()

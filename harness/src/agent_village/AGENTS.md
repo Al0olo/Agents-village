@@ -10,6 +10,8 @@ Messages go through `Messenger`. Origins only grow along a forward, and a messag
 
 The prompt text in `prompts.py` and the rendering in `runner.py` (`_render`) are part of the treatment, like `admission.py`: a change needs a new prompt version, an updated pinned-prompt test and a note in the pre-registration, and never happens after runs start. Acting is not evidence: do not log `did` events for messages or memory writes, or a citizen could back a claim by having said it. A model error must stop the run, not be retried silently.
 
+A village's state is a fold over its log; only the random generator's state lives outside it. Do not add state to `Village`, `Runner` or `Memory` that a fold of the log cannot rebuild, and change the log only through the methods that apply the event they append. If something genuinely cannot be rebuilt, add it to `Snapshot` and to `World.state()` so `test_fork.py` compares it. Make forks only with `fork.fork`, never by copying files.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.
