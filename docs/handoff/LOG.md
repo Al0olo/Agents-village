@@ -3,6 +3,12 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-18 · Claude Sonnet 5.5 · ADR-0001 storage and memory
+
+- Owner asked what to use for agent memory and storage and wanted the harness air-tight. Decision: event log we own, rebuildable projections, SQLite in the harness, Postgres in the kernel, forks by log prefix; no off-the-shelf memory layer in the write path. Search results on memory products were aggregators, so no benchmark numbers were used.
+- Owner asked whether IaC is planned: it was not (only a gateway ticket in S2). Added ADR-0002 (proposed: Terraform on AWS, minimal, phased) and tickets S2-T13 to T17, S3-T13, S4-T19 to T21. Hakim's ADR-0005 informed the choice.
+- Added `docs/adr/` (template from the Hakim repo), S1-T25 to T31, S4-T15 to T18, kernel invariants 9 and 10, PRD sections 7 and 8 updated. Open: optional off-the-shelf-memory arm for RQ1 (owner to decide before pre-registration).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · sprint plan and implementation audits
 
 - Modelled on the layout of the owner's `Al0olo/hakim` repo: `docs/sprints/` holds intent (goal, tickets with points and dependencies, definition of done, risks, demo, go/no-go) and `docs/implementation/` holds state per sprint. Adapted for research: sprints S1 to S3 run RQ1 on a Python harness, S4 builds the Rust kernel in parallel, S5 to S8 are outlined for after RQ1.

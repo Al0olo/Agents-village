@@ -23,3 +23,4 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T10 | Release code, configs and logs with canary string | ⏳ | |
 | T11 | Two external reviewers read the draft | ⏳ | |
 | T12 | Choose venue and submit | ⏳ | |
+| T13 | Scale batch runner; cost dashboard and alarms | ⏳ | |

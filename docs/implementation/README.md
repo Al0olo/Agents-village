@@ -10,7 +10,7 @@ Keep each file honest. A ticket marked ✅ must be verifiable with the commands 
 
 | Sprint | Status | Doc |
 | --- | --- | --- |
-| S0 — Foundations | ✅ Complete once the sprint-docs PR merges | [S0-foundations.md](./S0-foundations.md) |
+| S0 — Foundations | ✅ Complete | [S0-foundations.md](./S0-foundations.md) |
 | S1 — RQ1 harness | ⏳ Not started; `admission.py` and its tests exist from S0 | [S1-rq1-harness.md](./S1-rq1-harness.md) |
 | S2 — RQ1 pilot and pre-registration | ⏳ Not started | [S2-rq1-pilot.md](./S2-rq1-pilot.md) |
 | S3 — RQ1 main run and report | ⏳ Not started | [S3-rq1-main.md](./S3-rq1-main.md) |

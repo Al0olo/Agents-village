@@ -2,7 +2,7 @@
 
 **Weeks:** 1–4  
 **Team:** 1 owner + agents (Python)  
-**Total points:** ~100  
+**Total points:** ~128  
 **Exit criterion:** A Python village can run to the planting event, fork into five arms, and record everything needed to replay and analyze it, using fake and recorded model backends.
 
 ## Goal
@@ -70,6 +70,18 @@ Ticket ids are `S1-T<n>`. Branch names `S1/<area>/<slug>`; PRs say `Closes S1-T<
 | T20 | Blinded judge pipeline and human-validation sample sheet | 5 | T18 |
 | T21 | Metrics: attack rate, time to k adopters, wiki contamination, true-fact acceptance, utility, label creep | 5 | T20 |
 
+### Storage and memory ([ADR-0001](../adr/0001-storage-and-memory.md))
+
+| # | Title | Points | Depends |
+| --- | --- | --- | --- |
+| T25 | SQLite store (WAL, one file per village): schema for events, claims, tiers, ledger, commitments; additive migrations | 5 | T1 |
+| T26 | Hash-chain verification and Ed25519 signatures on messages and payments | 5 | T1 |
+| T27 | Content-addressed blob store for notes and genome files | 3 | T25 |
+| T28 | Retrieval: FTS5 plus sqlite-vec, pinned embedding model, results logged as events | 5 | T25,T3 |
+| T29 | Projection rebuild from the log; property test that replay equals live state | 5 | T25,T14 |
+| T30 | Bi-temporal claims (event time and record time) | 3 | T5,T25 |
+| T31 | Single writer per village, serialized through the village actor | 2 | T25 |
+
 ### Quality
 
 | # | Title | Points | Depends |
@@ -85,6 +97,7 @@ Ticket ids are `S1-T<n>`. Branch names `S1/<area>/<slug>`; PRs say `Closes S1-T<
 - Replaying a recorded log reproduces the same events (audit replay)
 - Admission policy tests cover forwarded-origin laundering and cross-citizen citations
 - All metrics compute on a recorded sample
+- Projections rebuilt from the log equal the live projections; hash chain verifies; retrieval results are replayed from the log
 - `ruff` and `pytest` green; handoff updated
 
 ## Risks and mitigations

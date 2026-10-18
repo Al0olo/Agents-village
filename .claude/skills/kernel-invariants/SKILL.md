@@ -24,6 +24,8 @@ These must hold after every change. Add a test for any you touch.
    Never claim bit-for-bit reproducibility; hosted models are not deterministic.
 7. **Sleeping is free.** A sleeping citizen holds no model call.
 8. **Forks are identical.** A fork starts from identical state; arms launch together.
+9. **The log is hash-chained** and messages and payments are signed by the citizen; one writer per village.
+10. **Projections are rebuildable.** Claims, tiers, ledger and commitments equal a fold over the log; retrieval results are recorded so replay does not drift; no model sits in a memory write path. See `docs/adr/0001-storage-and-memory.md`.
 
 Before merging: run the gate, replay a recorded log and compare state, and note any
 invariant you relaxed (there should be none) in the PR and the handoff.

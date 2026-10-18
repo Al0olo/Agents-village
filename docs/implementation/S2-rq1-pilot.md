@@ -23,3 +23,8 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T10 | Owner review, then OSF registration | ⏳ | |
 | T11 | Canary string and log release plan | ⏳ | |
 | T12 | Awareness probe calibration | ⏳ | |
+| T13 | Confirm ADR-0002; infra skeleton and remote state | ⏳ | |
+| T14 | Object storage, secrets, budget alarms, spend kill switch | ⏳ | |
+| T15 | Batch runner for all arms of a block | ⏳ | |
+| T16 | OIDC deploys; egress allow-list | ⏳ | |
+| T17 | Harness Dockerfile and image | ⏳ | |

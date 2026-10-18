@@ -35,3 +35,10 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T22 | Property tests: origin laundering, fork identity, log replay | ⏳ | |
 | T23 | Cost and usage accounting (tokens, citizen-day) | ⏳ | |
 | T24 | Harness CI: coverage report, type check | ⏳ | |
+| T25 | SQLite store: schema, WAL, additive migrations | ⏳ | |
+| T26 | Hash-chain verification and Ed25519 signatures | ⏳ | |
+| T27 | Content-addressed blob store | ⏳ | |
+| T28 | Retrieval: FTS5 plus sqlite-vec, results logged | ⏳ | |
+| T29 | Projection rebuild; replay equals live state | ⏳ | |
+| T30 | Bi-temporal claims | ⏳ | |
+| T31 | Single writer per village | ⏳ | |

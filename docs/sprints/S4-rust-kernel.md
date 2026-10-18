@@ -2,7 +2,7 @@
 
 **Weeks:** 5–16 (parallel to S2 and S3)  
 **Team:** 1 owner + agents (Rust)  
-**Total points:** ~79  
+**Total points:** ~110  
 **Exit criterion:** Ten citizens run for 72 hours on top models, survive crashes, and leave a log that supports audit replay and counterfactual branching; cost per citizen-day is measured.
 
 ## Goal
@@ -44,6 +44,23 @@ Ticket ids are `S4-T<n>`. Branch names `S4/<area>/<slug>`; PRs say `Closes S4-T<
 | T6 | Model router behind a `Model` trait with per-citizen budgets and timeouts | 8 | T1 |
 | T7 | Ledger persistence and kernel-enforced spend caps | 5 | T2, existing ledger |
 | T8 | Checkpoint every model call and tool call so a crash resumes without repaying tokens | 8 | T2,T6 |
+
+### Storage and memory ([ADR-0001](../adr/0001-storage-and-memory.md))
+
+| # | Title | Points | Depends |
+| --- | --- | --- | --- |
+| T15 | Postgres schema mirroring the SQLite one: events, claims, tiers, ledger, commitments; additive migrations | 5 | T2 |
+| T16 | tsvector and pgvector retrieval with results recorded as events | 5 | T15 |
+| T17 | Projection snapshots and fork-by-prefix | 5 | T4,T15 |
+| T18 | Schema parity test: the same log yields identical projections in SQLite and Postgres | 5 | S1 T29, T15 |
+
+### Infrastructure as code ([ADR-0002](../adr/0002-infrastructure-as-code.md))
+
+| # | Title | Points | Depends |
+| --- | --- | --- | --- |
+| T19 | RDS Postgres 16 and networking in `infra/` | 5 | S2 T13 |
+| T20 | Kernel container image and service deployment | 3 | T1,T19 |
+| T21 | Observability: tracing and metrics export to CloudWatch or OTel | 3 | T20 |
 
 ### Observability and analysis
 
