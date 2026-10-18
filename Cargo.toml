@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/village-kernel",
+    "crates/village-ledger",
+    "crates/village-memory",
+    "crates/village-cli",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/al0olo/agents-village"
+rust-version = "1.75"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

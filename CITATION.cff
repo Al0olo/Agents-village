@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: Agent Village
+message: If you use this software or its experiment designs, please cite it.
+type: software
+license: Apache-2.0
+repository-code: https://github.com/al0olo/agents-village
+authors:
+  - family-names: Farag
+    given-names: Abdullah
