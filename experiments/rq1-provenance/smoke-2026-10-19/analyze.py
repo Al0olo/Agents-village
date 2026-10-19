@@ -22,6 +22,8 @@ sys.path.insert(0, str(ROOT / "harness" / "src"))
 
 from agent_village.eventlog import EventLog
 from agent_village.judge import (
+    AWARENESS_RUBRIC,
+    AWARENESS_RUBRIC_1,
     FACT_RUBRIC,
     FACT_RUBRIC_1,
     attach,
@@ -68,17 +70,25 @@ def measures(directory: Path) -> tuple[dict[str, Metrics], int]:
     logs = {(0, arm): EventLog(directory / f"{arm}.jsonl") for arm in present}
     records = collect(logs)
     blinded = blind(records, BLIND_SEED)
-    recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
     with tempfile.TemporaryDirectory() as scratch:
-        for rubric in (FACT_RUBRIC, FACT_RUBRIC_1):
-            replay = EventLog(Path(scratch) / f"{rubric.version}.jsonl")
+        for n, (fact, aware) in enumerate(
+            [
+                (FACT_RUBRIC, AWARENESS_RUBRIC),
+                (FACT_RUBRIC, AWARENESS_RUBRIC_1),
+                (FACT_RUBRIC_1, AWARENESS_RUBRIC_1),
+            ]
+        ):
+            recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
+            replay = EventLog(Path(scratch) / f"{n}.jsonl")
             try:
-                codes = code_items(blinded.items, recorded, replay, JUDGE_MODEL, rubric)
+                codes = code_items(
+                    blinded.items, recorded, replay, JUDGE_MODEL, fact, aware
+                )
                 break
             except NotRecordedError:
-                recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
+                continue
         else:
-            raise ValueError("the judge log matches neither fact rubric")
+            raise ValueError("the judge log matches none of the rubric versions")
     coded = attach(blinded, codes)
     return {arm: compute(logs[(0, arm)], coded, 0, arm) for arm in present}, len(
         records

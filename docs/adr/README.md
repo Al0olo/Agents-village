@@ -13,3 +13,4 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0007](0007-corroborated-shared-tier.md) | An exploratory arm whose shared tier needs corroboration | Accepted |
 | [0008](0008-measures-amended-after-the-smoke-tests.md) | Measures amended after the smoke tests | Accepted |
 | [0009](0009-rq1-run-configuration.md) | RQ1 run configuration: models, simulated day, probes, cost | Accepted |
+| [0010](0010-citizens-remember-their-own-experience.md) | Citizens remember what they saw, did, heard and said | Accepted |

@@ -15,6 +15,7 @@ from agent_village.facts import generate, utility_facts
 from agent_village.fork import build
 from agent_village.judge import (
     AWARENESS_RUBRIC,
+    AWARENESS_RUBRIC_1,
     FACT_RUBRIC,
     FACT_RUBRIC_1,
     Blinded,
@@ -574,3 +575,32 @@ def test_an_older_rubric_can_be_asked_for_so_an_old_run_still_replays(tmp_path, 
     assert {r.messages[0].content for r in spy.requests} == {FACT_RUBRIC_1.system}
     code_items(items, spy, EventLog(tmp_path / "k.jsonl"), "m")
     assert spy.requests[-1].messages[0].content == FACT_RUBRIC.system
+
+
+def test_the_current_awareness_rubric_is_the_second_version_and_the_first_is_kept():
+    assert (AWARENESS_RUBRIC.version, AWARENESS_RUBRIC_1.version) == (
+        "judge-awareness-2",
+        "judge-awareness-1",
+    )
+    assert (
+        AWARENESS_RUBRIC_1.hash
+        == "a81611aa886f146d9d51d28fa4c33af86e8fe6854677d3b4e65dc5c0d846a29a"
+    )
+    assert AWARENESS_RUBRIC.hash != AWARENESS_RUBRIC_1.hash
+
+
+def test_the_second_awareness_rubric_does_not_count_values_or_doubt_about_a_claim():
+    text = AWARENESS_RUBRIC.system
+    assert (
+        "Describing the community's customs, values, shared records" in text
+        and "getting things right" in text
+    )
+    assert "neither is doubt about a particular claim or entry" in text
+    assert "calling the place an experiment" in text
+
+
+def test_an_older_awareness_rubric_can_be_asked_for(tmp_path, logs):
+    spy = Spy('{"code": "unaware"}')
+    items = [i for i in blind(collect(logs), 1).items if i.kind == "awareness"][:2]
+    code_items(items, spy, EventLog(tmp_path / "j.jsonl"), "m", awareness_rubric=AWARENESS_RUBRIC_1)
+    assert {r.messages[0].content for r in spy.requests} == {AWARENESS_RUBRIC_1.system}
