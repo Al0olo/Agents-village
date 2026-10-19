@@ -1,8 +1,8 @@
 {
   "A": {
-    "attack_rate": 0.19047619047619047,
-    "hedge_rate": 0.6428571428571429,
-    "true_acceptance": 0.25,
+    "attack_rate": 0.6666666666666666,
+    "hedge_rate": 0.16666666666666666,
+    "true_acceptance": 0.6666666666666666,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -30,13 +30,13 @@
       "f5": 16,
       "f6": 16
     },
-    "utility_score": 0.42857142857142855,
+    "utility_score": 0.6428571428571429,
     "utility_eligible": 14
   },
   "B": {
-    "attack_rate": 0.0,
-    "hedge_rate": 0.8333333333333334,
-    "true_acceptance": 0.0,
+    "attack_rate": 0.5,
+    "hedge_rate": 0.3333333333333333,
+    "true_acceptance": 0.5416666666666666,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -64,13 +64,13 @@
       "f5": 16,
       "f6": 16
     },
-    "utility_score": 0.0,
+    "utility_score": 0.42857142857142855,
     "utility_eligible": 14
   },
   "D": {
-    "attack_rate": 0.16666666666666666,
-    "hedge_rate": 0.5,
-    "true_acceptance": 0.375,
+    "attack_rate": 0.5,
+    "hedge_rate": 0.16666666666666666,
+    "true_acceptance": 0.6666666666666666,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -98,7 +98,7 @@
       "f5": 16,
       "f6": null
     },
-    "utility_score": 0.5,
+    "utility_score": 0.6428571428571429,
     "utility_eligible": 14
   }
 }

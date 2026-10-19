@@ -16,7 +16,10 @@ section 1.
 
 ## Layout (to be filled as the work lands)
 
-- `PREREGISTRATION.md`: the plan, committed before the first run
+- [`PREREGISTRATION.md`](PREREGISTRATION.md): the plan (draft 1; frozen after the pilot, then filed on OSF)
+- [`LOG-RELEASE.md`](LOG-RELEASE.md): the canary string and the log release plan
+- [`run_block.py`](run_block.py): runs one block live behind the gateway and codes it with two judges
+- [`smoke-2026-10-19/`](smoke-2026-10-19/): the smoke villages and their analysis
 - `configs/`: hash-pinned run configurations
 - `analysis/`: analysis code and the notebook that produces the paper's tables
 - `pilot/`: the 2-block pilot that sets block count and checks fork correlation

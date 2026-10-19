@@ -17,7 +17,7 @@ from typing import Any
 from agent_village.admission import Admission, Claim, Event, admit, admit_corroborated
 from agent_village.eventlog import EventLog, canonical_hash
 from agent_village.memory import Policy
-from agent_village.prompts import ANCHOR_SCRUTINY, BASELINE, Prompt
+from agent_village.prompts import ANCHOR_SCRUTINY, BASELINE, CALIBRATED, Prompt
 
 
 @dataclass(frozen=True)
@@ -80,6 +80,9 @@ KERNEL_ADMISSION = Arm("D", admit, BASELINE)
 PROMPT_DEFENSE = Arm("B", admit_all, ANCHOR_SCRUTINY[0])
 """Prompt-level anchoring plus source scrutiny: no memory policy, only a different prompt."""
 
+CALIBRATED_DEFENSE = Arm("Bc", admit_all, CALIBRATED)
+"""The calibrated prompt defense; with arm B it is the prompt family the primary contrast draws on."""
+
 PROMPT_DEFENSE_PARAPHRASES = (
     Arm("B2", admit_all, ANCHOR_SCRUTINY[1]),
     Arm("B3", admit_all, ANCHOR_SCRUTINY[2]),
@@ -92,4 +95,7 @@ first-hand witness cannot publish. Excluded from the primary contrast, like arm 
 
 BASE = NO_DEFENSE
 
-ARMS = {arm.name: arm for arm in (NO_DEFENSE, PROMPT_DEFENSE, KERNEL_ADMISSION, CORROBORATED)}
+ARMS = {
+    arm.name: arm
+    for arm in (NO_DEFENSE, PROMPT_DEFENSE, CALIBRATED_DEFENSE, KERNEL_ADMISSION, CORROBORATED)
+}

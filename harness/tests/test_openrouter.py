@@ -68,6 +68,19 @@ def test_the_reasoning_setting_is_sent_per_model_and_only_when_configured():
     assert off.calls[0][2]["reasoning"] == {"enabled": False}
 
 
+def test_a_provider_can_be_pinned_per_model():
+    pinned = {"vendor/model": ("acme",), "other/model": ("zeta", "eta")}
+    here, there, nowhere = (Script(chat(provider="acme")) for _ in range(3))
+    OpenRouterBackend(here, only=pinned).complete(ask())
+    other = Request("other/model", (Message("user", "hi"),), max_tokens=5)
+    OpenRouterBackend(there, only=pinned).complete(other)
+    unlisted = Request("third/model", (Message("user", "hi"),), max_tokens=5)
+    OpenRouterBackend(nowhere, only=pinned).complete(unlisted)
+    assert here.calls[0][2]["provider"] == {"allow_fallbacks": False, "only": ["acme"]}
+    assert there.calls[0][2]["provider"] == {"allow_fallbacks": False, "only": ["zeta", "eta"]}
+    assert nowhere.calls[0][2]["provider"] == {"allow_fallbacks": False}
+
+
 def test_provider_restriction_is_sent_when_configured():
     transport = Script(chat(provider="acme"))
     OpenRouterBackend(transport, only=("acme",)).complete(ask())

@@ -3,7 +3,7 @@ import re
 import pytest
 
 from agent_village.actions import parse
-from agent_village.prompts import ACTION_FORMAT, ANCHOR_SCRUTINY, BASELINE, Prompt
+from agent_village.prompts import ACTION_FORMAT, ANCHOR_SCRUTINY, BASELINE, CALIBRATED, Prompt
 
 
 def test_hash_is_stable_and_covers_version_and_text():
@@ -143,3 +143,42 @@ def test_a_defense_prompt_names_no_arm_policy_or_tier_rule(prompt):
     text = prompt.system.lower()
     for phrase in ("two citizens", "at least two", "disjoint", "corroborat"):
         assert phrase not in text
+
+
+def test_the_calibrated_prompt_is_versioned_and_pinned():
+    assert CALIBRATED.version == "anchor-calibrated-1"
+    assert CALIBRATED.hash == "e3a00e3a1ae8ff04fb0e038255736b1c02810a38ed3ae98a27f824d014815326"
+    assert CALIBRATED.hash not in {p.hash for p in ANCHOR_SCRUTINY}
+
+
+def test_the_calibrated_prompt_is_the_baseline_world_with_one_inserted_passage():
+    world = BASELINE.system.partition("\n\n" + ACTION_FORMAT)[0]
+    head, sep, tail = CALIBRATED.system.partition("\n\n" + ACTION_FORMAT)
+    assert sep and not tail and head.startswith(world + "\n\n")
+    passage = head[len(world) + 2 :]
+    assert passage.count("\n\n") == 1 and 600 < len(passage) < 1400
+
+
+CALIBRATED_MOVES = {
+    "own experience first": r"\bsaw\b",
+    "pass on what others said with who said it": r"who said it",
+    "agreeing independent accounts count for more": r"independent accounts",
+    "several citizens can be one source": r"one source",
+    "do not dismiss what you did not see": r"dismiss",
+    "say how you know before the wiki": r"wiki",
+    "do not abdicate": r"only when you have nothing",
+}
+
+
+@pytest.mark.parametrize("move", CALIBRATED_MOVES)
+def test_the_calibrated_prompt_makes_each_move(move):
+    assert re.search(CALIBRATED_MOVES[move], CALIBRATED.system.lower())
+
+
+@pytest.mark.parametrize(
+    "word",
+    ["hearsay", "admission", "provenance", "kernel", "experiment", "study", "simulat", "false"]
+    + ["defense", "origin", "verify", "planted", "rumour", "test", "skeptic", "distrust"],
+)
+def test_the_calibrated_prompt_does_not_leak_the_hypothesis(word):
+    assert word not in CALIBRATED.system.lower()

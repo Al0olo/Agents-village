@@ -1,8 +1,11 @@
 """Live backend for OpenRouter's OpenAI-compatible chat completions endpoint.
 
-Fallbacks between providers are always off. The routed provider is read from the chat
-response and a response that does not name it is an error, so no live call is logged
-without its provider. The response also carries the generation id and the real cost.
+Fallbacks between providers are always off, and ``only`` pins a provider for every model or per
+model: providers differ in quantization and serve different snapshots, so an unpinned model may
+change provider between calls and the launch controller then rejects the block. The routed
+provider is read from the chat response and a response that does not name it is an error, so no
+live call is logged without its provider. The response also carries the generation id and the
+real cost.
 
 The chat response echoes the model alias that was asked for, not the dated snapshot that
 served it. The snapshot appears only in the generation record, which becomes readable some
@@ -66,7 +69,7 @@ class OpenRouterBackend:
     def __init__(
         self,
         transport: Transport,
-        only: tuple[str, ...] = (),
+        only: tuple[str, ...] | Mapping[str, tuple[str, ...]] = (),
         reasoning: Mapping[str, Mapping[str, Any]] | None = None,
     ) -> None:
         self._transport = transport
@@ -75,8 +78,9 @@ class OpenRouterBackend:
 
     def complete(self, request: Request) -> Response:
         routing: dict[str, Any] = {"allow_fallbacks": False}
-        if self._only:
-            routing["only"] = list(self._only)
+        only = self._only.get(request.model, ()) if isinstance(self._only, Mapping) else self._only
+        if only:
+            routing["only"] = list(only)
         body: dict[str, Any] = {
             "model": request.model,
             "messages": [{"role": m.role, "content": m.content} for m in request.messages],

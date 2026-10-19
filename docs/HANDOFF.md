@@ -25,12 +25,13 @@ funding is a later concern.
   `admit` ignores a told event that originates with the writer; the base village runs without defense until
   the fork (ADR-0003). Live checks and smoke villages are in the audit; status per ticket is there too.
 - Done, PR #26: S1-T9 arm B (three pinned wordings; arms B, B2, B3).
-- In progress, owner-delegated decisions in PR #27 (`claude/gracious-albattani-osio94`): the owner handed the open
-  decisions to Claude; they are ADR-0008 (measures: assertion primary, carry rates, rubric `judge-fact-2`, two
-  judges, awareness funnel with `judge-awareness-2`, interim probe rounds), ADR-0009 (run configuration: models,
-  a day of 12 ticks, probe schedule, cost basis), ADR-0010 (citizens remember their own experience, `render-2`);
-  ADR-0006 and 0007 are accepted. Found with OpenRouter I/O logging: citizens forgot their own sightings and
-  disowned wiki entries, which distorted arm B; fixed. 827 tests, 100% coverage.
+- Done, PR #27: ADR-0008 to 0010 (measures, run configuration, citizens' memory), `render-2`, ADR-0006 and 0007 accepted.
+- In progress, PR #28 (`claude/gracious-albattani-osio94`): the owner handed the remaining items to Claude. Added:
+  `gateway.py` (spend cap, call cap, per-model cap, latching kill file; S2-T5), `block.py` and
+  `experiments/rq1-provenance/run_block.py` (one RQ1 block live, two judges, credit preflight),
+  `analysis.py` (paired exact test, intervals, Holm; S2-T2), arm Bc and ADR-0011 (prompt family chosen on the pilot),
+  per-model provider pins, `judge-fact-3` and `judge-awareness-2` with `replay_codes`, the pre-registration draft
+  (S2-T1) and log release plan (S2-T11), reference-paper findings in the experiment-design skill. 903 tests, 100% coverage.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -39,16 +40,15 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main`. First re-run arm B and its paraphrases (and A, D, E, G)
-on `render-2` and a 36-tick village with the interim probe rounds (ADR-0009), about $8 to $10 and 40 minutes:
-the old arm B numbers are partly the forgetting artifact. Then T12 and T10 (consolidation at ticks 12 and 24,
-and arm C; design it as ADR-0011, reading the Manufactured Confidence paper beyond its abstract), then the
-storage tickets T25 to T31, then the pre-registration (S2-T1) from ADRs 0004 to 0010. The owner still owns:
-approving and registering the pre-registration, a human coding the sample sheet, and the real gateway. Live
-checks are fine: the owner put $50 on the key (about $18 used) and allowed frontier models; the live backend has
-no gateway cap, so cap every script and never print the key. Stored prompts and outputs of calls made since
-logging was enabled are readable at `/generation/content?id=<generation id>` (HTTP 404 for older calls): read
-them before changing a prompt. Open the PR yourself with the template filled in; the owner reviews and merges.
+**Blocked on credit.** The OpenRouter account ran out (HTTP 402; $3 of $330 left, the key's own $50 limit was not the
+cause), so the awareness replication and every further live run wait for a top-up. When credit exists, in this order:
+(1) three replication blocks of arms A, B, Bc, D with `run_block.py` (about $6 to $8 per three-arm block; run at most
+two at a time, they killed each other's budget before), to see whether awareness differs by arm and whether B and Bc
+hold up on `render-2`; (2) a human, or at least a second reader, codes a fresh `validate.py` sheet; (3) arm C and
+the consolidator (S1-T10, T12; ADR-0012, read the Manufactured Confidence paper's prompt first); (4) the 2-block
+pilot (S2-T6), after which the pre-registration is frozen with the pilot's numbers and filed on OSF (needs an account);
+(5) storage tickets T25 to T31. Live checks are fine; the live backend has the gateway now, so use it, and never print
+the key. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -58,21 +58,22 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 
 ## Decisions (taken by Claude on the owner's delegation, 2026-10-19)
 
-- Primary outcome is the assertion rate; carry rates (asserted or hedged) are secondary and say whether spread
-  fell (ADR-0008). Arm B wording stands. Arm G stays strict and exploratory, no milder variant until the pilot
-  shows G silences the wiki (ADR-0007). The utility task needs no nudge: frontier citizens pass single-witness
-  facts on (ADR-0006). Model mix is Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro; a day is 12 ticks; cost basis is
-  measured, about $20 to $30 a block extrapolated (ADR-0009). License Apache-2.0 stands; inference runs on the
-  owner's OpenRouter key behind a spend cap before any reported run. Names and templates stand after a 12-name
-  sample search (none real).
-- Still open and owner-only: human validation of the judge on the sample sheet (the two judges agree at
-  kappa 0.90 and 1.0, which is not human validation); registering the pre-registration; a real self-hosted
-  open-weight replicate (S2-T13).
-- Flagged, not decided: in the fifth village awareness at the direct question was 0 of 8 under no defense, 1
-  under the prompt defense and 4 under the kernel; an arm difference would threaten the unawareness control,
-  so replicate it before registering. A kernel arm's hearsay is visible in the citizen's Recall section.
-- Single villages are noisy: the same seed and models gave A attack 36%, 17% and 26% (rubric 2). The pilot's
-  between-village variance sets the number of blocks; do not read a contrast from one block.
+- Measures (ADR-0008): primary is the assertion rate of false facts, guard is true facts, carry rate says whether spread
+  fell; rubric `judge-fact-3` counts attribution without doubt as an assertion; awareness is a funnel scored by
+  `judge-awareness-2`; probe rounds each day. Run configuration (ADR-0009): Opus 5.5, GPT-5.6 Sol, DeepSeek V4 Pro each
+  pinned to one provider, a day is 12 ticks. Citizens remember their own experience (ADR-0010). The prompt defense is a
+  family (B strict, three wordings; Bc calibrated) chosen on the pilot by a written rule and frozen (ADR-0011). Arm G
+  stays strict and exploratory (ADR-0007); the utility task needs no nudge (ADR-0006); license Apache-2.0.
+- The earlier statement that "arm B still zeroes assertions" was wrong: it came from a rubric that coded attribution as
+  a hedge, and the village before the memory fix also had citizens forgetting their own entries. On the corrected rubric
+  and layout B gave 50% against 67% with no defense (one village). Keep this in mind before trusting any single number.
+- Judge validity: two models agree at kappa 0.79 to 0.85; Claude's blind coding of 85 answers agrees with them at 0.73
+  and 0.79. That is not a person. The remaining disagreement is `hedges` against `denies` (implausible but left
+  open); before the pilot the rubric should say `denies` needs an explicit conclusion that the value is wrong.
+- Still unresolved, owner-independent: whether awareness differs by arm (village 5: A 0 of 8, B 1, D 4; not replicated),
+  and the pre-registration is a draft until the pilot and the OSF filing.
+- Single villages are noisy: arm A's assertion rate was 71%, 36%, 36% and 67% in four villages with the same seed and
+  models. The pilot's between-village variance sets the number of blocks; do not read a contrast from one block.
 
 ## Gotchas
 
@@ -93,10 +94,10 @@ Research claims
   field is the alias, the dated snapshot is only in the generation record (about 9 s later); `usage.cost`
   is per call and matches the key counter. The sandbox proxy adds the credential: use `urllib_transport(None)`,
   send no key, never print one. With fallbacks off, upstream HTTP 429 happens (about 1.5% of calls): wrap the
-  backend in `Retrying` (2 to 30 s backoff, attempts logged); the spend cap stays with the gateway (S2-T5). Haiku 5.5 reasons by default and
+  backend in `Retrying` (2 to 30 s backoff, attempts logged); `Gateway` caps spend and calls and has a kill file (S2-T5). Haiku 5.5 reasons by default and
   returns empty content at small `max_tokens`: use `OpenRouterBackend(..., reasoning={model: {"enabled": False}})`
   per model; Opus 5.5 and `openai/gpt-oss-20b` cannot disable it (HTTP 400), so give them a larger `max_tokens`. Not verified: the cost per citizen-day,
-  frontier-model behavior. The live backend has no spend cap or kill switch (S2-T5): cap any live script.
+  frontier-model behavior. Put every live call behind `Gateway` and check `/credits` first (the account, not only the key, can run dry). Unpinned providers drift: pin each model with `only`.
 - Write citizen names capitalized: lowercase names caused most invalid actions in the first live check (35 and 44
   invalid actions fell to 6 and 7 once capitalized). The runner also matches a recipient in any case.
 

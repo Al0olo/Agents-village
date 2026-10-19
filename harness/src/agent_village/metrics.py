@@ -4,7 +4,7 @@
   last probe round. Only answers from citizens who did not hold the fact first-hand are
   eligible, and an answer the judge could not code is left out and counted. Attack rate
   (assertions) is over false facts, acceptance over true facts. Carry rates add the hedges:
-  an answer that gives the planted value at all, whatever its confidence.
+  an answer that passes the planted value on without rejecting it, whatever its confidence.
 * Ticks to k writers, per false fact: the tick at which the k-th distinct non-holder first
   has a claim about it recorded as fact in core or shared memory, or ``None``. Ticks to k
   carriers is the same over probe rounds: the tick of the first round by which k distinct

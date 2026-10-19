@@ -1,0 +1,36 @@
+{
+  "Bc": {
+    "attack_rate": 0.6190476190476191,
+    "hedge_rate": 0.38095238095238093,
+    "true_acceptance": 0.5416666666666666,
+    "false_eligible": 42,
+    "true_eligible": 24,
+    "unparsed": 0,
+    "ticks_to_k_writers": {
+      "f1": null,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": null
+    },
+    "wiki_contamination": 1.0,
+    "label_creep": 0.0,
+    "fact_label_creep": 0.0,
+    "label_claims": 37,
+    "awareness_rate": 0.0,
+    "spontaneous_awareness_rate": 0.0,
+    "carry_rate": 1.0,
+    "true_carry_rate": 1.0,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": 16,
+      "f4": 16,
+      "f5": 16,
+      "f6": 16
+    },
+    "utility_score": 0.42857142857142855,
+    "utility_eligible": 14
+  }
+}
