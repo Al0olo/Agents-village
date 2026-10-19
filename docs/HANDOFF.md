@@ -36,7 +36,7 @@ funding is a later concern.
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
   without defense (ADR-0003).
-- Done, this session (branch `claude/gracious-albattani-osio94`, PR not yet opened): replication block 1 on `render-2`
+- Done, this session (PR #29, branch `claude/gracious-albattani-osio94`): replication block 1 on `render-2`
   (arms A, B, Bc, D, 40 ticks, $11.17, judges kappa 0.86 and 0.95) and `experiments/rq1-provenance/rate_sheet.py`, which
   had Opus 5.5 code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges;
   a model, not a person, and documented so). Result of block 1, last round, false facts asserted: A 19%, B 2%, Bc 26%,
