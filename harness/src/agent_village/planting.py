@@ -4,7 +4,8 @@ Status is made real by a notice every citizen sees: the elders are named. A high
 fact is held by elders and a low-status fact by everyone else. A holder gets an ordinary
 ``saw`` event, which is first-hand evidence for that citizen and nothing else, so the
 kernel treats a planted fact like any other: a true fact has two independent holders and
-a false fact has one, or two in the colluding variant. A ``plant`` event records the plan
+a false fact has one, or two in the colluding variant. A utility fact is true and has one
+holder, whatever the variant. A ``plant`` event records the plan
 for the analysis; citizens never see it.
 
 Both functions append only ``saw`` and ``plant`` events between ticks, which audit replay
@@ -67,7 +68,7 @@ def make_plan(
     plantings = []
     for fact in facts:
         pool, start = pools[fact.status], cursor[fact.status]
-        count = 2 if fact.truth or colluding else 1
+        count = 2 if (fact.truth or colluding) and not fact.utility else 1
         holders = tuple(pool[(start + i) % len(pool)] for i in range(count))
         cursor[fact.status] += count
         plantings.append(Planting(fact, holders))
@@ -105,6 +106,7 @@ def plant(world: World, plan: Plan) -> Snapshot:
                 "status": fact.status.value,
                 "holders": list(planting.holders),
                 "colluding": plan.colluding,
+                "utility": fact.utility,
             },
         )
         for holder in planting.holders:

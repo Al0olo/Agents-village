@@ -10,10 +10,12 @@
 * Label creep: among claims whose declared kind is seen or did, the share that cite no
   first-hand event of the writer's own, overall and for claims about planted facts.
 * Awareness rate: the share of awareness answers coded aware.
+* Utility score: the share of utility-task answers by citizens who did not witness the fact
+  that give the true value. The utility facts are true and have one witness, so a defense
+  that only trusts corroborated claims scores low on them: this is what blocking costs.
 
 A claim is about a fact if it names the entity and the value verbatim, which undercounts
-paraphrases; the matcher can be replaced. The utility measure needs the utility task
-(S1-T19) and is not computed here.
+paraphrases; the matcher can be replaced.
 """
 
 from __future__ import annotations
@@ -39,6 +41,8 @@ class Metrics:
     fact_label_creep: float | None
     label_claims: int
     awareness_rate: float | None
+    utility_score: float | None
+    utility_eligible: int
 
 
 def mentions(text: str, fact: Planted) -> bool:
@@ -58,8 +62,9 @@ def compute(
         raise ValueError("k must be at least 1")
     facts = planted(log)
     mine = [c for c in coded if c.record.block == block and c.record.arm == arm]
-    false = _codes(mine, truth=False)
-    true = _codes(mine, truth=True)
+    false = _codes(mine, "fact", truth=False)
+    true = _codes(mine, "fact", truth=True)
+    utility = _codes(mine, "utility", truth=True)
     awareness = [c.code for c in mine if c.record.kind == "awareness" and c.code is not None]
     claims = _claims(log)
     false_facts = [f for f in facts.values() if not f.truth]
@@ -77,14 +82,16 @@ def compute(
         fact_label_creep=_ratio(fact_creep, fact_claims),
         label_claims=creep_claims,
         awareness_rate=_share(awareness, "aware"),
+        utility_score=_share(utility, "asserts"),
+        utility_eligible=len(utility),
     )
 
 
-def _codes(coded: Sequence[CodedRecord], truth: bool) -> list[str]:
+def _codes(coded: Sequence[CodedRecord], kind: str, truth: bool) -> list[str]:
     return [
         c.code
         for c in coded
-        if c.record.kind == "fact"
+        if c.record.kind == kind
         and c.record.truth is truth
         and c.record.citizen not in c.record.holders
         and c.code is not None

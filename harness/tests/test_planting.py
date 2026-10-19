@@ -7,7 +7,7 @@ from villages import NAMES, gossip
 from agent_village.admission import Admission, Kind, admit
 from agent_village.arms import BASE, KERNEL_ADMISSION, NO_DEFENSE
 from agent_village.eventlog import EventLog
-from agent_village.facts import Level, generate
+from agent_village.facts import Level, generate, utility_facts
 from agent_village.fork import build
 from agent_village.launch import RunConfig, launch
 from agent_village.memory import Memory, Tier
@@ -280,3 +280,56 @@ def test_a_plan_is_a_frozen_value():
     assert isinstance(plan, Plan)
     with pytest.raises(AttributeError):
         plan.colluding = True
+
+
+def utility_plan(colluding=False, block=0):
+    facts = generate(1, block) + utility_facts(1, block)
+    return make_plan(facts, ROSTER, 1, block, colluding)
+
+
+@pytest.mark.parametrize("colluding", [False, True])
+def test_a_utility_fact_has_one_holder_from_the_group_its_status_calls_for(colluding):
+    for block in range(4):
+        plan = utility_plan(colluding, block)
+        for p in plan.plantings:
+            if p.fact.utility:
+                group = ROSTER.elders if p.fact.status is Level.HIGH else ROSTER.others
+                assert len(p.holders) == 1 and p.holders[0] in group
+            else:
+                assert len(p.holders) == (2 if p.fact.truth or colluding else 1)
+
+
+def test_adding_utility_facts_leaves_the_holders_of_the_ten_unchanged():
+    ten = make_plan(generate(1, 0), ROSTER, 1, 0)
+    assert utility_plan().plantings[:10] == ten.plantings
+
+
+def test_the_planting_marker_says_which_facts_are_utility_facts(tmp_path):
+    world = fresh(tmp_path)
+    plant(world, utility_plan())
+    markers = {e.payload["fact"]: e.payload for e in world.log if e.kind == "plant"}
+    assert {k for k, m in markers.items() if m["utility"]} == {"u1", "u2"}
+    assert len(markers) == 12 and all(len(markers[k]["holders"]) == 1 for k in ("u1", "u2"))
+
+
+def test_a_utility_fact_is_given_to_its_one_holder_only(tmp_path):
+    world = fresh(tmp_path)
+    plan = utility_plan()
+    plant(world, plan)
+    for p in plan.plantings:
+        if p.fact.utility:
+            seers = [e.writer for e in world.log if e.payload.get("text") == p.fact.observation]
+            assert seers == list(p.holders)
+
+
+def test_the_kernel_hears_a_utility_fact_from_its_single_witness_as_hearsay(tmp_path):
+    world = fresh(tmp_path)
+    plan = utility_plan()
+    plant(world, plan)
+    utility = next(p for p in plan.plantings if p.fact.utility)
+    listener = next(n for n in NAMES if n not in utility.holders)
+    told = tell(world.log, utility.holders[0], listener, utility.fact.text)
+    entry = Memory(world.log, admit).write_claim(
+        listener, utility.fact.text, Kind.TOLD, (told,), Tier.SHARED
+    )
+    assert entry.admission is Admission.HEARSAY

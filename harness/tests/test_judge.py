@@ -11,7 +11,7 @@ from villages import NAMES, gossip
 
 from agent_village.arms import BASE
 from agent_village.eventlog import EventLog
-from agent_village.facts import generate
+from agent_village.facts import generate, utility_facts
 from agent_village.fork import build
 from agent_village.judge import (
     AWARENESS_RUBRIC,
@@ -30,7 +30,7 @@ from agent_village.judge import (
 )
 from agent_village.model import FakeBackend, ModelError, RecordedBackend, Response
 from agent_village.planting import Roster, make_plan, plant
-from agent_village.probes import AWARENESS_QUESTION
+from agent_village.probes import AWARENESS_QUESTION, UTILITY_FRAME
 from agent_village.runner import Spec
 
 SPECS = [Spec(n, "fake/model") for n in NAMES]
@@ -453,3 +453,57 @@ def test_the_record_is_a_frozen_value(logs):
     assert isinstance(record, Record)
     with pytest.raises(AttributeError):
         record.arm = "Z"
+
+
+UTILITY = utility_facts(1, 0)
+
+
+def utility_log(tmp_path):
+    world = build(
+        EventLog(tmp_path / "u.jsonl"),
+        random.Random(1),
+        FakeBackend(gossip),
+        BASE.policy,
+        BASE.prompt,
+        SPECS,
+        3,
+    )
+    plant(world, make_plan(FACTS + UTILITY, ROSTER, 1, 0))
+    for fact in UTILITY:
+        text = UTILITY_FRAME.format(question=fact.question)
+        for citizen in NAMES:
+            reply = f"It is {fact.answer}."
+            payload = {"kind": "utility", "key": fact.id, "question": text}
+            world.log.append("probe", citizen, {**payload, "reply": reply, "answer": reply})
+    return world.log
+
+
+def test_collect_reads_utility_probes_with_their_single_holder(tmp_path):
+    records = collect({(0, "A"): utility_log(tmp_path)})
+    assert len(records) == 2 * len(NAMES)
+    first = records[0]
+    assert (first.kind, first.key, first.truth) == ("utility", "u1", True)
+    assert first.claim == UTILITY[0].text and len(first.holders) == 1
+    assert first.question == UTILITY_FRAME.format(question=UTILITY[0].question)
+
+
+def test_a_utility_answer_is_coded_against_its_statement_with_the_fact_codes(tmp_path):
+    blinded = blind(collect({(0, "A"): utility_log(tmp_path)}), 1)
+    spy = Spy('{"code": "asserts"}')
+    codes = code_items(blinded.items, spy, EventLog(tmp_path / "j.jsonl"), "m")
+    assert set(codes.values()) == {"asserts"}
+    for request in spy.requests:
+        assert request.messages[0].content == FACT_RUBRIC.system
+        assert "Statement:" in request.messages[1].content
+
+
+def test_a_utility_item_shows_the_judge_nothing_more_than_a_fact_item(tmp_path):
+    blinded = blind(collect({(0, "A"): utility_log(tmp_path)}), 1)
+    assert {f.name for f in dataclasses.fields(Item)} == {
+        "item_id",
+        "kind",
+        "question",
+        "claim",
+        "answer",
+    }
+    assert all(i.claim and i.answer for i in blinded.items)

@@ -12,6 +12,10 @@ it first-hand rank high or low in the village). The assignment is counterbalance
 
 Names are built from syllables and are not checked against any real-world registry; the
 lists are reviewed by the owner before pre-registration. True and false facts read alike.
+
+Besides the ten, a block has two utility facts for the utility task: true facts that a single
+citizen witnessed, one held by an elder and one by anyone else. They sit outside the
+counterbalanced ten, so adding them changes none of its counts.
 """
 
 from __future__ import annotations
@@ -49,6 +53,7 @@ class Fact:
     truth: bool
     plausibility: Level
     status: Level
+    utility: bool = False
 
 
 TEMPLATES = (
@@ -169,6 +174,47 @@ def design(block: int) -> list[tuple[bool, Level, Level]]:
     return false + true
 
 
+def _build(
+    fact_id: str,
+    template: Template,
+    entity: str,
+    value: str,
+    truth: bool,
+    plausibility: Level,
+    status: Level,
+    utility: bool = False,
+) -> Fact:
+    return Fact(
+        id=fact_id,
+        template=template.key,
+        entity=entity,
+        text=template.statement.format(entity=entity, value=value),
+        observation=template.observation.format(entity=entity, value=value),
+        question=template.question.format(entity=entity),
+        answer=value,
+        truth=truth,
+        plausibility=plausibility,
+        status=status,
+        utility=utility,
+    )
+
+
+def utility_facts(seed: int, block: int) -> tuple[Fact, ...]:
+    if block < 0:
+        raise ValueError("block must not be negative")
+    used = {f.entity for f in generate(seed, block)}
+    rng = random.Random(f"{seed}:{block}:utility")
+    facts = []
+    for j, status in enumerate((Level.HIGH, Level.LOW)):
+        template = TEMPLATES[(2 * block + j) % len(TEMPLATES)]
+        names = PLACES if template.entity == "place" else PERSONS
+        entity = rng.choice([n for n in names if n not in used])
+        used.add(entity)
+        value = rng.choice(template.plausible)
+        facts.append(_build(f"u{j + 1}", template, entity, value, True, Level.HIGH, status, True))
+    return tuple(facts)
+
+
 def generate(seed: int, block: int) -> tuple[Fact, ...]:
     if block < 0:
         raise ValueError("block must not be negative")
@@ -182,18 +228,5 @@ def generate(seed: int, block: int) -> tuple[Fact, ...]:
         entity = next(places if template.entity == "place" else people)
         pool = template.plausible if plausibility is Level.HIGH else template.implausible
         value = rng.choice(pool)
-        facts.append(
-            Fact(
-                id=f"f{i + 1}",
-                template=template.key,
-                entity=entity,
-                text=template.statement.format(entity=entity, value=value),
-                observation=template.observation.format(entity=entity, value=value),
-                question=template.question.format(entity=entity),
-                answer=value,
-                truth=truth,
-                plausibility=plausibility,
-                status=status,
-            )
-        )
+        facts.append(_build(f"f{i + 1}", template, entity, value, truth, plausibility, status))
     return tuple(facts)
