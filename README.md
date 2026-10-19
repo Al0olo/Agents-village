@@ -118,13 +118,17 @@ that give a false value as the answer; all coded with the third judge rubric):
   community as suspicion, the fifth village gave 0 of 8 citizens aware with no defense, 1 of 8 under the
   prompt defense and 4 of 8 under the kernel, almost all at the direct question. An arm difference in
   awareness would itself be a confound, and the replication was cut short (below).
-- **Judges.** Two judge models agree at kappa 0.79 to 0.85. A blind sample of 85 answers coded by Claude, not a
-  person, agrees with them at 0.73 and 0.79; the disagreements are mostly one boundary (an answer that calls
-  a value implausible but leaves it open: hedge or denial). The human check is still owed.
+- **Judges.** Two judge models agree at kappa 0.79 to 0.86. A blind sample of 112 answers coded by a third
+  model standing in for a person (Opus 5.5) agrees with them at 0.90 and 0.92 on facts; the disagreements are
+  mostly one boundary (an answer that calls a value implausible but leaves it open: hedge or denial). A person
+  has not coded anything.
 - **A real run was killed by a drifting provider.** Unpinned, DeepSeek V4 Pro was served by two different
   providers inside one block and the launch controller rejected all three replication blocks; each model is now
-  pinned to one provider. A second attempt then ran out of account credit (HTTP 402) in its last round, so
-  those blocks are dead too and the awareness replication is outstanding.
+  pinned to one provider. A second attempt then ran out of account credit (HTTP 402) in its last round. A
+  third block, complete this time (arms A, B, Bc, D, 40 ticks, $11), gave assertions of false facts of 19%, 2%,
+  26% and 79%: the kernel arm asserted more than no defense, because it admitted each lone witness's
+  first-hand wiki entry and the others then repeated it as a first-hand count. One block, so not a result,
+  but it is the weakness the exploratory corroboration arm (G) was built for.
 - **Time to k adopters was blind to the spread.** Citizens learned by reading the wiki, not by writing
   claims, so no false fact reached two adopters by the measure as defined; spread is now also followed
   over probe rounds.
