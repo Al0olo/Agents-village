@@ -10,6 +10,8 @@ from agent_village.eventlog import EventLog
 from agent_village.model import Message, Model, ModelError, Request, Response
 from agent_village.openrouter import (
     OpenRouterBackend,
+    Retrying,
+    TransientError,
     generation_record,
     served_snapshots,
     urllib_transport,
@@ -124,7 +126,9 @@ class Echo(BaseHTTPRequestHandler):
             (self.path, self.headers["Authorization"], json.loads(self.rfile.read(length)))
         )
         body = Echo.seen[-1][2]
-        status, payload = (500, b"{}") if body.get("fail") else (200, b'{"ok": 1}')
+        status, payload = (
+            (body.get("status", 500), b"{}") if body.get("fail") else (200, b'{"ok": 1}')
+        )
         if body.get("garbage"):
             payload = b"not json"
         self.send_response(status)
@@ -177,6 +181,27 @@ def test_a_failed_request_names_the_http_status(server, monkeypatch):
         send("POST", "/x", {"fail": True})
 
 
+@pytest.mark.parametrize(
+    "status,transient", [(429, True), (500, True), (503, True), (400, False), (402, False)]
+)
+def test_rate_limits_and_server_errors_are_transient_and_other_failures_are_not(
+    server, monkeypatch, status, transient
+):
+    monkeypatch.setenv("no_proxy", "127.0.0.1")
+    with pytest.raises(ModelError, match=f"HTTP {status}") as info:
+        urllib_transport(None, base_url=server)("POST", "/x", {"fail": True, "status": status})
+    assert isinstance(info.value, TransientError) is transient
+
+
+def test_an_unreachable_server_is_transient(server, monkeypatch):
+    monkeypatch.setenv("no_proxy", "127.0.0.1")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        closed = f"http://127.0.0.1:{sock.getsockname()[1]}"
+    with pytest.raises(TransientError):
+        urllib_transport(None, base_url=closed)("POST", "/x", {})
+
+
 def test_an_unreachable_server_or_a_non_json_reply_is_a_model_error(server, monkeypatch):
     monkeypatch.setenv("no_proxy", "127.0.0.1")
     with socket.socket() as sock:
@@ -184,8 +209,9 @@ def test_an_unreachable_server_or_a_non_json_reply_is_a_model_error(server, monk
         closed = f"http://127.0.0.1:{sock.getsockname()[1]}"
     with pytest.raises(ModelError, match="URLError"):
         urllib_transport(None, base_url=closed)("POST", "/x", {})
-    with pytest.raises(ModelError, match="JSONDecodeError"):
+    with pytest.raises(ModelError, match="JSONDecodeError") as info:
         urllib_transport(None, base_url=server)("POST", "/x", {"garbage": True})
+    assert not isinstance(info.value, TransientError)
 
 
 class Flaky:
@@ -272,3 +298,66 @@ def test_served_snapshots_reports_a_change_and_skips_calls_without_an_id(tmp_pat
 
 def test_served_snapshots_of_a_log_with_no_ids_is_empty(tmp_path):
     assert served_snapshots(logged(tmp_path, [("m", None)]), Flaky(0, {})) == {}
+
+
+class Unreliable:
+    def __init__(self, *outcomes):
+        self.outcomes, self.calls = list(outcomes), 0
+
+    def complete(self, request):
+        self.calls += 1
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+
+OK = Response("hi", "vendor/model", "acme", 3, 1)
+
+
+def test_a_transient_failure_is_retried_after_each_delay_and_the_attempts_are_counted():
+    sleeps = []
+    backend = Unreliable(TransientError("a"), TransientError("b"), OK)
+    got = Retrying(backend, (2.0, 5.0, 10.0), sleeps.append).complete(ask())
+    assert (backend.calls, sleeps, got.attempts, got.text) == (3, [2.0, 5.0], 3, "hi")
+
+
+def test_a_call_that_works_first_time_is_not_delayed_or_counted_as_retried():
+    sleeps = []
+    got = Retrying(Unreliable(OK), (2.0,), sleeps.append).complete(ask())
+    assert (sleeps, got.attempts) == ([], 1)
+
+
+def test_the_call_gives_up_after_the_last_delay():
+    sleeps = []
+    backend = Unreliable(*[TransientError("busy")] * 4)
+    with pytest.raises(ModelError, match="gave up after 3 attempts: busy") as info:
+        Retrying(backend, (1.0, 2.0), sleeps.append).complete(ask())
+    assert (backend.calls, sleeps) == (3, [1.0, 2.0])
+    assert not isinstance(info.value, TransientError)
+
+
+def test_a_failure_that_is_not_transient_is_raised_at_once():
+    sleeps = []
+    backend = Unreliable(ModelError("HTTP 400"), OK)
+    with pytest.raises(ModelError, match="HTTP 400"):
+        Retrying(backend, (1.0, 2.0), sleeps.append).complete(ask())
+    assert (backend.calls, sleeps) == (1, [])
+
+
+def test_with_no_delays_there_is_one_attempt():
+    with pytest.raises(ModelError):
+        Retrying(Unreliable(TransientError("x"), OK), ()).complete(ask())
+
+
+def test_an_answer_with_no_content_says_how_it_ended():
+    reply = chat(
+        provider="acme", choices=[{"message": {"content": None}, "finish_reason": "length"}]
+    )
+    with pytest.raises(ModelError, match="no content.*length"):
+        OpenRouterBackend(Script(reply)).complete(ask())
+
+
+def test_a_blank_answer_is_still_an_answer():
+    reply = chat(provider="acme", choices=[{"message": {"content": ""}}])
+    assert OpenRouterBackend(Script(reply)).complete(ask()).text == ""

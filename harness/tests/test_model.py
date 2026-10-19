@@ -177,3 +177,16 @@ def test_a_backend_without_them_leaves_them_out_of_the_log(tmp_path):
     assert "generation_id" not in log[0].payload and "cost" not in log[0].payload
     again = RecordedBackend.from_log(log).complete(ask())
     assert (again.generation_id, again.cost) == (None, None)
+
+
+def test_the_number_of_attempts_is_logged_only_when_the_call_was_retried(tmp_path):
+    class Retried:
+        def complete(self, request):
+            return Response("hi", "vendor/model", "acme", 3, 1, attempts=3)
+
+    log = EventLog(tmp_path / "v.jsonl")
+    Model(Retried(), log).complete("ada", ask())
+    Model(FakeBackend(), log).complete("ada", ask("other"))
+    assert log[0].payload["attempts"] == 3 and "attempts" not in log[1].payload
+    assert RecordedBackend.from_log(log).complete(ask()).attempts == 3
+    assert RecordedBackend.from_log(log).complete(ask("other")).attempts == 1

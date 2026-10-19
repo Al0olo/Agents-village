@@ -21,13 +21,19 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
 from typing import Any
 
 from agent_village.eventlog import EventLog
-from agent_village.model import ModelError, Request, Response
+from agent_village.model import Backend, ModelError, Request, Response
 
 BASE_URL = "https://openrouter.ai/api/v1"
+
+
+class TransientError(ModelError):
+    """A failure worth retrying: a rate limit, a server error or a connection that failed."""
+
 
 Transport = Callable[[str, str, Mapping[str, Any] | None], Mapping[str, Any]]
 
@@ -45,8 +51,11 @@ def urllib_transport(
             with urllib.request.urlopen(http, timeout=timeout) as reply:
                 return json.loads(reply.read())
         except urllib.error.HTTPError as exc:
-            raise ModelError(f"{method} {path} failed: HTTP {exc.code}") from None
-        except (urllib.error.URLError, ValueError, OSError) as exc:
+            kind = TransientError if exc.code == 429 or exc.code >= 500 else ModelError
+            raise kind(f"{method} {path} failed: HTTP {exc.code}") from None
+        except (urllib.error.URLError, OSError) as exc:
+            raise TransientError(f"{method} {path} failed: {type(exc).__name__}") from None
+        except ValueError as exc:
             raise ModelError(f"{method} {path} failed: {type(exc).__name__}") from None
 
     return send
@@ -78,12 +87,18 @@ class OpenRouterBackend:
             body["reasoning"] = dict(self._reasoning)
         data = self._transport("POST", "/chat/completions", body)
         try:
-            text = data["choices"][0]["message"]["content"]
+            choice = data["choices"][0]
+            text = choice["message"]["content"]
             served = data["model"]
             prompt_tokens = data["usage"]["prompt_tokens"]
             completion_tokens = data["usage"]["completion_tokens"]
         except (KeyError, IndexError, TypeError):
             raise ModelError("malformed chat response") from None
+        if text is None:
+            raise ModelError(
+                f"the response has no content (finish reason {choice.get('finish_reason')}); "
+                "a reasoning model may have spent max_tokens thinking"
+            )
         if not isinstance(text, str) or not isinstance(served, str):
             raise ModelError("malformed chat response")
         provider = data.get("provider")
@@ -97,6 +112,37 @@ class OpenRouterBackend:
         return Response(
             text, served, provider, prompt_tokens, completion_tokens, generation_id, cost
         )
+
+
+class Retrying:
+    """Retries transient failures after each delay, and reports how many attempts a call took.
+
+    Any other failure is raised at once. A call that still fails after the last delay is
+    given up on with a plain ``ModelError``, so the run stops.
+    """
+
+    def __init__(
+        self,
+        backend: Backend,
+        delays: Sequence[float] = (2.0, 5.0, 10.0, 20.0, 30.0),
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self._backend = backend
+        self._delays = tuple(delays)
+        self._sleep = sleep
+
+    def complete(self, request: Request) -> Response:
+        attempts = 0
+        while True:
+            attempts += 1
+            try:
+                response = self._backend.complete(request)
+            except TransientError as error:
+                if attempts > len(self._delays):
+                    raise ModelError(f"gave up after {attempts} attempts: {error}") from None
+                self._sleep(self._delays[attempts - 1])
+            else:
+                return replace(response, attempts=attempts)
 
 
 def generation_record(

@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `c284212`
+Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `fa62722`
 
 ## Objective
 
@@ -28,12 +28,13 @@ funding is a later concern.
 - Done, PRs #18 to #21: `admit` ignores a told event that originates with the writer, and the shared
   base village runs without defense until the fork (ADR-0003, `arms.BASE`); launch controller `launch.py`;
   replay `replay.py`; facts, planting and probes (`facts.py`, `planting.py`, `probes.py`, `Runner.ask`; ADR-0004, proposed).
-- In progress, S1-T20 and T21 in PR #22 (`claude/gracious-albattani-osio94`): blinded judge `judge.py` and metrics `metrics.py`
-  (ADR-0005, proposed), 588 tests, 100% line and branch coverage. T21 is partial: utility waits for T19.
-  Also OpenRouter fixes from the first live calls: provider read from the chat response, generation id and
-  cost on `Response`, `served_snapshots`, `reasoning` passthrough, HTTP status in transport errors.
-- Done, live check (2026-10-19, owner-approved, $0.02): the whole pipeline ran against OpenRouter with small
-  models; findings are in `docs/implementation/S1-rq1-harness.md` ("Live check"). Plumbing works; no RQ1 result.
+- Done, PR #22: S1-T20 blinded judge `judge.py` and S1-T21 metrics `metrics.py` (ADR-0005), and the first live
+  OpenRouter check ("Live check" in `docs/implementation/S1-rq1-harness.md`): provider on the chat response,
+  generation id and cost on `Response`, `served_snapshots`, `reasoning` option, HTTP status in transport errors.
+- In progress, S1-T19 and the completion of T21 in PR #23 (`claude/gracious-albattani-osio94`): the utility
+  task (`facts.utility_facts`, `UTILITY_FRAME`, `Metrics.utility_score`; ADR-0006, proposed); `openrouter.Retrying`
+  retries 429, 5xx and failed connections with backoff and logs the attempts; the runner finds a recipient in any
+  case; a no-content response says how it ended. ADR-0004 and ADR-0005 are accepted. 661 tests, 100% coverage.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -42,8 +43,7 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main` and take S1-T19 (utility task that needs true
-word-of-mouth information; it measures what blocking costs and completes T21's utility measure). Then T11
+Once this PR is merged, restart the branch from `main` and take T11
 (arm E, the random block: a deterministic policy keyed on the claim, block rate set from arm D in the
 pilot), T9 (arm B prompts, which the owner reviews), T12 and T10 (consolidation and arm C), and the
 storage tickets T25 to T31. The pre-registration is S2-T1; do not run an experiment before it is
@@ -63,14 +63,13 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
   full RQ1 at assumed prices; the measured cost per citizen-day replaces it).
 - Arm prompts and `LoopConfig` defaults are placeholders until the owner reviews them at the S1 gate.
-- ADR-0004 (proposed): how facts are planted and probed. The one that matters: a true fact is given to two
-  independent first-hand holders and a false fact to one (two in the red-team variant), because the kernel
-  sees only provenance. So arm D is never asked to admit a true fact that one citizen witnessed; it blocks
-  those by design, and the utility task (T19) is what measures that cost, as the PRD says. Alternative:
-  single-witness true facts, which break the four-cell balance. Recommendation: keep it as built. Also
-  review the fact templates and name lists (`facts.py`) and the awareness question (`probes.py`).
-- ADR-0005 (proposed): how answers are coded and measured. Decide k (default 2), the verbatim claim matcher
-  (a floor on adoption), which judge model to use, and accept it only if human-sample kappa is good (pilot).
+- Decided by recommendation: ADR-0004 (true facts have two independent holders, so arm D blocks single-witness
+  facts by design) and ADR-0005 (codes, k = 2, verbatim claim matcher). Still for the owner: review the fact
+  templates and name lists (`facts.py`), the awareness question and the utility frame (both pinned by tests),
+  and the judge model, accepted only if human-sample kappa is good (pilot).
+- ADR-0006 (proposed): the utility task. Two true single-witness facts per block asked as a task. In the live
+  check the score was 0 of 14 in both arms because small models did not pass them on; if the pilot shows the
+  same at frontier quality, the task needs a nudge decided before pre-registration.
 
 ## Gotchas
 
@@ -90,13 +89,13 @@ Research claims
 - OpenRouter, verified live (details in the audit): the chat response names the `provider`; the model
   field is the alias, the dated snapshot is only in the generation record (about 9 s later); `usage.cost`
   is per call and matches the key counter. The sandbox proxy adds the credential: use `urllib_transport(None)`,
-  send no key, never print one. With fallbacks off, upstream HTTP 429 happens (about 1.5% of calls): retry
-  with 2 to 30 s backoff, in the gateway (S2-T5), and log retries. Haiku 5.5 reasons by default and
+  send no key, never print one. With fallbacks off, upstream HTTP 429 happens (about 1.5% of calls): wrap the
+  backend in `Retrying` (2 to 30 s backoff, attempts logged); the spend cap stays with the gateway (S2-T5). Haiku 5.5 reasons by default and
   returns empty content at small `max_tokens`: use `OpenRouterBackend(..., reasoning={"enabled": False})`.
   `openai/gpt-oss-20b` cannot disable reasoning and is unusable. Not verified: the cost per citizen-day,
   frontier-model behavior. The live backend has no spend cap or kill switch (S2-T5): cap any live script.
-- Citizen names in a village must be written as models write them (capitalized); lowercase names caused
-  most invalid actions in the live check.
+- Write citizen names capitalized: lowercase names caused most invalid actions in the first live check (35 and 44
+  invalid actions fell to 6 and 7 once capitalized). The runner also matches a recipient in any case.
 
 Design rules that tests depend on
 - Evidence is only `saw`, `did` (written by the citizen or environment) and `told` (written by the

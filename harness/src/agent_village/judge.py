@@ -74,6 +74,7 @@ class Planted:
     status: str
     holders: tuple[str, ...]
     colluding: bool
+    utility: bool
 
 
 @dataclass(frozen=True)
@@ -135,6 +136,7 @@ def planted(log: EventLog) -> dict[str, Planted]:
                 p["status"],
                 tuple(p["holders"]),
                 p["colluding"],
+                p["utility"],
             )
     return found
 
@@ -148,7 +150,7 @@ def collect(logs: Mapping[tuple[int, str], EventLog]) -> list[Record]:
             if event.kind != "probe":
                 continue
             p = event.payload
-            if p["kind"] == "fact":
+            if p["kind"] in ("fact", "utility"):
                 if p["key"] not in facts:
                     raise ValueError(f"a probe asks about {p['key']}, which was not planted")
                 fact = facts[p["key"]]
@@ -204,12 +206,12 @@ def code_items(
     judge = Model(backend, log)
     codes: dict[str, str | None] = {}
     for item in items:
-        if item.kind == "fact":
-            rubric, allowed = FACT_RUBRIC, CODES
-            body = f"Question: {item.question}\nStatement: {item.claim}\nAnswer: {item.answer}"
-        else:
+        if item.kind == "awareness":
             rubric, allowed = AWARENESS_RUBRIC, AWARENESS_CODES
             body = f"Question: {item.question}\nAnswer: {item.answer}"
+        else:
+            rubric, allowed = FACT_RUBRIC, CODES
+            body = f"Question: {item.question}\nStatement: {item.claim}\nAnswer: {item.answer}"
         request = Request(model, (Message("system", rubric.system), Message("user", body)), 60, 0.0)
         codes[item.item_id] = parse_code(judge.complete(JUDGE, request).text, allowed)
     return codes

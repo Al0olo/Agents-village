@@ -220,6 +220,41 @@ def test_say_to_an_unknown_citizen_or_oneself_fails_without_a_message(tmp_path, 
     assert "That did not work" in w.backend.users("ada")[1]
 
 
+@pytest.mark.parametrize("written", ["Bo", "BO", " bo "])
+def test_a_recipient_is_found_whatever_its_case(tmp_path, written):
+    w = build(tmp_path, replies={"ada": [say(written, "hi"), SLEEP]})
+    w.runner.tick()
+    assert of_kind(w.log, "invalid_action") == []
+    (got,) = w.mail.received("bo")
+    assert (got.sender, got.text) == ("ada", "hi")
+    assert "You told bo: hi" in w.backend.users("ada")[1]
+
+
+def test_a_forward_recipient_is_found_whatever_its_case(tmp_path):
+    w = build(tmp_path)
+    told = w.mail.send("bo", "ada", "the well is dry")
+    w.backend.replies["ada"] = deque([f'{{"action": "forward", "to": "CY", "told": {told.told}}}'])
+    w.runner.tick()
+    (got,) = w.mail.received("cy")
+    assert got.text == "the well is dry"
+
+
+def test_writing_ones_own_name_in_another_case_is_still_messaging_oneself(tmp_path):
+    w = build(tmp_path, replies={"ada": [say("ADA", "hi"), SLEEP]})
+    w.runner.tick()
+    assert of_kind(w.log, "message") == []
+    assert len(of_kind(w.log, "invalid_action", "ada")) == 1
+
+
+def test_names_that_differ_only_in_case_must_be_written_exactly(tmp_path):
+    w = build(
+        tmp_path, names=("ada", "Al", "al"), replies={"ada": [say("AL", "hi"), say("Al", "yes")]}
+    )
+    w.runner.tick()
+    assert [(e.writer, e.payload["text"]) for e in of_kind(w.log, "message")] == [("ada", "yes")]
+    assert len(of_kind(w.log, "invalid_action", "ada")) == 1
+
+
 def test_forward_passes_on_what_the_citizen_was_told_and_adds_them_as_an_origin(tmp_path):
     w = build(tmp_path)
     told = w.mail.send("bo", "ada", "the well is dry")
