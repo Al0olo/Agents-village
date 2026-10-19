@@ -89,6 +89,8 @@ class Record:
     claim: str
     truth: bool | None
     holders: tuple[str, ...]
+    round: int = 0
+    tick: int = 0
 
 
 @dataclass(frozen=True)
@@ -142,11 +144,20 @@ def planted(log: EventLog) -> dict[str, Planted]:
 
 
 def collect(logs: Mapping[tuple[int, str], EventLog]) -> list[Record]:
-    """Every probe answer in ``logs``, keyed by ``(block, arm)``, in block and arm order."""
+    """Every probe answer in ``logs``, keyed by ``(block, arm)``, in block and arm order.
+
+    A record says which probe round it was asked in (counted from zero) and the tick the
+    village had reached, so a measure can use the last round or follow spread over rounds.
+    """
     records = []
     for (block, arm), log in sorted(logs.items()):
         facts = planted(log)
+        rounds, tick = -1, 0
         for event in log:
+            if event.kind == "probe_round":
+                rounds += 1
+            elif event.kind == "tick":
+                tick = event.payload["tick"]
             if event.kind != "probe":
                 continue
             p = event.payload
@@ -169,6 +180,8 @@ def collect(logs: Mapping[tuple[int, str], EventLog]) -> list[Record]:
                     claim,
                     truth,
                     holders,
+                    max(rounds, 0),
+                    tick,
                 )
             )
     return records

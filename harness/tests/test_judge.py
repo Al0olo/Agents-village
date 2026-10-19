@@ -30,7 +30,7 @@ from agent_village.judge import (
 )
 from agent_village.model import FakeBackend, ModelError, RecordedBackend, Response
 from agent_village.planting import Roster, make_plan, plant
-from agent_village.probes import AWARENESS_QUESTION, UTILITY_FRAME
+from agent_village.probes import AWARENESS_QUESTIONS, UTILITY_FRAME
 from agent_village.runner import Spec
 
 SPECS = [Spec(n, "fake/model") for n in NAMES]
@@ -66,17 +66,18 @@ def planted_log(tmp_path, name, answers=None):
                     "answer": reply,
                 },
             )
-        world.log.append(
-            "probe",
-            citizen,
-            {
-                "kind": "awareness",
-                "key": "awareness",
-                "question": AWARENESS_QUESTION,
-                "reply": "Nothing odd.",
-                "answer": "Nothing odd.",
-            },
-        )
+        for key, text in AWARENESS_QUESTIONS:
+            world.log.append(
+                "probe",
+                citizen,
+                {
+                    "kind": "awareness",
+                    "key": key,
+                    "question": text,
+                    "reply": "Nothing odd.",
+                    "answer": "Nothing odd.",
+                },
+            )
     return world.log
 
 
@@ -101,7 +102,7 @@ class Spy:
 
 def test_collect_reads_every_probe_with_its_planted_fact(logs):
     records = collect(logs)
-    assert len(records) == 3 * 8 * 11
+    assert len(records) == 3 * 8 * 13
     fact_records = [r for r in records if r.kind == "fact"]
     assert len(fact_records) == 3 * 8 * 10
     one = next(r for r in fact_records if r.key == FACTS[0].id and r.citizen == "cy")
@@ -111,7 +112,7 @@ def test_collect_reads_every_probe_with_its_planted_fact(logs):
     assert one.truth is FACTS[0].truth
     assert one.holders == next(p.holders for p in PLAN.plantings if p.fact.id == FACTS[0].id)
     awareness = [r for r in records if r.kind == "awareness"]
-    assert len(awareness) == 3 * 8
+    assert len(awareness) == 3 * 8 * 3
     assert all(r.claim == "" and r.truth is None and r.holders == () for r in awareness)
 
 
@@ -507,3 +508,46 @@ def test_a_utility_item_shows_the_judge_nothing_more_than_a_fact_item(tmp_path):
         "answer",
     }
     assert all(i.claim and i.answer for i in blinded.items)
+
+
+def test_records_say_which_probe_round_and_tick_they_were_asked_in(tmp_path):
+    world = build(
+        EventLog(tmp_path / "r.jsonl"),
+        random.Random(1),
+        FakeBackend(gossip),
+        BASE.policy,
+        BASE.prompt,
+        SPECS,
+        3,
+    )
+    plant(world, PLAN)
+    ask = FACTS[0]
+
+    def probe_round(questions):
+        world.log.append("probe_round", "environment", {"questions": questions})
+        for citizen in ("ada", "bo"):
+            world.log.append(
+                "probe",
+                citizen,
+                {
+                    "kind": "fact",
+                    "key": ask.id,
+                    "question": ask.question,
+                    "reply": "x",
+                    "answer": "x",
+                },
+            )
+
+    probe_round([])
+    world.runner.run(2)
+    probe_round([])
+    world.runner.run(3)
+    probe_round([])
+    records = collect({(0, "A"): world.log})
+    assert [r.round for r in records] == [0, 0, 1, 1, 2, 2]
+    assert [r.tick for r in records] == [0, 0, 2, 2, 5, 5]
+
+
+def test_a_probe_without_a_round_marker_is_in_round_zero_at_tick_zero(logs):
+    records = collect(logs)
+    assert {r.round for r in records} == {0} and {r.tick for r in records} == {0}
