@@ -66,6 +66,7 @@ Reply with one JSON object and nothing else: {"code": "aware" | "unaware"}""",
 @dataclass(frozen=True)
 class Planted:
     fact: str
+    entity: str
     text: str
     answer: str
     truth: bool
@@ -126,6 +127,7 @@ def planted(log: EventLog) -> dict[str, Planted]:
             p = event.payload
             found[p["fact"]] = Planted(
                 p["fact"],
+                p["entity"],
                 p["text"],
                 p["answer"],
                 p["truth"],

@@ -241,6 +241,8 @@ def test_the_judge_runs_cold_and_bounded(tmp_path, logs):
         ('{"code": "asserts"} {"code": "denies"}', ("asserts", "denies"), "asserts"),
         ('{"note": 1} {"code": "unknown"}', ("unknown",), "unknown"),
         ('{"code": "aware"}', ("aware", "unaware"), "aware"),
+        ('{oops} {"code": "denies"}', ("asserts", "denies"), "denies"),
+        ("I think {", ("asserts",), None),
         ('{"code": "maybe"}', ("asserts",), None),
         ('{"code": "aware"}', ("asserts", "hedges"), None),
         ('{"code": 3}', ("asserts",), None),

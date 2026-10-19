@@ -143,6 +143,7 @@ def test_planting_records_each_fact_then_gives_each_holder_a_first_hand_observat
         assert marker.payload["truth"] is p.fact.truth
         assert marker.payload["holders"] == list(p.holders)
         assert marker.payload["answer"] == p.fact.answer
+        assert marker.payload["entity"] == p.fact.entity
         assert marker.payload["colluding"] is False
         for holder in p.holders:
             assert any(e.writer == holder and e.payload["text"] == p.fact.observation for e in saws)
