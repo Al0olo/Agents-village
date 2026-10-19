@@ -1,6 +1,6 @@
 import pytest
 
-from agent_village.admission import Admission, Kind, admit
+from agent_village.admission import Admission, Kind, admit, admit_corroborated
 from agent_village.eventlog import EventLog
 from agent_village.memory import Memory, Tier
 
@@ -160,3 +160,26 @@ def test_invalid_writes_are_rejected_without_logging(tmp_path, writer, text, tie
     with pytest.raises(ValueError):
         memory.write_claim(writer, text, Kind.SEEN, (), tier)
     assert len(log) == 0
+
+
+@pytest.mark.parametrize("tier,asks", [(Tier.CORE, False), (Tier.SHARED, True)])
+def test_the_policy_is_told_whether_the_claim_asks_for_the_shared_tier(tmp_path, tier, asks):
+    seen = []
+
+    def spy(claim, evidence):
+        seen.append(claim)
+        return Admission.FACT
+
+    _, memory = setup(tmp_path, spy)
+    memory.write_claim("ada", "x", Kind.SEEN, (), tier)
+    assert [c.shared for c in seen] == [asks]
+
+
+def test_a_lone_witness_reaches_core_but_not_the_wiki_under_the_corroborated_policy(tmp_path):
+    log, memory = setup(tmp_path, admit_corroborated)
+    seen = str(log.append("saw", "ada", {"what": "well"}).id)
+    core = memory.write_claim("ada", "the well is dry", Kind.SEEN, (seen,), Tier.CORE)
+    wiki = memory.write_claim("ada", "the well is dry", Kind.SEEN, (seen,), Tier.SHARED)
+    assert (core.admission, core.tier) == (Admission.FACT, Tier.CORE)
+    assert (wiki.admission, wiki.tier) == (Admission.HEARSAY, Tier.RECALL)
+    assert memory.entries(Tier.SHARED) == ()

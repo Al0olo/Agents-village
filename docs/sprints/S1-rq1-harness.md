@@ -82,6 +82,7 @@ Ticket ids are `S1-T<n>`. Branch names `S1/<area>/<slug>`; PRs say `Closes S1-T<
 | T30 | Bi-temporal claims (event time and record time) | 3 | T5,T25 |
 | T31 | Single writer per village, serialized through the village actor | 2 | T25 |
 | T32 | Arm F (exploratory): Mem0 OSS adapter, pinned version and models, its memory writes mirrored as events | 5 | T4,T25 |
+| T33 | Arm G (exploratory): kernel admission with a corroborated shared tier | 2 | T7 |
 
 ### Quality
 

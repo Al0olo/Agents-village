@@ -24,10 +24,12 @@ funding is a later concern.
   with the writer, and the base village runs without defense until the fork (ADR-0003). The first live checks
   are in the audit ("Live check", `docs/implementation/S1-rq1-harness.md`). Status per ticket is there too.
 - Done, PR #23: S1-T19 utility task (ADR-0006), `Retrying`, case-insensitive recipients; ADR-0004 and ADR-0005 accepted.
-- In progress, S1-T11 in PR #24 (`claude/gracious-albattani-osio94`): arm E (`arms.RandomBlock`, `random_block_arm`,
-  `matched_rate`; arm `settings` logged at launch and checked by audit), the reasoning setting is now per model, and
-  the first frontier-model smoke test with its figure in the README (`experiments/rq1-provenance/smoke-2026-10-19/`).
-  684 tests, 100% coverage.
+- Done, PR #24: S1-T11 arm E (`arms.RandomBlock`, `matched_rate`; arm `settings` logged at launch and checked by
+  audit), per-model reasoning setting, the first frontier smoke test and the README progress section.
+- In progress, S1-T33 in PR #25 (`claude/gracious-albattani-osio94`): exploratory arm G (`admission.admit_corroborated`,
+  `Claim.shared`, `arms.CORROBORATED`; ADR-0007, proposed): the kernel plus a wiki that needs two independent
+  sources, so a lone first-hand witness cannot publish. 708 tests, 100% coverage. A second frontier village ran
+  it (audit, "Fourth run"); the README figure is that village.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -40,7 +42,7 @@ Once this PR is merged, restart the branch from `main` and take S1-T9 (arm B pro
 reviews), then T12 and T10 (consolidation and arm C), and the storage tickets T25 to T31. First raise the
 design question below with the owner. The pre-registration is S2-T1; do not run an experiment before it is
 approved. Live checks of plumbing are fine: the owner allowed frontier models for testing and put $50 on the
-key (about $2 used so far, topped up on request); the live backend has no gateway cap, so cap every script
+key (about $4 used so far, topped up on request); the live backend has no gateway cap, so cap every script
 and never print the key. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
@@ -60,12 +62,13 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
   (`facts.py`), the awareness question and the utility frame (pinned by tests), and the judge model (accept only
   if human-sample kappa is good). ADR-0006 (proposed): the utility task; if the pilot shows citizens do not pass
   single-witness facts on, it needs a nudge decided before pre-registration.
-- **Design problem from the frontier smoke test.** A planted false fact is first-hand for its one witness, who
-  wrote it to the shared wiki citing their own observation; the kernel admitted it, so D matched A (attack 50%
-  against 57%) and only random blocking (E) cut spread. As specified the kernel cannot stop a lone first-hand
-  witness. Options: keep the PRD mechanism (a refutation is publishable) and add an exploratory arm whose shared
-  tier needs two independent origins even for first-hand claims (it blocks single-witness truths too, which T19
-  measures); or change what is planted. Recommendation: keep D as registered and add the exploratory arm.
+- Lone first-hand witness (resolved by recommendation): D keeps the PRD mechanism and arm G is the exploratory
+  fix (ADR-0007). Both smoke villages showed D admitting the witness's own wiki write; G stopped false facts
+  but also every shared true fact (true facts asserted 0 of 24, single-witness 0 of 14, against 33% and 64%
+  under D). Whether that trade is useful is for the pilot; G may need a milder rule (one first-hand witness
+  plus any single other source) if the pilot shows it just silences the wiki.
+- Single villages are noisy: the same seed and models gave A attack 57% then 26%. The pilot's between-village
+  variance sets the number of blocks; do not read a contrast from one block.
 - The awareness question ("strange or artificial") coded `aware` for 7 of 8 citizens in every arm; reword it and
   have a human code a sample. Time to k adopters sees only memory writes, so it missed spread by reading the
   wiki: amend ADR-0005 or add a read-based measure.

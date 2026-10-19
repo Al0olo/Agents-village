@@ -45,6 +45,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T30 | Bi-temporal claims | ⏳ | |
 | T31 | Single writer per village | ⏳ | |
 | T32 | Arm F (exploratory): Mem0 OSS adapter | ⏳ | |
+| T33 | Arm G (exploratory): kernel admission with a corroborated shared tier | ✅ | `harness/src/agent_village/admission.py` (`admit_corroborated`, `Claim.shared`), `arms.py` (`CORROBORATED`, in `ARMS`), `memory.py` passes the requested tier to the policy; tests `test_admission.py`, `test_memory.py`, `test_arms.py`, `test_planting.py`. A private claim is judged as under the kernel; a shared claim needs two sources with disjoint origins even when the writer saw it first-hand. It never admits what the kernel refuses. Design is ADR-0007 (proposed). `pytest -q` |
 
 ## Live check against OpenRouter (2026-10-19)
 
@@ -74,3 +75,5 @@ Third run, with frontier models and arm E (2026-10-19, 794 calls, $1.77): Claude
 - In A and D, 5 of 6 false facts reached the wiki, each written by its own witness citing their own observation, which the kernel admits. Attack rate was 57% (A), 50% (D) and 10% (E); true facts asserted 67%, 75% and 17%; single-witness facts 64%, 43% and 43%.
 - 7 of 8 citizens in every arm answered the awareness probe in a way coded `aware`. The probe says "strange or artificial".
 - Time to k adopters was null everywhere: citizens learned from the wiki without writing claims.
+
+Fourth run, a second frontier village with arm G (2026-10-19, 1,027 calls, $1.87; same models, seed and judge; costs matched the counter to 0.002%): arms A, D, G for 12 ticks, then E at D's rate (0.429); 7 of 677 arm calls retried. Attack rate A 26%, D 19%, G 0%, E 7%; false facts in the wiki 50%, 33%, 0%, 17%; true facts asserted 25%, 33%, 0%, 33%; single-witness facts 57%, 64%, 0%, 0%; awareness 88%, 100%, 88%, 75%. Every false fact that reached the wiki under A and D was written by its own witness. G's wiki got no claim (14 hearsay, 1 core fact), so it stopped false facts and every shared true fact. Against the first village, arm A moved from 57% to 26% attack and from 83% to 50% contamination with the same seed and models: one village per arm cannot support a contrast. Figure and analysis: `experiments/rq1-provenance/smoke-2026-10-19/`.

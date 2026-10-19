@@ -1,8 +1,9 @@
 import itertools
+import random
 
 import pytest
 
-from agent_village.admission import Admission, Claim, Event, Kind, admit
+from agent_village.admission import Admission, Claim, Event, Kind, admit, admit_corroborated
 
 
 def log(*events):
@@ -206,3 +207,95 @@ def test_an_echo_does_not_cancel_first_hand_evidence():
         Event("e2", "ada", Kind.SEEN),
     )
     assert admit(Claim("x", "ada", ("e1", "e2")), l) is Admission.FACT
+
+
+def shared(text, writer, *cites):
+    return Claim(text, writer, cites, shared=True)
+
+
+def test_a_claim_does_not_ask_for_the_shared_tier_unless_it_says_so():
+    assert Claim("x", "ada", ()).shared is False
+
+
+def test_the_corroborated_policy_is_the_kernels_for_a_private_claim():
+    l = log(Event("e1", "ada", Kind.SEEN), Event("e2", "ada", Kind.TOLD, frozenset({"bo"})))
+    for cites in [(), ("e1",), ("e2",), ("e1", "e2"), ("e9",)]:
+        claim = Claim("x", "ada", cites)
+        assert admit_corroborated(claim, l) is admit(claim, l)
+
+
+def test_a_lone_first_hand_witness_cannot_publish_to_the_shared_tier():
+    l = log(Event("e1", "ada", Kind.SEEN))
+    assert admit(shared("x", "ada", "e1"), l) is Admission.FACT
+    assert admit_corroborated(shared("x", "ada", "e1"), l) is Admission.HEARSAY
+
+
+def test_repeating_ones_own_observation_is_still_one_source():
+    l = log(Event("e1", "ada", Kind.SEEN), Event("e2", "ada", Kind.DID))
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.HEARSAY
+    assert admit_corroborated(shared("x", "ada", "e1", "e1"), l) is Admission.HEARSAY
+
+
+def test_a_first_hand_witness_with_an_independent_told_source_can_publish():
+    l = log(Event("e1", "ada", Kind.SEEN), Event("e2", "ada", Kind.TOLD, frozenset({"bo"})))
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.FACT
+
+
+def test_an_action_the_writer_took_corroborates_like_an_observation():
+    l = log(Event("e1", "ada", Kind.DID), Event("e2", "ada", Kind.TOLD, frozenset({"bo"})))
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.FACT
+
+
+def test_a_told_event_with_no_recorded_origin_is_not_a_source():
+    l = log(
+        Event("e1", "ada", Kind.SEEN),
+        Event("e2", "ada", Kind.TOLD),
+        Event("e3", "ada", Kind.TOLD),
+    )
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.HEARSAY
+    assert admit_corroborated(shared("x", "ada", "e2", "e3"), l) is Admission.HEARSAY
+
+
+def test_a_told_source_that_traces_back_to_the_writer_does_not_corroborate():
+    l = log(
+        Event("e1", "ada", Kind.SEEN),
+        Event("e2", "ada", Kind.TOLD, frozenset({"bo", "ada"})),
+    )
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.HEARSAY
+
+
+def test_two_independent_told_sources_publish_as_under_the_kernel():
+    l = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"bo"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"cy"})),
+    )
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.FACT
+    same = log(
+        Event("e1", "ada", Kind.TOLD, frozenset({"bo"})),
+        Event("e2", "ada", Kind.TOLD, frozenset({"bo", "cy"})),
+    )
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), same) is Admission.HEARSAY
+
+
+def test_another_citizens_events_do_not_count_toward_corroboration():
+    l = log(Event("e1", "bo", Kind.SEEN), Event("e2", "ada", Kind.SEEN))
+    assert admit_corroborated(shared("x", "ada", "e1", "e2"), l) is Admission.HEARSAY
+
+
+@pytest.mark.parametrize("seed", range(5))
+def test_the_corroborated_policy_never_admits_what_the_kernel_would_refuse(seed):
+    names = ["ada", "bo", "cy"]
+    kinds = [Kind.SEEN, Kind.DID, Kind.TOLD]
+    pool = [
+        Event(f"e{i}", n, k, frozenset(o) if k is Kind.TOLD else frozenset())
+        for i, (n, k, o) in enumerate(
+            itertools.product(names, kinds, [{"bo"}, {"cy"}, {"bo", "cy"}, {"ada"}, {"ada", "bo"}])
+        )
+    ]
+    l = log(*pool)
+    rng = random.Random(seed)
+    for _ in range(300):
+        cites = tuple(e.id for e in rng.sample(pool, rng.randint(0, 4)))
+        claim = shared("x", rng.choice(names), *cites)
+        if admit_corroborated(claim, l) is Admission.FACT:
+            assert admit(claim, l) is Admission.FACT

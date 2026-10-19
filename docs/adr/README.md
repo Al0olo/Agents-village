@@ -10,3 +10,4 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0004](0004-how-facts-are-planted-and-probed.md) | How facts are planted and probed | Accepted |
 | [0005](0005-how-answers-are-coded-and-measured.md) | How probe answers are coded and the measures computed | Accepted |
 | [0006](0006-the-utility-task.md) | The utility task: what blocking true information costs | Proposed |
+| [0007](0007-corroborated-shared-tier.md) | An exploratory arm whose shared tier needs corroboration | Proposed |
