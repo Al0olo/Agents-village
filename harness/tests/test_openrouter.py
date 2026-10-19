@@ -1,4 +1,5 @@
 import json
+import socket
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import ClassVar
@@ -52,6 +53,14 @@ def test_request_body_pins_fallbacks_off_and_bounds_tokens():
         "temperature": 0.3,
         "provider": {"allow_fallbacks": False},
     }
+
+
+def test_the_reasoning_setting_is_sent_only_when_configured():
+    plain, off = Script(chat(provider="acme")), Script(chat(provider="acme"))
+    OpenRouterBackend(plain).complete(ask())
+    OpenRouterBackend(off, reasoning={"enabled": False}).complete(ask())
+    assert "reasoning" not in plain.calls[0][2]
+    assert off.calls[0][2]["reasoning"] == {"enabled": False}
 
 
 def test_provider_restriction_is_sent_when_configured():
@@ -114,7 +123,10 @@ class Echo(BaseHTTPRequestHandler):
         Echo.seen.append(
             (self.path, self.headers["Authorization"], json.loads(self.rfile.read(length)))
         )
-        status, payload = (500, b"{}") if Echo.seen[-1][2].get("fail") else (200, b'{"ok": 1}')
+        body = Echo.seen[-1][2]
+        status, payload = (500, b"{}") if body.get("fail") else (200, b'{"ok": 1}')
+        if body.get("garbage"):
+            payload = b"not json"
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
@@ -156,6 +168,24 @@ def test_urllib_transport_errors_do_not_leak_the_key(server, monkeypatch):
     with pytest.raises(ModelError) as info:
         send("POST", "/x", {"fail": True})
     assert "sk-secret" not in str(info.value)
+
+
+def test_a_failed_request_names_the_http_status(server, monkeypatch):
+    monkeypatch.setenv("no_proxy", "127.0.0.1")
+    send = urllib_transport(None, base_url=server)
+    with pytest.raises(ModelError, match="HTTP 500"):
+        send("POST", "/x", {"fail": True})
+
+
+def test_an_unreachable_server_or_a_non_json_reply_is_a_model_error(server, monkeypatch):
+    monkeypatch.setenv("no_proxy", "127.0.0.1")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        closed = f"http://127.0.0.1:{sock.getsockname()[1]}"
+    with pytest.raises(ModelError, match="URLError"):
+        urllib_transport(None, base_url=closed)("POST", "/x", {})
+    with pytest.raises(ModelError, match="JSONDecodeError"):
+        urllib_transport(None, base_url=server)("POST", "/x", {"garbage": True})
 
 
 class Flaky:

@@ -8,6 +8,10 @@ The chat response echoes the model alias that was asked for, not the dated snaps
 served it. The snapshot appears only in the generation record, which becomes readable some
 seconds after the call, so ``served_snapshots`` resolves a sample of logged generation ids
 after a run. A gateway that adds credentials itself takes no key.
+
+Some models reason before they answer and the reasoning spends ``max_tokens``, so a short
+budget can end with no content at all. ``reasoning`` is sent as given; ``{"enabled": False}``
+switches it off where the model allows it.
 """
 
 from __future__ import annotations
@@ -28,7 +32,9 @@ BASE_URL = "https://openrouter.ai/api/v1"
 Transport = Callable[[str, str, Mapping[str, Any] | None], Mapping[str, Any]]
 
 
-def urllib_transport(api_key: str, base_url: str = BASE_URL, timeout: float = 60.0) -> Transport:
+def urllib_transport(
+    api_key: str | None, base_url: str = BASE_URL, timeout: float = 60.0
+) -> Transport:
     def send(method: str, path: str, body: Mapping[str, Any] | None) -> Mapping[str, Any]:
         data = None if body is None else json.dumps(body).encode("utf-8")
         headers = {"Content-Type": "application/json"}
@@ -38,6 +44,8 @@ def urllib_transport(api_key: str, base_url: str = BASE_URL, timeout: float = 60
         try:
             with urllib.request.urlopen(http, timeout=timeout) as reply:
                 return json.loads(reply.read())
+        except urllib.error.HTTPError as exc:
+            raise ModelError(f"{method} {path} failed: HTTP {exc.code}") from None
         except (urllib.error.URLError, ValueError, OSError) as exc:
             raise ModelError(f"{method} {path} failed: {type(exc).__name__}") from None
 
@@ -45,25 +53,30 @@ def urllib_transport(api_key: str, base_url: str = BASE_URL, timeout: float = 60
 
 
 class OpenRouterBackend:
-    def __init__(self, transport: Transport, only: tuple[str, ...] = ()) -> None:
+    def __init__(
+        self,
+        transport: Transport,
+        only: tuple[str, ...] = (),
+        reasoning: Mapping[str, Any] | None = None,
+    ) -> None:
         self._transport = transport
         self._only = only
+        self._reasoning = reasoning
 
     def complete(self, request: Request) -> Response:
         routing: dict[str, Any] = {"allow_fallbacks": False}
         if self._only:
             routing["only"] = list(self._only)
-        data = self._transport(
-            "POST",
-            "/chat/completions",
-            {
-                "model": request.model,
-                "messages": [{"role": m.role, "content": m.content} for m in request.messages],
-                "max_tokens": request.max_tokens,
-                "temperature": request.temperature,
-                "provider": routing,
-            },
-        )
+        body: dict[str, Any] = {
+            "model": request.model,
+            "messages": [{"role": m.role, "content": m.content} for m in request.messages],
+            "max_tokens": request.max_tokens,
+            "temperature": request.temperature,
+            "provider": routing,
+        }
+        if self._reasoning is not None:
+            body["reasoning"] = dict(self._reasoning)
+        data = self._transport("POST", "/chat/completions", body)
         try:
             text = data["choices"][0]["message"]["content"]
             served = data["model"]

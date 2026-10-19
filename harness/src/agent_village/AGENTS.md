@@ -20,6 +20,10 @@ Replay re-drives a log, so anything a driver appends between ticks must be a `sa
 
 Facts, planting and probes are part of the treatment (ADR-0004). Plant only through `planting.plant` as first-hand `saw` events, never as injected messages; keep every fact about invented entities; keep fact wording neutral (a test checks it); and ask probes only through `probes.run_round`, which changes nothing a citizen knows. Do not edit the templates or the awareness question after runs start.
 
+The judge and the metrics are part of the analysis (ADR-0005). The judge must never see the arm, block, citizen, truth label or holders: put only the fields of `judge.Item` in its prompt, and keep the key out of reach. An uncodable reply is `None`, never a guess. A metric is a pure function of a log and the codes; change a definition only with an ADR and a dated amendment.
+
+A live backend must name the provider and pin fallbacks off. Reasoning models can spend `max_tokens` on hidden reasoning and return no content; set `reasoning` on `OpenRouterBackend` and keep it the same for every arm. Retries belong in the gateway (S2-T5), must be logged, and are not added to `Model`.
+
 Changes to `admission.py` change the experimental treatment: update the tests, note it in the pre-registration, and never do it after runs start.
 
 The canonical hash format in `eventlog.py` is pinned by a test vector. Changing it invalidates every recorded log, so it needs an ADR.

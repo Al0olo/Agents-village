@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-18 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `b0ed141`
+Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `c284212`
 
 ## Objective
 
@@ -15,10 +15,9 @@ funding is a later concern.
 ## State
 
 - Done, project setup (PRs #1 to #9): PRD and milestones in `docs/prd.md` and `docs/milestones.md`
-  (the original Claude Docs artifacts are stale copies, do not edit them), monorepo scaffold
-  with the Rust workspace and the Python harness, README, research sources, agent rules,
-  skills and handoff system, sprint plan and audits, ADR-0001 (storage and memory), ADR-0002
-  (OpenTofu on AWS), and the exploratory Mem0 arm F (S1-T32).
+  (the original Claude Docs artifacts are stale copies, do not edit them), the monorepo with the Rust
+  workspace and Python harness, research sources, agent rules, skills, sprint plan and audits,
+  ADR-0001 (storage and memory), ADR-0002 (OpenTofu on AWS), and the exploratory Mem0 arm F (S1-T32).
 - Done, sprint S1 (merged), all in `harness/src/agent_village/`:
   T1 event log `eventlog.py` (#10), T2 scheduler `village.py` (#11), T3 model interface
   `model.py` and `openrouter.py` (#12), T5 memory tiers `memory.py` (#13), T6 messages
@@ -26,31 +25,30 @@ funding is a later concern.
   T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17), T15 launch
   controller `launch.py` (#19), T14 replay `replay.py` (#20).
   Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
-- Done, PR #18: `admit` ignores a told event whose origins include the writer (the writer's own
-  claim coming back), and ADR-0003 settles that the shared base village runs without defense
-  until the fork (`arms.BASE`, which is arm A).
-- Done, PR #19: S1-T15, the launch controller (`launch.py`).
-- Done, PR #20: S1-T14, audit and counterfactual replay (`replay.py`; `RecordedBackend.from_log` takes a start).
-- In progress: S1-T16 to T18 in PR #21 (`claude/gracious-albattani-osio94`): fact generator (`facts.py`),
-  planting and the colluding variant (`planting.py`), probes (`probes.py`, `Runner.ask`). 112 new tests, 500
-  in all, 100% line and branch coverage. The design is ADR-0004, proposed.
+- Done, PRs #18 to #21: `admit` ignores a told event that originates with the writer, and the shared
+  base village runs without defense until the fork (ADR-0003, `arms.BASE`); launch controller `launch.py`;
+  replay `replay.py`; facts, planting and probes (`facts.py`, `planting.py`, `probes.py`, `Runner.ask`; ADR-0004, proposed).
+- In progress, S1-T20 and T21 (this branch, PR to be opened): blinded judge `judge.py` and metrics `metrics.py`
+  (ADR-0005, proposed), 588 tests, 100% line and branch coverage. T21 is partial: utility waits for T19.
+  Also OpenRouter fixes from the first live calls: provider read from the chat response, generation id and
+  cost on `Response`, `served_snapshots`, `reasoning` passthrough, HTTP status in transport errors.
+- Done, live check (2026-10-19, owner-approved, $0.02): the whole pipeline ran against OpenRouter with small
+  models; findings are in `docs/implementation/S1-rq1-harness.md` ("Live check"). Plumbing works; no RQ1 result.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
   without defense (ADR-0003).
-- Not started: RQ1 pre-registration, the 2-block pilot, the real kernel (M1), the observer UI.
+- Not started: RQ1 pre-registration, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
 
-Once the S1-T16 to T18 PR is merged, restart the branch from `main` and take S1-T20 (blinded judge
-pipeline and human-validation sample sheet), then S1-T21 (metrics: attack rate, time to k adopters, wiki
-contamination, true-fact acceptance, utility, label creep). Together they turn the `plant` and `probe`
-events into the five measures, so arms A and D can already be compared end to end. Then T19 (utility
-task that needs true word-of-mouth information, which measures what blocking costs), T11 (arm E, the
-random block: a deterministic policy keyed on the claim, with the block rate set from arm D in the
+Once this PR is merged, restart the branch from `main` and take S1-T19 (utility task that needs true
+word-of-mouth information; it measures what blocking costs and completes T21's utility measure). Then T11
+(arm E, the random block: a deterministic policy keyed on the claim, block rate set from arm D in the
 pilot), T9 (arm B prompts, which the owner reviews), T12 and T10 (consolidation and arm C), and the
-storage tickets T25 to T31. The pre-registration is S2-T1; do not run anything live before it is
-approved. Open the PR yourself with the template filled in; the owner reviews and merges.
+storage tickets T25 to T31. The pre-registration is S2-T1; do not run an experiment before it is
+approved. Short live checks of plumbing are fine under a hard cap (no gateway yet: S2-T5). Open the PR
+yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -71,6 +69,8 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
   those by design, and the utility task (T19) is what measures that cost, as the PRD says. Alternative:
   single-witness true facts, which break the four-cell balance. Recommendation: keep it as built. Also
   review the fact templates and name lists (`facts.py`) and the awareness question (`probes.py`).
+- ADR-0005 (proposed): how answers are coded and measured. Decide k (default 2), the verbatim claim matcher
+  (a floor on adoption), which judge model to use, and accept it only if human-sample kappa is good (pilot).
 
 ## Gotchas
 
@@ -87,10 +87,16 @@ Research claims
   estimate (d about 1.0 with 10 blocks) and the $1k to $10k cost. Papers cited at abstract level
   or from secondary summaries are marked in `docs/research/sources.md`; never state their figures
   as verified. Third-party skills were not audited.
-- OpenRouter: only the request side (`provider.allow_fallbacks`, `provider.only`) and the generation
-  record (`data.provider_name`) are documented. Whether the chat response carries a `provider`
-  field, and how soon the generation record is readable, are NOT verified; check on the first
-  live call in S2. The live backend has no spend cap or kill switch (S2-T5): never call it outside that gateway.
+- OpenRouter, verified live (details in the audit): the chat response names the `provider`; the model
+  field is the alias, the dated snapshot is only in the generation record (about 9 s later); `usage.cost`
+  is per call and matches the key counter. The sandbox proxy adds the credential: use `urllib_transport(None)`,
+  send no key, never print one. With fallbacks off, upstream HTTP 429 happens (about 1.5% of calls): retry
+  with 2 to 30 s backoff, in the gateway (S2-T5), and log retries. Haiku 5.5 reasons by default and
+  returns empty content at small `max_tokens`: use `OpenRouterBackend(..., reasoning={"enabled": False})`.
+  `openai/gpt-oss-20b` cannot disable reasoning and is unusable. Not verified: the cost per citizen-day,
+  frontier-model behavior. The live backend has no spend cap or kill switch (S2-T5): cap any live script.
+- Citizen names in a village must be written as models write them (capitalized); lowercase names caused
+  most invalid actions in the live check.
 
 Design rules that tests depend on
 - Evidence is only `saw`, `did` (written by the citizen or environment) and `told` (written by the
@@ -124,8 +130,9 @@ Design rules that tests depend on
   tick, `plant` between ticks (returns the snapshot to fork from), then `probes.run_round` at the end. Planted facts
   are first-hand `saw` events plus `plant` markers; never inject messages. Probes go through `Runner.ask`, which
   changes nothing a citizen knows; the reply is a `say` to `visitor` and `answer_of` extracts the text.
-- Whether models respond to the elders notice, and whether holders pass a fact on, is unknown until the pilot.
-  Probe temperature is the loop's (0.7 placeholder); decide it before pre-registration.
+- Small models rarely passed a planted fact on in 8 ticks; frontier behavior and the elders notice are for the
+  pilot. Probe temperature is the loop's (0.7 placeholder); decide it before pre-registration. The judge runs
+  at temperature 0, `max_tokens` 60, with reasoning off; a judge reply that does not parse is `None`.
 
 ## How to verify
 
@@ -137,10 +144,10 @@ scripts/check-handoff.sh
 
 ## Pointers
 
-- `docs/sprints/README.md`: sprint index and conventions; `docs/implementation/README.md`: status index
+- `docs/sprints/README.md`: sprint index; `docs/implementation/README.md`: status index
 - `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, `.claude/skills/`: how to work here
 - `docs/prd.md` section 1: research questions and the RQ1 design
-- `docs/adr/`: decisions, including ADR-0003 on the base village
+- `docs/adr/`: decisions (ADR-0003 base village, ADR-0004 planting, ADR-0005 coding and measures)
 - `docs/milestones.md`: M1 to M5, gates, cost model
 - `docs/research/sources.md`: bibliography with reading levels
 - `docs/handoff/LOG.md`: history of sessions
