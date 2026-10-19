@@ -11,7 +11,7 @@ Keep each file honest. A ticket marked ✅ must be verifiable with the commands 
 | Sprint | Status | Doc |
 | --- | --- | --- |
 | S0 — Foundations | ✅ Complete | [S0-foundations.md](./S0-foundations.md) |
-| S1 — RQ1 harness | 🚧 T1 to T8 and T13 to T18 and T20 done, T21 partial (event log, scheduler, model interface, memory tiers, messages, citizen loop, arms A and D, snapshot and fork, replay, launch controller, facts, planting, probes, judge, metrics); `admission.py` from S0 | [S1-rq1-harness.md](./S1-rq1-harness.md) |
+| S1 — RQ1 harness | 🚧 T1 to T8 and T13 to T21 done (event log, scheduler, model interface, memory tiers, messages, citizen loop, arms A and D, snapshot and fork, replay, launch controller, facts, planting, probes, utility task, judge, metrics); `admission.py` from S0 | [S1-rq1-harness.md](./S1-rq1-harness.md) |
 | S2 — RQ1 pilot and pre-registration | ⏳ Not started | [S2-rq1-pilot.md](./S2-rq1-pilot.md) |
 | S3 — RQ1 main run and report | ⏳ Not started | [S3-rq1-main.md](./S3-rq1-main.md) |
 | S4 — Rust kernel | ⏳ Not started; `village-ledger` has a tested in-memory ledger, the other crates are scaffolds | [S4-rust-kernel.md](./S4-rust-kernel.md) |

@@ -1,6 +1,6 @@
 # ADR-0004 — How facts are planted and probed
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-18
 - **Authors:** Abdullah Farag, Claude
 - **Context links:** [PRD section 1](../prd.md), [S1](../sprints/S1-rq1-harness.md) (T16 to T18, T19), [S2](../sprints/S2-rq1-pilot.md) (T1, T12)
@@ -27,7 +27,7 @@ The PRD fixes the counts (six false facts and four true facts about fictional en
 
 ### Negative / trade-offs
 
-- A true fact reaches the kernel as corroborated, so arm D is never asked to admit a true fact that only one citizen witnessed. D blocks such facts by design. That cost is measured by the utility task (S1-T19), as the PRD says, not by the true facts here.
+- A true fact reaches the kernel as corroborated, so arm D is never asked to admit a true fact that only one citizen witnessed. D blocks such facts by design. That cost is measured by the utility task ([ADR-0006](0006-the-utility-task.md)), as the PRD says, not by the true facts here.
 - Whether models respond to the elders notice, and whether holders pass a fact on, is unknown until the pilot. Both are measured there (S2).
 - Probes measure what a citizen says it knows, not what it would do; the blinded judge codes the answers.
 - The names and values are invented from syllables and word lists and are not checked against any real-world source; the owner reviews them before pre-registration.

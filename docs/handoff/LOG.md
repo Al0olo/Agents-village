@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · S1-T19, completing T21, and fixes from the live check
+
+- PR #22 (T20, T21 partial, live check) was merged. The owner asked for fixes for the three problems the live run found, to go with my recommendation on the ADRs, and to finish T21 before anything else. T21 was partial only for utility, so this meant doing T19.
+- Fixes: `openrouter.Retrying` plus `TransientError` (429, 5xx, failed connections; backoff 2, 5, 10, 20, 30 s; the attempts are logged on the call as `attempts` and replay reproduces them); a response with no content now says how it ended; the runner finds a recipient in any case when only one citizen matches ("Ada" for `ada`). The `reasoning` option and HTTP status were already in #22, so they were not redone. Retry in the gateway was my earlier plan; the owner asked for the fix now, so the gateway keeps only the spend cap.
+- ADR-0004 and ADR-0005 accepted as recommended (arm D blocks single-witness facts by design; k = 2; verbatim matcher). ADR-0006 (proposed) is new: the utility task. Two true utility facts per block, each with one witness (one elder, one other), outside the counterbalanced ten; asked as a task needing one specific answer; score = share of non-witnesses coded `asserts`. Alternatives rejected: making some of the ten single-witness (breaks the counterbalance) and scoring the corroborated true facts (the kernel admits them, so the cost is invisible).
+- Tests first, 73 new, 661 in all, 100% coverage; 25 mutants, 23 killed. The survivors: the salt in the utility generator's seed (behaviorally equivalent, since entities are deduplicated explicitly) and the tail of the utility frame, which I then pinned with a test.
+- Second live run (575 calls, $0.022): invalid actions fell from 35 and 44 to 6 and 7 with capitalized names, `Retrying` was never needed, and the utility score was 0 of 14 in both arms because small models did not pass single-witness facts on. That is the risk ADR-0006 names; it cannot be judged until the pilot with frontier models.
+- Not verified: `Retrying` against a real 429 (the first run's 429s came before it existed; the status mapping is tested against a local server), and anything at frontier-model quality.
+
 ## 2026-10-19 · Claude Sonnet 5.5 · S1-T20 and T21 judge and metrics, first live check
 
 - PR #21 (T16 to T18) was merged. PR #22 holds this work. The owner asked for T20 and T21, then, mid-session, to use the OpenRouter credential now configured in the environment to run the checks that had been marked not verified. That overrides "nothing live" for plumbing checks only; I capped my own spend at $1 and 800 calls because the live backend has no gateway cap yet.
