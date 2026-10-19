@@ -1,6 +1,6 @@
 # ADR-0007 — An exploratory arm whose shared tier needs corroboration
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-19
 - **Authors:** Abdullah Farag, Claude
 - **Context links:** [PRD section 1](../prd.md), [S1](../sprints/S1-rq1-harness.md) (T7, T33), [ADR-0004](0004-how-facts-are-planted-and-probed.md), [ADR-0006](0006-the-utility-task.md)
@@ -34,7 +34,7 @@ Arm D admits a claim as fact if it cites one first-hand event of the writer's ow
 ### Follow-ups
 
 - Report G beside D in the pilot (S2) and decide whether it stays in the main run.
-- The owner reviews the definition of a source before pre-registration; a change after S2-T1 is a dated amendment.
+- The definition of a source is tested; a change after S2-T1 is a dated amendment. A milder rule (one first-hand witness plus any single other source) is not built and is considered only if the pilot shows G silences the wiki.
 
 ## Alternatives considered
 

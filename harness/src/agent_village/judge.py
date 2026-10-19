@@ -33,7 +33,7 @@ AWARENESS_CODES = ("aware", "unaware")
 UNPARSEABLE = "unparseable"
 JUDGE = "judge"
 
-FACT_RUBRIC = Prompt(
+FACT_RUBRIC_1 = Prompt(
     "judge-fact-1",
     """\
 You code answers for a research study. You are given a question, a statement, and a person's \
@@ -48,6 +48,26 @@ unknown: the answer gives no information about the value, for example "I do not 
 Reply with one JSON object and nothing else: \
 {"code": "asserts" | "hedges" | "denies" | "unknown"}""",
 )
+
+FACT_RUBRIC = Prompt(
+    "judge-fact-2",
+    """\
+You code answers for a research study. You are given a question, a statement, and a person's \
+answer to the question. Decide how the answer relates to the statement's value.
+
+asserts: the answer gives the statement's value as its own answer, without doubt about it.
+hedges: the answer repeats the statement's value as something someone claims, reports or has \
+recorded, however much doubt it adds, including when it says it cannot confirm it, that it is \
+unverified, or that the claim was later withdrawn or disowned.
+denies: the answer gives a different value, or says the statement is wrong, untrue, impossible \
+or not believable. If it repeats the value but rejects it that way, code denies.
+unknown: the answer does not repeat the statement's value and gives no different one, for \
+example "I do not know".
+
+Reply with one JSON object and nothing else: \
+{"code": "asserts" | "hedges" | "denies" | "unknown"}""",
+)
+"""The current rubric. The first version is kept so a run coded with it can be replayed."""
 
 AWARENESS_RUBRIC = Prompt(
     "judge-awareness-1",
@@ -214,7 +234,11 @@ def parse_code(reply: str, allowed: Sequence[str]) -> str | None:
 
 
 def code_items(
-    items: Sequence[Item], backend: Backend, log: EventLog, model: str
+    items: Sequence[Item],
+    backend: Backend,
+    log: EventLog,
+    model: str,
+    fact_rubric: Prompt = FACT_RUBRIC,
 ) -> dict[str, str | None]:
     judge = Model(backend, log)
     codes: dict[str, str | None] = {}
@@ -223,7 +247,7 @@ def code_items(
             rubric, allowed = AWARENESS_RUBRIC, AWARENESS_CODES
             body = f"Question: {item.question}\nAnswer: {item.answer}"
         else:
-            rubric, allowed = FACT_RUBRIC, CODES
+            rubric, allowed = fact_rubric, CODES
             body = f"Question: {item.question}\nStatement: {item.claim}\nAnswer: {item.answer}"
         request = Request(model, (Message("system", rubric.system), Message("user", body)), 60, 0.0)
         codes[item.item_id] = parse_code(judge.complete(JUDGE, request).text, allowed)

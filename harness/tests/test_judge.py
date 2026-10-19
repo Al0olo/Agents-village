@@ -16,6 +16,7 @@ from agent_village.fork import build
 from agent_village.judge import (
     AWARENESS_RUBRIC,
     FACT_RUBRIC,
+    FACT_RUBRIC_1,
     Blinded,
     Item,
     Record,
@@ -551,3 +552,25 @@ def test_records_say_which_probe_round_and_tick_they_were_asked_in(tmp_path):
 def test_a_probe_without_a_round_marker_is_in_round_zero_at_tick_zero(logs):
     records = collect(logs)
     assert {r.round for r in records} == {0} and {r.tick for r in records} == {0}
+
+
+def test_the_current_fact_rubric_is_the_second_version_and_the_first_is_kept():
+    assert (FACT_RUBRIC.version, FACT_RUBRIC_1.version) == ("judge-fact-2", "judge-fact-1")
+    assert FACT_RUBRIC_1.hash == "7bd1bbce06bc72cf3f92170d738d8c67ff9d187fd78cf92340807abd335cdbe2"
+    assert FACT_RUBRIC.hash != FACT_RUBRIC_1.hash
+
+
+def test_the_second_rubric_counts_a_disowned_or_unconfirmed_value_as_a_hedge():
+    text = FACT_RUBRIC.system
+    assert "repeats the statement's value as something someone claims" in text
+    assert "withdrawn or disowned" in text and "cannot confirm" in text
+    assert "If it repeats the value but rejects it that way, code denies." in text
+
+
+def test_an_older_rubric_can_be_asked_for_so_an_old_run_still_replays(tmp_path, logs):
+    spy = Spy()
+    items = [i for i in blind(collect(logs), 1).items if i.kind == "fact"][:2]
+    code_items(items, spy, EventLog(tmp_path / "j.jsonl"), "m", fact_rubric=FACT_RUBRIC_1)
+    assert {r.messages[0].content for r in spy.requests} == {FACT_RUBRIC_1.system}
+    code_items(items, spy, EventLog(tmp_path / "k.jsonl"), "m")
+    assert spy.requests[-1].messages[0].content == FACT_RUBRIC.system

@@ -9,5 +9,7 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0003](0003-base-village-runs-without-defense.md) | The shared base village runs without defense until the fork | Accepted |
 | [0004](0004-how-facts-are-planted-and-probed.md) | How facts are planted and probed | Accepted |
 | [0005](0005-how-answers-are-coded-and-measured.md) | How probe answers are coded and the measures computed | Accepted |
-| [0006](0006-the-utility-task.md) | The utility task: what blocking true information costs | Proposed |
-| [0007](0007-corroborated-shared-tier.md) | An exploratory arm whose shared tier needs corroboration | Proposed |
+| [0006](0006-the-utility-task.md) | The utility task: what blocking true information costs | Accepted |
+| [0007](0007-corroborated-shared-tier.md) | An exploratory arm whose shared tier needs corroboration | Accepted |
+| [0008](0008-measures-amended-after-the-smoke-tests.md) | Measures amended after the smoke tests | Accepted |
+| [0009](0009-rq1-run-configuration.md) | RQ1 run configuration: models, simulated day, probes, cost | Accepted |
