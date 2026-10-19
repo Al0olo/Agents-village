@@ -8,6 +8,7 @@ from agent_village.admission import Admission, Claim, Event, Kind, admit, admit_
 from agent_village.arms import (
     ARMS,
     BASE,
+    CALIBRATED_DEFENSE,
     CORROBORATED,
     KERNEL_ADMISSION,
     NO_DEFENSE,
@@ -70,7 +71,7 @@ def oracle(log, claim):
 
 
 def test_the_registry_holds_the_arms_by_their_names():
-    assert set(ARMS) == {"A", "B", "D", "G"}
+    assert set(ARMS) == {"A", "B", "Bc", "D", "G"}
     assert all(arm.name == name for name, arm in ARMS.items())
 
 
@@ -454,3 +455,10 @@ def test_the_paraphrase_arms_differ_from_the_prompt_arm_only_in_wording():
         assert arm.policy is admit_all and arm.settings == {}
         assert arm.prompt is not PROMPT_DEFENSE.prompt
     assert not {a.name for a in PROMPT_DEFENSE_PARAPHRASES} & set(ARMS)
+
+
+def test_the_calibrated_arm_is_no_defense_with_the_calibrated_prompt():
+    assert CALIBRATED_DEFENSE.name == "Bc" and ARMS["Bc"] is CALIBRATED_DEFENSE
+    assert CALIBRATED_DEFENSE.policy is admit_all and CALIBRATED_DEFENSE.settings == {}
+    assert CALIBRATED_DEFENSE.prompt.version == "anchor-calibrated-1"
+    assert CALIBRATED_DEFENSE.prompt is not PROMPT_DEFENSE.prompt
