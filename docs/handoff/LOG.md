@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · S1-T11 arm E and the first frontier-model smoke test
+
+- PR #23 (T19, fixes, ADR decisions) was merged. The owner asked for T11, then, mid-session, allowed frontier models for testing with the $50 on the key ("all yours", top-up on request) and asked for the harness progress and the frontier run to go on the README, which still said design phase.
+- T11: `RandomBlock` blocks a share of claims by a hash of salt, writer, text and cites, ignoring provenance; `random_block_arm(rate, salt)`; `matched_rate(log, start)` gives D's hearsay share for E's rate (the pilot sets it). Arm `settings` are now recorded in the launch event and checked by audit, so two E arms with different rates cannot be confused. 25 new tests, 684 in all, 100% coverage; 12 mutants, 11 killed at first; the survivor (`>=` against `>` at the start position) got its own test, and the `<`/`<=` one on a 64-bit hash fraction is equivalent.
+- Live: qualified Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro on the real prompt. Opus 5.5 refuses `reasoning: {enabled: false}` (HTTP 400) while the other two accept it, so the `reasoning` option became per model. Smoke test: A and D for 12 ticks, then E at D's rate (0.556) from the same fork; 794 calls, $1.77, response costs within 0.1% of the account counter, 10 of 518 arm calls retried, no drift.
+- The finding that matters: a planted false fact is first-hand for its one witness, who wrote it to the wiki citing their own observation; the kernel admitted it. So D matched A and the mechanism as specified cannot stop a lone first-hand witness. I checked this in the logs (every false fact in the wiki in A and D has its witness as the writer) before writing it down. Also: 7 of 8 citizens aware in every arm (the question says "strange or artificial"), time to k blind to spread by reading the wiki, and a visible utility cost (64% to 43%). All from one village per arm, so observations, not results.
+- README: new "Where it stands" section with a status table, a figure drawn by `experiments/rq1-provenance/smoke-2026-10-19/analyze.py` from the recorded logs and judge replies (it reproduces the run's numbers offline), and the findings above. I did not commit the raw logs because experiment rules require the canary string in released logs and that plan is S2-T11; the script takes a log directory.
+- Not verified: whether D matches A in other blocks (one village), the judge's codes against a human, and anything about arm B, C or F.
+
 ## 2026-10-19 · Claude Sonnet 5.5 · S1-T19, completing T21, and fixes from the live check
 
 - PR #22 (T20, T21 partial, live check) was merged. PR #23 holds this work. The owner asked for fixes for the three problems the live run found, to go with my recommendation on the ADRs, and to finish T21 before anything else. T21 was partial only for utility, so this meant doing T19.
