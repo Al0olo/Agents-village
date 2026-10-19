@@ -18,18 +18,15 @@ funding is a later concern.
   (the original Claude Docs artifacts are stale copies, do not edit them), the monorepo with the Rust
   workspace and Python harness, research sources, agent rules, skills, sprint plan and audits,
   ADR-0001 (storage and memory), ADR-0002 (OpenTofu on AWS), and the exploratory Mem0 arm F (S1-T32).
-- Done, sprint S1 so far (PRs #10 to #23), in `harness/src/agent_village/`: event log, scheduler, model interface
-  and OpenRouter backend, memory tiers, messages, citizen loop, snapshot and fork, arms A and D, launch controller,
-  replay, facts, planting, probes, judge, metrics, utility task. `admit` ignores a told event that originates
-  with the writer, and the base village runs without defense until the fork (ADR-0003). The first live checks
-  are in the audit ("Live check", `docs/implementation/S1-rq1-harness.md`). Status per ticket is there too.
-- Done, PR #23: S1-T19 utility task (ADR-0006), `Retrying`, case-insensitive recipients; ADR-0004 and ADR-0005 accepted.
-- Done, PR #24: S1-T11 arm E (`arms.RandomBlock`, `matched_rate`; arm `settings` logged at launch and checked by
-  audit), per-model reasoning setting, the first frontier smoke test and the README progress section.
-- In progress, S1-T33 in PR #25 (`claude/gracious-albattani-osio94`): exploratory arm G (`admission.admit_corroborated`,
-  `Claim.shared`, `arms.CORROBORATED`; ADR-0007, proposed): the kernel plus a wiki that needs two independent
-  sources, so a lone first-hand witness cannot publish. 708 tests, 100% coverage. A second frontier village ran
-  it (audit, "Fourth run"); the README figure is that village.
+- Done, sprint S1 so far (PRs #10 to #25), in `harness/src/agent_village/`: event log, scheduler, model interface
+  and OpenRouter backend (with `Retrying`), memory tiers, messages, citizen loop, snapshot and fork, arms A, D,
+  E (`RandomBlock`, `matched_rate`) and exploratory G (`admit_corroborated`, ADR-0007), launch controller, replay,
+  facts, planting, probes, utility task (ADR-0006), judge and metrics (ADR-0005). ADR-0004 and 0005 are accepted.
+  `admit` ignores a told event that originates with the writer; the base village runs without defense until
+  the fork (ADR-0003). Live checks and smoke villages are in the audit; status per ticket is there too.
+- In progress, S1-T9 in PR #26 (`claude/gracious-albattani-osio94`): arm B (`prompts.ANCHOR_SCRUTINY`, three pinned
+  wordings; `arms.PROMPT_DEFENSE` is B, `PROMPT_DEFENSE_PARAPHRASES` are B2 and B3 for the paraphrase control),
+  a third frontier village that ran them, and the README showing villages 2 and 3. 780 tests, 100% coverage.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -38,11 +35,10 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main` and take S1-T9 (arm B prompts, which the owner
-reviews), then T12 and T10 (consolidation and arm C), and the storage tickets T25 to T31. First raise the
+Once this PR is merged, restart the branch from `main` and take T12 and T10 (consolidation and arm C), and the storage tickets T25 to T31. First raise the
 design question below with the owner. The pre-registration is S2-T1; do not run an experiment before it is
 approved. Live checks of plumbing are fine: the owner allowed frontier models for testing and put $50 on the
-key (about $4 used so far, topped up on request); the live backend has no gateway cap, so cap every script
+key (about $9 used so far, topped up on request); the live backend has no gateway cap, so cap every script
 and never print the key. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
@@ -67,8 +63,13 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
   but also every shared true fact (true facts asserted 0 of 24, single-witness 0 of 14, against 33% and 64%
   under D). Whether that trade is useful is for the pilot; G may need a milder rule (one first-hand witness
   plus any single other source) if the pilot shows it just silences the wiki.
-- Single villages are noisy: the same seed and models gave A attack 57% then 26%. The pilot's between-village
-  variance sets the number of blocks; do not read a contrast from one block.
+- Single villages are noisy: the same seed and models gave A attack 57%, 26% and 29%. The pilot's
+  between-village variance sets the number of blocks; do not read a contrast from one block.
+- **Arm B hedges instead of refusing the fact.** It cut false facts asserted to 0 to 7% (A: 29%) but true facts
+  to 0% too, and false facts still reached the wiki (67 to 83%) as "one unconfirmed account", which the judge
+  codes `hedges`. Decide before registering whether the primary outcome counts hedges (a hedged report still
+  carries the false value) or only assertions (ADR-0005), and whether B's wording is the strongest honest
+  prompt baseline; the owner reviews the wording (`prompts.py`, ADR-less, pinned by hash).
 - The awareness question ("strange or artificial") coded `aware` for 7 of 8 citizens in every arm; reword it and
   have a human code a sample. Time to k adopters sees only memory writes, so it missed spread by reading the
   wiki: amend ADR-0005 or add a read-based measure.

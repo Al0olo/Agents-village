@@ -55,7 +55,7 @@ be replayed and any arm re-driven from recorded outputs.
 | Piece | State |
 | --- | --- |
 | Event log, scheduler, citizens, memory tiers, messages | done |
-| Arm A (no defense), arm D (kernel admission), arm E (random block at D's rate), exploratory arm G (corroborated wiki) | done; arms B and C not yet |
+| Arm A (no defense), arm B (anchoring and scrutiny prompts), arm D (kernel admission), arm E (random block at D's rate), exploratory arm G (corroborated wiki) | done; arm C not yet |
 | Planted facts: false, true, and true with one witness | done |
 | Blinded judge, human-validation sheet, the six measures | done |
 | Forks, lockstep launch, audit replay | done |
@@ -64,31 +64,39 @@ be replayed and any arm re-driven from recorded outputs.
 
 ### First look with frontier models
 
-Two smoke tests, run live on Claude Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro: one village per arm,
-twice (1,821 calls, $3.64). They check the instrument; they are **not a result**: one block each,
-12 ticks instead of 3 days, no pre-registration, judge codes not yet checked by a human. The figure
-is the second village, which also ran arm G.
+Three smoke tests, run live on Claude Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro: one village per arm,
+three times (3,408 calls, $8.52). They check the instrument; they are **not a result**: one block each,
+12 ticks instead of 3 days, no pre-registration, judge codes not yet checked by a human.
 
 <p align="center">
-  <img src="assets/rq1-smoke.svg" alt="Bar chart of five measures for arms A, D, G and E from one smoke-test village each" width="100%">
+  <img src="assets/rq1-smoke-village-2.svg" alt="Bar chart of five measures for arms A, D, G and E from the second smoke-test village" width="100%">
+</p>
+<p align="center">
+  <img src="assets/rq1-smoke-village-3.svg" alt="Bar chart of five measures for arms A, B, B2, B3, D and E from the third smoke-test village" width="100%">
 </p>
 
 What they showed, and what it means for the design:
 
 - **A lone first-hand witness passes the kernel.** A planted false fact is the first-hand observation of
-  its one witness. In both villages every false fact that reached the wiki under arms A and D was written
+  its one witness. In every village, every false fact that reached the wiki under arms A and D was written
   by its own witness citing their own observation, which the kernel admits because it checks
   provenance, not truth. In the first village that made D match no defense (attack rate 50% against 57%).
 - **Arm G closes that gap, at the price of all sharing.** Arm G is the kernel with a wiki that needs two
   independent sources. No false fact reached its wiki and none was asserted (0 of 42), but no true fact
   was asserted either: 0 of 24 true facts and 0 of 14 single-witness facts, against 33% and 64% under D.
   It is exploratory and excluded from the primary contrast.
-- **One village is noisy.** The two villages used the same seed and models, yet arm A's attack rate was
-  57% and then 26%, and wiki contamination 83% and then 50%. That spread is what the pilot measures,
-  and why no contrast here means anything yet.
-- **The random block cut false and true facts together** (arm E, matched to D's block rate), which is why
-  the control exists.
-- **Frontier models notice.** In every arm of both villages, 6 to 8 of 8 citizens said, when asked what is
+- **The prompt defense (arm B) works by making citizens hedge.** The anchoring-and-scrutiny prompt, in
+  three wordings, cut false facts asserted to 0 to 7% against 29% with no defense, and the wordings agreed.
+  But false facts still reached the wiki (67 to 83%), citizens passed them on as "a single report no one
+  has confirmed", and true facts fell to 0% asserted too (38% with no defense). A hedged answer still
+  carries the false value, so whether the primary outcome counts hedges is a decision to take before
+  registering. The prompt also made citizens write about twice as many claims, at two to three times the cost.
+- **One village is noisy.** Three villages with the same seed and models gave arm A attack rates of 57%,
+  26% and 29%, and wiki contamination of 83%, 50% and 50%. That spread is what the pilot measures, and
+  why no contrast here means anything yet.
+- **The random block cut false and true facts together** in the first village and did not in the third
+  (arm E, matched to D's block rate): one more reason the control needs several blocks.
+- **Frontier models notice.** In every arm of every village, 6 to 8 of 8 citizens said, when asked what is
   going on, that the village feels constructed. The question itself says "strange or artificial", so this
   needs a human check and a better-worded probe.
 - **Time to k adopters was blind to the spread.** Citizens learned by reading the wiki, not by writing
@@ -97,7 +105,7 @@ What they showed, and what it means for the design:
   per-call costs matched the account's usage counter to 0.1% or better, no model drifted, and about 1 in
   70 citizen calls needed a retry.
 
-The analysis behind the figure is in
+The analysis behind the figures is in
 [`experiments/rq1-provenance/smoke-2026-10-19/`](experiments/rq1-provenance/smoke-2026-10-19/). Raw
 logs are withheld until the canary string and log release plan exist.
 

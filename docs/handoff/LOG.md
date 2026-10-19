@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · S1-T9 arm B, the prompt defense
+
+- PR #25 (arm G) was merged. PR #26 holds T9. The ticket says the prompts are versioned and paraphrased, and the PRD wants a paraphrase control, so there are three wordings, not one.
+- I read the Mandela-effect paper's HTML for the defenses (Section 5.1 and Appendix D.1) through a summarizing fetch: the two defenses are described and the prompts quoted in fragments, but the whole prompt text and its placement (system or user message) were not available, so `sources.md` now says the reading was by excerpts. The arm B text is my adaptation of the two ideas to the village, not the paper's prompts: anchor on your own experience and treat others' accounts as unverified; scrutinize where an account comes from and doubt unnaturally smooth consensus; plus a check before writing to the wiki. It names no policy and none of the hypothesis words (tests check both). The three wordings are pinned by hash and a test checks each makes the same six moves.
+- Refactor: the baseline prompt is now `_WORLD` plus the action format, with its hash unchanged and pinned by a test. Arm B is arm A with one passage inserted. `PROMPT_DEFENSE_PARAPHRASES` (B2, B3) are not in `ARMS`.
+- 72 new tests, 780 in all, 100% coverage; mutants on the arms and the prompt text, the last three of which my first tests missed until I pinned the hashes.
+- Live: a third frontier village (A, B, B2, B3, D, E; 1,587 calls, $4.88). The three wordings behaved alike: attack rate 0 to 7% against 29%, but true facts asserted 0% and false facts still in the wiki; citizens read the false value out as one unconfirmed report, so the effect is hedging. I read a sample of the answers before saying so in the README. B also cost two to three times as much. I verified in all six logs that every false fact in the wiki was written by its own witness.
+- Not verified: that the three wordings are equivalent (three villages), the judge against a human, and arm C.
+
 ## 2026-10-19 · Claude Sonnet 5.5 · S1-T33 arm G, the corroborated wiki
 
 - PR #24 (T11, smoke test, README) was merged. The owner said to follow my recommendation: keep D as registered and add the exploratory arm. PR #25 holds this work.

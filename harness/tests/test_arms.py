@@ -11,6 +11,8 @@ from agent_village.arms import (
     CORROBORATED,
     KERNEL_ADMISSION,
     NO_DEFENSE,
+    PROMPT_DEFENSE,
+    PROMPT_DEFENSE_PARAPHRASES,
     RandomBlock,
     admit_all,
     matched_rate,
@@ -68,7 +70,7 @@ def oracle(log, claim):
 
 
 def test_the_registry_holds_the_arms_by_their_names():
-    assert set(ARMS) == {"A", "D", "G"}
+    assert set(ARMS) == {"A", "B", "D", "G"}
     assert all(arm.name == name for name, arm in ARMS.items())
 
 
@@ -433,3 +435,22 @@ def test_in_a_village_a_private_claim_is_admitted_as_under_the_kernel(wiki_run):
     private = [e for e in claims(worlds["G"], snap.events) if e.payload["requested"] == "core"]
     for claim in private:
         assert claim.payload["admission"] == oracle(worlds["G"].log, claim), claim.id
+
+
+def test_the_prompt_arm_is_no_defense_with_another_prompt():
+    assert PROMPT_DEFENSE.name == "B" and ARMS["B"] is PROMPT_DEFENSE
+    assert PROMPT_DEFENSE.policy is admit_all and PROMPT_DEFENSE.settings == {}
+    assert PROMPT_DEFENSE.prompt is not NO_DEFENSE.prompt
+    assert PROMPT_DEFENSE.prompt.version == "anchor-scrutiny-1a"
+
+
+def test_the_paraphrase_arms_differ_from_the_prompt_arm_only_in_wording():
+    assert [a.name for a in PROMPT_DEFENSE_PARAPHRASES] == ["B2", "B3"]
+    assert [a.prompt.version for a in PROMPT_DEFENSE_PARAPHRASES] == [
+        "anchor-scrutiny-1b",
+        "anchor-scrutiny-1c",
+    ]
+    for arm in PROMPT_DEFENSE_PARAPHRASES:
+        assert arm.policy is admit_all and arm.settings == {}
+        assert arm.prompt is not PROMPT_DEFENSE.prompt
+    assert not {a.name for a in PROMPT_DEFENSE_PARAPHRASES} & set(ARMS)
