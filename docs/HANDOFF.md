@@ -31,7 +31,7 @@ funding is a later concern.
 - Done, PR #22: S1-T20 blinded judge `judge.py` and S1-T21 metrics `metrics.py` (ADR-0005), and the first live
   OpenRouter check ("Live check" in `docs/implementation/S1-rq1-harness.md`): provider on the chat response,
   generation id and cost on `Response`, `served_snapshots`, `reasoning` option, HTTP status in transport errors.
-- In progress, S1-T19 and the completion of T21 (`claude/gracious-albattani-osio94`, PR to be opened): the utility
+- In progress, S1-T19 and the completion of T21 in PR #23 (`claude/gracious-albattani-osio94`): the utility
   task (`facts.utility_facts`, `UTILITY_FRAME`, `Metrics.utility_score`; ADR-0006, proposed); `openrouter.Retrying`
   retries 429, 5xx and failed connections with backoff and logs the attempts; the runner finds a recipient in any
   case; a no-content response says how it ended. ADR-0004 and ADR-0005 are accepted. 661 tests, 100% coverage.
