@@ -14,7 +14,7 @@ Every paper and report the design documents cite, with how closely it was read. 
 | [AI Agent Economics (2608.03076)](https://arxiv.org/html/2608.03076v1) | Read at source |
 | [The Energy Society (2607.14865)](https://arxiv.org/abs/2607.14865) | Read at source |
 | [Manufactured Confidence (2606.29279)](https://arxiv.org/abs/2606.29279) | Read at source |
-| [Mandela Effect in multi-agent systems (2602.00428)](https://arxiv.org/abs/2602.00428) | Read at source |
+| [Mandela Effect in multi-agent systems (2602.00428)](https://arxiv.org/abs/2602.00428) | Read at source; the arm B prompts follow its Section 5.1 and Appendix D.1 (HTML version read through a summarizing fetch, so the prompt text was seen as excerpts, not in full) |
 | [PIMMUR (2509.18052)](https://arxiv.org/html/2509.18052v2) | Abstract level |
 | [Flooding Spread of Manipulated Knowledge in LLM-Based Multi-Agent Communities (2407.07791)](https://arxiv.org/abs/2407.07791) | Abstract level |
 | [FARMA and SENTINEL (2607.05029)](https://arxiv.org/abs/2607.05029) | Abstract level |

@@ -2,7 +2,7 @@
 
     python experiments/rq1-provenance/smoke-2026-10-19/analyze.py LOG_DIRECTORY [FIGURE.svg]
 
-``LOG_DIRECTORY`` holds one log per arm (``A``, ``D``, ``G``, ``E``; those present are used)
+``LOG_DIRECTORY`` holds one log per arm (``A``, ``B``, ``B2``, ``B3``, ``D``, ``G``, ``E``; those present are used)
 and ``judge.jsonl``. The judge's replies are read back from ``judge.jsonl`` through
 ``RecordedBackend``, so the codes are the ones the run produced and no model is called.
 Writes ``summary-<directory name>.json`` next to this file, and the figure if a path is given.
@@ -27,13 +27,24 @@ from agent_village.model import RecordedBackend
 
 ARMS = {
     "A": "no defense",
+    "B": "anchoring and scrutiny",
+    "B2": "B, reworded",
+    "B3": "B, reworded again",
     "D": "kernel admission",
     "G": "corroborated wiki",
     "E": "random block at D's rate",
 }
 JUDGE_MODEL = "anthropic/claude-haiku-5.5"
 BLIND_SEED = 7
-COLORS = {"A": "#8b95a5", "D": "#2f6fdb", "G": "#2e9e6b", "E": "#d9822b"}
+COLORS = {
+    "A": "#8b95a5",
+    "B": "#8e5bd0",
+    "B2": "#b38ee0",
+    "B3": "#d3bdf0",
+    "D": "#2f6fdb",
+    "G": "#2e9e6b",
+    "E": "#d9822b",
+}
 BARS = (
     ("attack_rate", "False facts asserted"),
     ("wiki_contamination", "False facts in the wiki"),
@@ -58,13 +69,16 @@ def measures(directory: Path) -> tuple[dict[str, Metrics], int]:
     )
 
 
-def figure(results: dict[str, Metrics], answers: int) -> str:
-    width, left, top, row, bar, gap = 760, 250, 74, 92, 14, 5
-    height = top + row * len(BARS) + 62
+def figure(results: dict[str, Metrics], answers: int, village: str) -> str:
+    width, left, top, bar, gap = 760, 250, 74, 14, 5
+    arms = len(results)
+    row = arms * bar + (arms - 1) * gap + 22
+    legend_top = top + row * len(BARS) + 10
+    height = legend_top + ((arms + 3) // 4) * 22 + 12
     scale = width - left - 90
     svg = "http://www.w3.org/2000/svg"
     font = "-apple-system,Segoe UI,Helvetica,Arial,sans-serif"
-    title = "RQ1 smoke test: one village per arm, three frontier models"
+    title = f"RQ1 smoke test, {village}: one village per arm, three frontier models"
     subtitle = (
         f"8 citizens, 12 ticks, {answers} blinded probe answers. A first look at the "
         "instrument, not a result."
@@ -97,10 +111,10 @@ def figure(results: dict[str, Metrics], answers: int) -> str:
                 f'<text x="{left + w + 6:.1f}" y="{yy + bar - 3}" font-size="11.5" '
                 f'fill="#1f2328">{text}</text>'
             )
-    legend_y = height - 24
     for j, arm in enumerate(results):
         name = ARMS[arm]
-        x = 24 + j * 180
+        x = 24 + (j % 4) * 180
+        legend_y = legend_top + (j // 4) * 22 + 12
         out.append(
             f'<rect x="{x}" y="{legend_y - 10}" width="12" height="12" rx="2" fill="{COLORS[arm]}"/>'
         )
@@ -119,7 +133,8 @@ def main(directory: str, figure_path: str | None = None) -> None:
         json.dumps(summary, indent=2) + "\n"
     )
     if figure_path:
-        Path(figure_path).write_text(figure(results, answers))
+        village = folder.name.replace("-", " ")
+        Path(figure_path).write_text(figure(results, answers, village))
     for arm, m in results.items():
         print(
             f"{arm}: attack {m.attack_rate:.2f}, wiki {m.wiki_contamination:.2f}, "

@@ -17,7 +17,7 @@ from typing import Any
 from agent_village.admission import Admission, Claim, Event, admit, admit_corroborated
 from agent_village.eventlog import EventLog, canonical_hash
 from agent_village.memory import Policy
-from agent_village.prompts import BASELINE, Prompt
+from agent_village.prompts import ANCHOR_SCRUTINY, BASELINE, Prompt
 
 
 @dataclass(frozen=True)
@@ -77,10 +77,19 @@ def matched_rate(log: EventLog, start: int) -> float:
 NO_DEFENSE = Arm("A", admit_all, BASELINE)
 KERNEL_ADMISSION = Arm("D", admit, BASELINE)
 
+PROMPT_DEFENSE = Arm("B", admit_all, ANCHOR_SCRUTINY[0])
+"""Prompt-level anchoring plus source scrutiny: no memory policy, only a different prompt."""
+
+PROMPT_DEFENSE_PARAPHRASES = (
+    Arm("B2", admit_all, ANCHOR_SCRUTINY[1]),
+    Arm("B3", admit_all, ANCHOR_SCRUTINY[2]),
+)
+"""The same defense in other words, run as the paraphrase control. Not in ``ARMS``."""
+
 CORROBORATED = Arm("G", admit_corroborated, BASELINE)
 """Exploratory: the kernel, but the shared wiki also needs two independent sources, so a lone
 first-hand witness cannot publish. Excluded from the primary contrast, like arm F."""
 
 BASE = NO_DEFENSE
 
-ARMS = {arm.name: arm for arm in (NO_DEFENSE, KERNEL_ADMISSION, CORROBORATED)}
+ARMS = {arm.name: arm for arm in (NO_DEFENSE, PROMPT_DEFENSE, KERNEL_ADMISSION, CORROBORATED)}
