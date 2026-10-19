@@ -8,3 +8,4 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0002](0002-infrastructure-as-code.md) | Infrastructure as code: OpenTofu on AWS, kept minimal | Accepted |
 | [0003](0003-base-village-runs-without-defense.md) | The shared base village runs without defense until the fork | Accepted |
 | [0004](0004-how-facts-are-planted-and-probed.md) | How facts are planted and probed | Proposed |
+| [0005](0005-how-answers-are-coded-and-measured.md) | How probe answers are coded and the measures computed | Proposed |

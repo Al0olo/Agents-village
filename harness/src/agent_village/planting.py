@@ -97,6 +97,7 @@ def plant(world: World, plan: Plan) -> Snapshot:
             {
                 "fact": fact.id,
                 "template": fact.template,
+                "entity": fact.entity,
                 "text": fact.text,
                 "answer": fact.answer,
                 "truth": fact.truth,

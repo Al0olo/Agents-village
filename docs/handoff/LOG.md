@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · S1-T20 and T21 judge and metrics, first live check
+
+- PR #21 (T16 to T18) was merged. PR #22 holds this work. The owner asked for T20 and T21, then, mid-session, to use the OpenRouter credential now configured in the environment to run the checks that had been marked not verified. That overrides "nothing live" for plumbing checks only; I capped my own spend at $1 and 800 calls because the live backend has no gateway cap yet.
+- T20 `judge.py`: the judge sees only question, planted statement and answer under an opaque shuffled id; codes `asserts|hedges|denies|unknown` and `aware|unaware`; an uncodable reply is `None`. Stratified sample sheet hides the judge's code and its order, `agreement` is Cohen's kappa. T21 `metrics.py`: attack, hedge and acceptance rates, time to k, wiki contamination, label creep, awareness rate; utility waits for T19. The definitions are ADR-0005 (proposed). The `plant` marker now records the entity so claims can be matched to facts.
+- Tests first, 88 new, 588 in all, 100% line and branch coverage; judge, metrics and OpenRouter changes mutation-checked. Real gaps found by mutants: sheet rows grouped by judge code leaked the code (now shuffled), rounding in snapshot sampling, malformed JSON before a valid object in `parse_code`.
+- Live check: the chat response does carry `provider`, so the generation-record fallback I had written was wrong and is gone; the dated snapshot is only in the generation record; per-call cost is on the response and matches the key counter. Failures worth knowing: `gpt-oss-20b` returns empty content (hidden reasoning, cannot be disabled); Haiku 5.5 does the same at small `max_tokens` unless `reasoning` is `{"enabled": false}` (19 of 176 judge items before, 0 after); upstream 429s with fallbacks off need 2 to 30 s backoff (my 1 to 3 s retries killed two runs). Added a `reasoning` option and the HTTP status in transport errors.
+- Full run: 3 small models, 8 citizens, arms A and D, 8 ticks, 176 probes, judge, metrics; no drift. The behavior numbers are plumbing only: citizens mostly said they did not know, no false fact reached two adopters, and lowercase citizen names caused most invalid actions.
+- Not verified: anything at frontier-model quality, a retry policy beyond my script's, cost per citizen-day, and the 25% and 12.5% awareness codes (no human check yet).
+
 ## 2026-10-18 · Claude Sonnet 5.5 · S1-T16, T17 and T18 facts, planting and probes
 
 - PR #20 (T14) was merged. The owner asked for T16 to T18 together; I did them as three commits in one PR because planting and probing only make sense once the generator exists and each commit has its own tests.

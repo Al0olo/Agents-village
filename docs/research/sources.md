@@ -63,7 +63,7 @@ Every paper and report the design documents cite, with how closely it was read. 
 | --- | --- |
 | Mem0 (Apache-2.0; README read; benchmark scores are vendor-reported for the managed platform) | https://github.com/mem0ai/mem0 |
 | OpenTofu (MPL-2.0; site and repository read) | https://github.com/opentofu/opentofu |
-| OpenRouter API (docs pages read: provider routing, API overview, get a generation; the routed provider is documented only on the generation record, not on the chat response) | https://openrouter.ai/docs |
+| OpenRouter API (docs pages read: provider routing, API overview, get a generation; behavior checked against live calls on 2026-10-19, see the live check in [`../implementation/S1-rq1-harness.md`](../implementation/S1-rq1-harness.md)) | https://openrouter.ai/docs |
 | Concordia (DeepMind) | https://github.com/google-deepmind/concordia |
 | Project Sid / PIANO (Altera) | https://github.com/altera-al/project-sid |
 | OASIS (CAMEL-AI) | https://github.com/camel-ai/oasis |

@@ -64,6 +64,8 @@ class Response:
     provider: str
     prompt_tokens: int
     completion_tokens: int
+    generation_id: str | None = None
+    cost: float | None = None
 
 
 class Backend(Protocol):
@@ -89,19 +91,20 @@ class Model:
 
     def complete(self, writer: str, request: Request) -> Response:
         response = self._backend.complete(request)
-        self._log.append(
-            "model_call",
-            writer,
-            {
-                "request_hash": request.hash,
-                "model_requested": request.model,
-                "model_served": response.model,
-                "provider": response.provider,
-                "text": response.text,
-                "prompt_tokens": response.prompt_tokens,
-                "completion_tokens": response.completion_tokens,
-            },
-        )
+        payload: dict[str, Any] = {
+            "request_hash": request.hash,
+            "model_requested": request.model,
+            "model_served": response.model,
+            "provider": response.provider,
+            "text": response.text,
+            "prompt_tokens": response.prompt_tokens,
+            "completion_tokens": response.completion_tokens,
+        }
+        if response.generation_id is not None:
+            payload["generation_id"] = response.generation_id
+        if response.cost is not None:
+            payload["cost"] = response.cost
+        self._log.append("model_call", writer, payload)
         return response
 
 
@@ -131,6 +134,8 @@ class RecordedBackend:
                         p["provider"],
                         p["prompt_tokens"],
                         p["completion_tokens"],
+                        p.get("generation_id"),
+                        p.get("cost"),
                     )
                 )
         return cls(responses)
