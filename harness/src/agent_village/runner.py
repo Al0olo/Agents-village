@@ -13,7 +13,7 @@ policy never counts, so a citizen cannot back a claim by having said it.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from agent_village.actions import ActionError, Forward, Remember, Say, Sleep, parse
 from agent_village.eventlog import EventLog, LogEvent
@@ -162,10 +162,12 @@ class Runner:
         if isinstance(action, Remember):
             self._memory.write_claim(name, action.text, action.kind, action.cites, action.tier)
             return "You noted it."
-        if action.to == name:
+        recipient = self._citizen(action.to)
+        if recipient == name:
             return self._invalid(name, "you cannot message yourself")
-        if action.to not in self._specs:
+        if recipient is None:
             return self._invalid(name, f"there is no citizen called {_one(action.to)}")
+        action = replace(action, to=recipient)
         if isinstance(action, Say):
             self._messenger.send(name, action.to, action.text)
             note = f"You told {action.to}: {_one(action.text)}"
@@ -181,6 +183,14 @@ class Runner:
         if action.to not in self._queued:
             self._village.request_wake(action.to, self._village.state().tick, "message")
         return note
+
+    def _citizen(self, written: str) -> str | None:
+        """The citizen a recipient names, exactly or else in any case, if that is unambiguous."""
+        if written in self._specs:
+            return written
+        wanted = written.strip().casefold()
+        found = [n for n in self._specs if n.casefold() == wanted]
+        return found[0] if len(found) == 1 else None
 
     def _invalid(self, name: str, reason: str) -> str:
         self._log.append("invalid_action", name, {"reason": reason})

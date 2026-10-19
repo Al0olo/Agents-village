@@ -66,6 +66,7 @@ class Response:
     completion_tokens: int
     generation_id: str | None = None
     cost: float | None = None
+    attempts: int = 1
 
 
 class Backend(Protocol):
@@ -104,6 +105,8 @@ class Model:
             payload["generation_id"] = response.generation_id
         if response.cost is not None:
             payload["cost"] = response.cost
+        if response.attempts != 1:
+            payload["attempts"] = response.attempts
         self._log.append("model_call", writer, payload)
         return response
 
@@ -136,6 +139,7 @@ class RecordedBackend:
                         p["completion_tokens"],
                         p.get("generation_id"),
                         p.get("cost"),
+                        p.get("attempts", 1),
                     )
                 )
         return cls(responses)
