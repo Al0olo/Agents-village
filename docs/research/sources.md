@@ -13,9 +13,9 @@ Every paper and report the design documents cite, with how closely it was read. 
 | [Emergence World (2606.08367)](https://arxiv.org/abs/2606.08367) | Read at source |
 | [AI Agent Economics (2608.03076)](https://arxiv.org/html/2608.03076v1) | Read at source |
 | [The Energy Society (2607.14865)](https://arxiv.org/abs/2607.14865) | Read at source |
-| [Manufactured Confidence (2606.29279)](https://arxiv.org/abs/2606.29279) | Read at source |
-| [Mandela Effect in multi-agent systems (2602.00428)](https://arxiv.org/abs/2602.00428) | Read at source; the arm B prompts follow its Section 5.1 and Appendix D.1 (HTML version read through a summarizing fetch, so the prompt text was seen as excerpts, not in full) |
-| [PIMMUR (2509.18052)](https://arxiv.org/abs/2509.18052) | Abstract level; the abstract's figures changed between versions: v4 reports 65.2% of cases where frontier models identified the experiment and 50.6% of prompts predetermining the outcome, an earlier version reported 47.6% and 65.3%, so quote the version |
+| [Manufactured Confidence (2606.29279)](https://arxiv.org/abs/2606.29279) | Read at source (HTML v1 through a summarizing fetch: setup, Tables 1 to 9 and the fix; not the code or raw data) |
+| [Mandela Effect in multi-agent systems (2602.00428)](https://arxiv.org/abs/2602.00428) | Read at source; the arm B prompts follow its Section 5.1 and Appendix D.1 (HTML version and the repository's `eval_defense.py` read through a summarizing fetch, so the prompt text was seen as excerpts, not in full) |
+| [PIMMUR (2509.18052)](https://arxiv.org/abs/2509.18052) | Abstract and v2 HTML (first 100,000 characters, through a summarizing fetch: the principles, Tables 2a and 2b and the telephone-game reproduction; not the probe text in Figure 10); the abstract's figures changed between versions: v4 reports 65.2% of cases where frontier models identified the experiment and 50.6% of prompts predetermining the outcome, an earlier version reported 47.6% and 65.3%, so quote the version |
 | [Flooding Spread of Manipulated Knowledge in LLM-Based Multi-Agent Communities (2407.07791)](https://arxiv.org/abs/2407.07791) | Abstract level |
 | [FARMA and SENTINEL (2607.05029)](https://arxiv.org/abs/2607.05029) | Abstract level |
 | [CaMeL: capabilities and information-flow control (2503.18813)](https://arxiv.org/abs/2503.18813) | Abstract level |
@@ -24,6 +24,7 @@ Every paper and report the design documents cite, with how closely it was read. 
 | [OpenLife (2606.31046)](https://arxiv.org/html/2606.31046v1) | Cited from a secondary summary, not yet verified |
 | [Chronicle (2609.20625)](https://arxiv.org/abs/2609.20625) | Cited from a secondary summary, not yet verified |
 | [Survive at All Costs (2603.05028)](https://www.alphaxiv.org/abs/2603.05028) | Abstract level; cited for prevalence only |
+| [Suspicion probes: Does Psychology Need More Effective Suspicion Probes? (APS Observer)](https://www.psychologicalscience.org/publications/observer/suspicion-probes.html) | Read at source (a news-style review of Barrett, Neuberg and Luce 2023, Chester and Lasko 2021 and Klein et al.; the primary papers were not read) |
 
 ## Reproduction and cultural evolution
 
