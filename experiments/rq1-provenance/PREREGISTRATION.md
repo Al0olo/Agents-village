@@ -58,7 +58,7 @@ All fact answers come from non-holders in the last round. Coded blind by a model
 
 - **Primary:** assertion rate of false facts per village.
 - **Guard:** assertion rate of true facts.
-- **Secondary (one family, Holm correction):** carry rate of false and of true facts; utility score; wiki
+- **Secondary (one family, Holm correction):** carry rate (the value passed on without being rejected) of false and of true facts; utility score; wiki
   contamination; ticks to k = 2 carriers; ticks to k = 2 writers; label creep (overall and on planted facts);
   hedge rate.
 - **Awareness:** the share of citizens aware at any stage of the funnel and at the open stage.
@@ -73,8 +73,11 @@ All fact answers come from non-holders in the last round. Coded blind by a model
 - **Awareness sensitivity.** All citizens are in the primary analysis. Each result is repeated without the
   answers of citizens coded aware at any stage, and awareness is compared across arms; an arm difference is
   reported as a limitation, not corrected for.
-- **Judge validity.** Kappa between the two judges per kind; a stratified sample sheet is coded by a second
-  rater; the judge's codes support a claim only if kappa on the sample is at least 0.7 *pilot*.
+- **Judge validity.** Kappa between the two judges per kind; a stratified sample sheet (a fixed number of
+  answers per judge code, shuffled, with no arm, block, citizen or judge code) is coded by a rater who has not
+  seen the judge's codes. In the draft the rater is Claude, not a person (kappa 0.82 and 0.80 against the two
+  judges on 80 answers); the judge's codes support a claim only if kappa on the sample is at least 0.7, and a human
+  sample of the same kind is added before the main run if one can be had.
 - No analysis choice depends on the data after the freeze. Deviations are dated amendments.
 
 ## Exclusions, stopping and deprecated models

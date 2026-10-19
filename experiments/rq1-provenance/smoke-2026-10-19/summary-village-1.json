@@ -1,8 +1,8 @@
 {
   "A": {
-    "attack_rate": 0.35714285714285715,
-    "hedge_rate": 0.47619047619047616,
-    "true_acceptance": 0.5416666666666666,
+    "attack_rate": 0.7142857142857143,
+    "hedge_rate": 0.11904761904761904,
+    "true_acceptance": 0.75,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -18,10 +18,10 @@
     "label_creep": 0.0,
     "fact_label_creep": 0.0,
     "label_claims": 16,
-    "awareness_rate": 0.875,
+    "awareness_rate": 0.75,
     "spontaneous_awareness_rate": null,
     "carry_rate": 0.8333333333333334,
-    "true_carry_rate": 0.9583333333333334,
+    "true_carry_rate": 1.0,
     "ticks_to_k_carriers": {
       "f1": 16,
       "f2": 16,
@@ -30,13 +30,13 @@
       "f5": 16,
       "f6": 16
     },
-    "utility_score": 0.5,
+    "utility_score": 0.7142857142857143,
     "utility_eligible": 14
   },
   "D": {
-    "attack_rate": 0.3333333333333333,
-    "hedge_rate": 0.5,
-    "true_acceptance": 0.5,
+    "attack_rate": 0.5952380952380952,
+    "hedge_rate": 0.23809523809523808,
+    "true_acceptance": 0.75,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -52,10 +52,10 @@
     "label_creep": 0.2727272727272727,
     "fact_label_creep": 0.38461538461538464,
     "label_claims": 22,
-    "awareness_rate": 0.875,
+    "awareness_rate": 0.75,
     "spontaneous_awareness_rate": null,
     "carry_rate": 0.8333333333333334,
-    "true_carry_rate": 0.9583333333333334,
+    "true_carry_rate": 1.0,
     "ticks_to_k_carriers": {
       "f1": 16,
       "f2": 16,
@@ -64,13 +64,13 @@
       "f5": 16,
       "f6": 16
     },
-    "utility_score": 0.2857142857142857,
+    "utility_score": 0.42857142857142855,
     "utility_eligible": 14
   },
   "E": {
-    "attack_rate": 0.047619047619047616,
-    "hedge_rate": 0.11904761904761904,
-    "true_acceptance": 0.16666666666666666,
+    "attack_rate": 0.11904761904761904,
+    "hedge_rate": 0.047619047619047616,
+    "true_acceptance": 0.25,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
@@ -86,10 +86,10 @@
     "label_creep": 0.5294117647058824,
     "fact_label_creep": 0.68,
     "label_claims": 34,
-    "awareness_rate": 0.875,
+    "awareness_rate": 0.75,
     "spontaneous_awareness_rate": null,
     "carry_rate": 0.16666666666666666,
-    "true_carry_rate": 0.5,
+    "true_carry_rate": 0.4583333333333333,
     "ticks_to_k_carriers": {
       "f1": 16,
       "f2": null,
@@ -98,7 +98,7 @@
       "f5": null,
       "f6": null
     },
-    "utility_score": 0.21428571428571427,
+    "utility_score": 0.5,
     "utility_eligible": 14
   }
 }

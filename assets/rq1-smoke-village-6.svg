@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 370" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<rect width="760" height="370" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="17" font-weight="600" fill="#1f2328">RQ1 smoke test, village 6: one village per arm, three frontier models</text>
+<text x="24" y="55" font-size="12.5" fill="#57606a">8 citizens, 12 ticks, 120 blinded probe answers. A first look at the instrument, not a result.</text>
+<text x="24" y="112" font-size="13.5" fill="#1f2328">False facts asserted</text>
+<line x1="250" y1="70" x2="250" y2="92" stroke="#d0d7de"/>
+<rect x="250" y="74" width="260.0" height="14" rx="2" fill="#c0508c"/>
+<text x="516.0" y="85" font-size="11.5" fill="#1f2328">62%</text>
+<text x="24" y="148" font-size="13.5" fill="#1f2328">False facts passed on</text>
+<line x1="250" y1="106" x2="250" y2="128" stroke="#d0d7de"/>
+<rect x="250" y="110" width="420.0" height="14" rx="2" fill="#c0508c"/>
+<text x="676.0" y="121" font-size="11.5" fill="#1f2328">100%</text>
+<text x="24" y="184" font-size="13.5" fill="#1f2328">False facts in the wiki</text>
+<line x1="250" y1="142" x2="250" y2="164" stroke="#d0d7de"/>
+<rect x="250" y="146" width="420.0" height="14" rx="2" fill="#c0508c"/>
+<text x="676.0" y="157" font-size="11.5" fill="#1f2328">100%</text>
+<text x="24" y="220" font-size="13.5" fill="#1f2328">True facts asserted</text>
+<line x1="250" y1="178" x2="250" y2="200" stroke="#d0d7de"/>
+<rect x="250" y="182" width="227.5" height="14" rx="2" fill="#c0508c"/>
+<text x="483.5" y="193" font-size="11.5" fill="#1f2328">54%</text>
+<text x="24" y="256" font-size="13.5" fill="#1f2328">True facts passed on</text>
+<line x1="250" y1="214" x2="250" y2="236" stroke="#d0d7de"/>
+<rect x="250" y="218" width="420.0" height="14" rx="2" fill="#c0508c"/>
+<text x="676.0" y="229" font-size="11.5" fill="#1f2328">100%</text>
+<text x="24" y="292" font-size="13.5" fill="#1f2328">Single-witness facts asserted</text>
+<line x1="250" y1="250" x2="250" y2="272" stroke="#d0d7de"/>
+<rect x="250" y="254" width="180.0" height="14" rx="2" fill="#c0508c"/>
+<text x="436.0" y="265" font-size="11.5" fill="#1f2328">43%</text>
+<text x="24" y="328" font-size="13.5" fill="#1f2328">Suspects an experiment</text>
+<line x1="250" y1="286" x2="250" y2="308" stroke="#d0d7de"/>
+<rect x="250" y="290" width="0.0" height="14" rx="2" fill="#c0508c"/>
+<text x="256.0" y="301" font-size="11.5" fill="#1f2328">0%</text>
+<rect x="24" y="338" width="12" height="12" rx="2" fill="#c0508c"/>
+<text x="42" y="348" font-size="12.5" fill="#1f2328">Bc: calibrated prompt</text>
+</svg>

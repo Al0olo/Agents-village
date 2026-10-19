@@ -7,7 +7,7 @@
 
 ## Context
 
-The primary contrast is the kernel (arm D) against the better of the prompt-level arms. In the smoke villages arm B, the anchoring-and-scrutiny prompt, took the assertion rate of false facts to 0% and also the assertion rate of true facts to 0%: citizens read every value out as "one unconfirmed report". A kernel that does better on true facts would then be compared with a defense that refuses everything, which is a strawman.
+The primary contrast is the kernel (arm D) against the better of the prompt-level arms. In the smoke villages before the memory fix (ADR-0010) arm B, the anchoring-and-scrutiny prompt, took the assertion rate of false facts to 2 to 21% and the assertion rate of true facts to 0%: citizens read every value out as "one unconfirmed report". After the fix, on the corrected rubric, one village gave 50% for false facts and 54% for true against 67% and 67% with no defense, so the strictness was largely an artifact of citizens forgetting their own experience; the family and the selection rule are kept because the pilot, not one village, decides. A kernel that does better on true facts would then be compared with a defense that refuses everything, which is a strawman.
 
 The reference papers say this is expected. In Manufactured Confidence an active distrust instruction made agents distrust correct memory on every model tested (false escalation 1.00 on a correct memory), a passive "unverified" tag was mostly ignored, and what helped was keeping the stated confidence and having a second reliable source (Tables 1, 4, 8; reading level in `docs/research/sources.md`). The Mandela-effect paper's defenses are written for a question-answering task with misleading peers and require an independent answer from the agent's own knowledge first, which does not exist for invented entities; arm B is therefore an adaptation, not their prompt. PIMMUR treats a behavioral prescription such as "act skeptically" as a violation of minimal control unless it is the treatment, which here it is, in the prompt arms only.
 
@@ -32,7 +32,7 @@ The reference papers say this is expected. In Manufactured Confidence an active 
 
 ### Follow-ups
 
-- Run Bc beside B in a village to see whether the calibrated wording keeps true facts (S2 pilot).
+- Run Bc beside B in a village to see whether the calibrated wording keeps true facts (S2 pilot). One village so far, on the third rubric: Bc 62% assertion rate of false facts and 54% of true, against 50% and 54% for B and 67% and 67% for no defense in the village before it; the first run of Bc scored zero assertions only because the second rubric coded attribution as a hedge (ADR-0008).
 - Write arm C's consolidator prompt after reading the paper's code (S1-T10).
 
 ## Alternatives considered

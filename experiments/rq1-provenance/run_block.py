@@ -91,6 +91,9 @@ def main() -> None:
     parser.add_argument("--max-cost", type=float, default=15.0)
     parser.add_argument("--max-calls", type=int, default=6000)
     parser.add_argument("--colluding", action="store_true")
+    parser.add_argument(
+        "--judge-only", action="store_true", help="code the logs already in OUT"
+    )
     args = parser.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -103,6 +106,11 @@ def main() -> None:
         max_calls=args.max_calls,
         kill_file=out / "STOP",
     )
+    available = credits_available(transport)
+    if available < args.max_cost:
+        sys.exit(
+            f"only {available:.2f} dollars of credit are left, below the cap of {args.max_cost}"
+        )
     run = RunConfig(specs(), 3, LOOP)
     arms = chosen(args.arms.split(","), args.block)
     config = BlockConfig(
@@ -116,9 +124,12 @@ def main() -> None:
         args.days,
         args.colluding,
     )
-    result = run_block(config, lambda: stack(gateway), out)
-    print("block done:", json.dumps(gateway.summary()), flush=True)
-    judge(result.logs, out, gateway)
+    if args.judge_only:
+        logs = {arm.name: out / f"{arm.name}.jsonl" for arm in arms}
+    else:
+        logs = run_block(config, lambda: stack(gateway), out).logs
+        print("block done:", json.dumps(gateway.summary()), flush=True)
+    judge(logs, out, gateway)
     manifest = {
         "seed": args.seed,
         "block": args.block,
@@ -133,6 +144,15 @@ def main() -> None:
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print("done:", json.dumps(gateway.summary()), flush=True)
+
+
+def credits_available(transport) -> float:
+    """What the key and the account can still spend, in dollars."""
+    key = transport("GET", "/auth/key", None)["data"]
+    credits = transport("GET", "/credits", None)["data"]
+    account = credits["total_credits"] - credits["total_usage"]
+    remaining = key.get("limit_remaining")
+    return account if remaining is None else min(account, remaining)
 
 
 def judge(logs: dict[str, Path], out: Path, gateway: Gateway) -> None:

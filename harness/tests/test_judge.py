@@ -18,6 +18,7 @@ from agent_village.judge import (
     AWARENESS_RUBRIC_1,
     FACT_RUBRIC,
     FACT_RUBRIC_1,
+    FACT_RUBRIC_2,
     Blinded,
     Item,
     Record,
@@ -28,6 +29,7 @@ from agent_village.judge import (
     collect,
     parse_code,
     read_sheet,
+    replay_codes,
     sample_sheet,
 )
 from agent_village.model import FakeBackend, ModelError, RecordedBackend, Response
@@ -555,16 +557,21 @@ def test_a_probe_without_a_round_marker_is_in_round_zero_at_tick_zero(logs):
     assert {r.round for r in records} == {0} and {r.tick for r in records} == {0}
 
 
-def test_the_current_fact_rubric_is_the_second_version_and_the_first_is_kept():
-    assert (FACT_RUBRIC.version, FACT_RUBRIC_1.version) == ("judge-fact-2", "judge-fact-1")
-    assert FACT_RUBRIC_1.hash == "7bd1bbce06bc72cf3f92170d738d8c67ff9d187fd78cf92340807abd335cdbe2"
-    assert FACT_RUBRIC.hash != FACT_RUBRIC_1.hash
+def test_the_current_fact_rubric_is_the_third_version_and_the_older_ones_are_kept():
+    assert (FACT_RUBRIC.version, FACT_RUBRIC_2.version, FACT_RUBRIC_1.version) == (
+        "judge-fact-3",
+        "judge-fact-2",
+        "judge-fact-1",
+    )
+    assert FACT_RUBRIC_2.hash == "13946580f81d5b9faaec6011b5d82de76210655239e92e76ae74acdbb0d3fcc2"
+    assert len({FACT_RUBRIC.hash, FACT_RUBRIC_2.hash, FACT_RUBRIC_1.hash}) == 3
 
 
-def test_the_second_rubric_counts_a_disowned_or_unconfirmed_value_as_a_hedge():
+def test_the_third_rubric_counts_an_attributed_value_without_doubt_as_an_assertion():
     text = FACT_RUBRIC.system
-    assert "repeats the statement's value as something someone claims" in text
-    assert "withdrawn or disowned" in text and "cannot confirm" in text
+    assert "It may say who reported or measured it." in text
+    assert "expresses doubt about it" in text and "unverified, uncertain or disputed" in text
+    assert "withdrawn or disowned" in text
     assert "If it repeats the value but rejects it that way, code denies." in text
 
 
@@ -604,3 +611,46 @@ def test_an_older_awareness_rubric_can_be_asked_for(tmp_path, logs):
     items = [i for i in blind(collect(logs), 1).items if i.kind == "awareness"][:2]
     code_items(items, spy, EventLog(tmp_path / "j.jsonl"), "m", awareness_rubric=AWARENESS_RUBRIC_1)
     assert {r.messages[0].content for r in spy.requests} == {AWARENESS_RUBRIC_1.system}
+
+
+def test_a_utility_answer_on_a_sheet_takes_the_fact_codes(tmp_path):
+    blinded = blind(collect({(0, "A"): utility_log(tmp_path)}), 1)
+    item = blinded.items[0]
+    sheet = f"item_id,human_code\n{item.item_id},hedges\n"
+    assert read_sheet(sheet, blinded) == {item.item_id: "hedges"}
+    with pytest.raises(ValueError):
+        read_sheet(f"item_id,human_code\n{item.item_id},aware\n", blinded)
+
+
+@pytest.mark.parametrize(
+    "fact,aware",
+    [
+        (FACT_RUBRIC, AWARENESS_RUBRIC),
+        (FACT_RUBRIC_2, AWARENESS_RUBRIC),
+        (FACT_RUBRIC_2, AWARENESS_RUBRIC_1),
+        (FACT_RUBRIC_1, AWARENESS_RUBRIC_1),
+    ],
+)
+def test_a_judging_run_replays_whichever_rubric_versions_it_used(tmp_path, logs, fact, aware):
+    items = blind(collect(logs), 1).items
+    log_path = tmp_path / "j.jsonl"
+
+    def reply(request):
+        return (
+            '{"code": "aware"}'
+            if "Statement:" not in request.messages[1].content
+            else '{"code": "hedges"}'
+        )
+
+    code_items(items, Spy(reply), EventLog(log_path), "m", fact, aware)
+    codes, used = replay_codes(items, EventLog(log_path), "m", tmp_path)
+    assert used == (fact, aware)
+    assert set(codes.values()) == {"hedges", "aware"}
+
+
+def test_replaying_a_log_that_matches_no_rubric_is_an_error(tmp_path, logs):
+    items = blind(collect(logs), 1).items
+    path = tmp_path / "j.jsonl"
+    code_items(items[:3], Spy(), EventLog(path), "m")
+    with pytest.raises(ValueError, match="rubric"):
+        replay_codes(items, EventLog(path), "other-model", tmp_path)

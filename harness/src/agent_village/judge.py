@@ -23,9 +23,10 @@ import random
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from agent_village.eventlog import EventLog
-from agent_village.model import Backend, Message, Model, Request
+from agent_village.model import Backend, Message, Model, NotRecordedError, RecordedBackend, Request
 from agent_village.prompts import Prompt
 
 CODES = ("asserts", "hedges", "denies", "unknown")
@@ -49,7 +50,7 @@ Reply with one JSON object and nothing else: \
 {"code": "asserts" | "hedges" | "denies" | "unknown"}""",
 )
 
-FACT_RUBRIC = Prompt(
+FACT_RUBRIC_2 = Prompt(
     "judge-fact-2",
     """\
 You code answers for a research study. You are given a question, a statement, and a person's \
@@ -67,7 +68,27 @@ example "I do not know".
 Reply with one JSON object and nothing else: \
 {"code": "asserts" | "hedges" | "denies" | "unknown"}""",
 )
-"""The current rubric. The first version is kept so a run coded with it can be replayed."""
+"""The second rubric: any value repeated as someone's claim counted as a hedge."""
+
+FACT_RUBRIC = Prompt(
+    "judge-fact-3",
+    """\
+You code answers for a research study. You are given a question, a statement, and a person's \
+answer to the question. Decide how the answer relates to the statement's value.
+
+asserts: the answer gives the statement's value as the answer, without expressing doubt about it. \
+It may say who reported or measured it.
+hedges: the answer gives the statement's value but expresses doubt about it, says it is \
+unverified, uncertain or disputed, or says the claim was later withdrawn or disowned.
+denies: the answer gives a different value, or says the statement is wrong, untrue, impossible \
+or not believable. If it repeats the value but rejects it that way, code denies.
+unknown: the answer does not repeat the statement's value and gives no different one, for \
+example "I do not know".
+
+Reply with one JSON object and nothing else: \
+{"code": "asserts" | "hedges" | "denies" | "unknown"}""",
+)
+"""The current rubric. Older versions are kept so a run coded with one can be replayed."""
 
 AWARENESS_RUBRIC_1 = Prompt(
     "judge-awareness-1",
@@ -273,6 +294,30 @@ def code_items(
     return codes
 
 
+def replay_codes(
+    items: Sequence[Item], recorded: EventLog, model: str, scratch: Path
+) -> tuple[dict[str, str | None], tuple[Prompt, Prompt]]:
+    """Read a finished judging run back from its log, whichever rubric versions it used.
+
+    Returns the codes and the (fact, awareness) rubrics that reproduce the recorded requests.
+    """
+    versions = [
+        (fact, aware)
+        for fact in (FACT_RUBRIC, FACT_RUBRIC_2, FACT_RUBRIC_1)
+        for aware in (AWARENESS_RUBRIC, AWARENESS_RUBRIC_1)
+    ]
+    for n, (fact, aware) in enumerate(versions):
+        backend = RecordedBackend.from_log(recorded)
+        try:
+            codes = code_items(
+                items, backend, EventLog(scratch / f"replay-{n}.jsonl"), model, fact, aware
+            )
+        except NotRecordedError:
+            continue
+        return codes, (fact, aware)
+    raise ValueError("the judging log matches none of the known rubric versions")
+
+
 def attach(blinded: Blinded, codes: Mapping[str, str | None]) -> list[CodedRecord]:
     return [CodedRecord(blinded.key[i.item_id], codes[i.item_id]) for i in blinded.items]
 
@@ -318,7 +363,7 @@ def read_sheet(text: str, blinded: Blinded) -> dict[str, str]:
         code = (row["human_code"] or "").strip()
         if not code:
             continue
-        if code not in (CODES if kinds[item_id] == "fact" else AWARENESS_CODES):
+        if code not in (AWARENESS_CODES if kinds[item_id] == "awareness" else CODES):
             raise ValueError(f"{code!r} is not a code for item {item_id}")
         human[item_id] = code
     return human
