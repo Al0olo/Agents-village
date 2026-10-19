@@ -98,6 +98,7 @@ def launch(
                     "config_hash": config.hash,
                     "prompt_version": arm.prompt.version,
                     "prompt_hash": arm.prompt.hash,
+                    "settings": arm.settings,
                 },
             )
             worlds[arm.name] = world

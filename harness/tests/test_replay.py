@@ -7,7 +7,14 @@ import pytest
 from villages import drive, gossip, specs
 
 from agent_village.admission import admit
-from agent_village.arms import BASE, KERNEL_ADMISSION, NO_DEFENSE, Arm, admit_all
+from agent_village.arms import (
+    BASE,
+    KERNEL_ADMISSION,
+    NO_DEFENSE,
+    Arm,
+    admit_all,
+    random_block_arm,
+)
 from agent_village.eventlog import EventLog
 from agent_village.fork import Snapshot, World, build
 from agent_village.launch import RunConfig, launch
@@ -412,3 +419,26 @@ def test_a_branch_leaves_only_its_own_file_in_the_destination_folder(recorded, t
         CONFIG,
     ).run()
     assert [p.name for p in folder.iterdir()] == ["b.jsonl"]
+
+
+def test_a_different_policy_setting_is_caught_at_the_launch_event(tmp_path):
+    world = build(
+        EventLog(tmp_path / "base.jsonl"),
+        random.Random(SEED),
+        FakeBackend(gossip),
+        BASE.policy,
+        BASE.prompt,
+        specs(),
+        3,
+    )
+    drive(world, 6)
+    snapshot = world.snapshot()
+    arm = random_block_arm(0.5, "s")
+    run = launch(snapshot, world.log, tmp_path / "arms", [arm], lambda: FakeBackend(gossip), CONFIG)
+    run.run(4)
+    other = random_block_arm(0.4, "s")
+    log = run.worlds["E"].log
+    result = audit(log, tmp_path / "arm.jsonl", snapshot, other, CONFIG)
+    assert result.divergence.index == snapshot.events
+    assert result.divergence.expected.kind == "launch"
+    assert audit(log, tmp_path / "again.jsonl", snapshot, arm, CONFIG).ok
