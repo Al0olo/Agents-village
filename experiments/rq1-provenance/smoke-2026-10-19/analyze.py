@@ -1,11 +1,11 @@
 """Recompute the smoke test's measures and figure from the recorded logs, offline.
 
-    python experiments/rq1-provenance/smoke-2026-10-19/analyze.py LOG_DIRECTORY
+    python experiments/rq1-provenance/smoke-2026-10-19/analyze.py LOG_DIRECTORY [FIGURE.svg]
 
-``LOG_DIRECTORY`` holds ``A.jsonl``, ``D.jsonl``, ``E.jsonl`` and ``judge.jsonl``. The judge's
-replies are read back from ``judge.jsonl`` through ``RecordedBackend``, so the codes are the
-ones the run produced and no model is called. Writes ``summary.json`` next to this file and
-the figure ``assets/rq1-smoke.svg``.
+``LOG_DIRECTORY`` holds one log per arm (``A``, ``D``, ``G``, ``E``; those present are used)
+and ``judge.jsonl``. The judge's replies are read back from ``judge.jsonl`` through
+``RecordedBackend``, so the codes are the ones the run produced and no model is called.
+Writes ``summary-<directory name>.json`` next to this file, and the figure if a path is given.
 """
 
 from __future__ import annotations
@@ -28,11 +28,12 @@ from agent_village.model import RecordedBackend
 ARMS = {
     "A": "no defense",
     "D": "kernel admission",
+    "G": "corroborated wiki",
     "E": "random block at D's rate",
 }
 JUDGE_MODEL = "anthropic/claude-haiku-5.5"
 BLIND_SEED = 7
-COLORS = {"A": "#8b95a5", "D": "#2f6fdb", "E": "#d9822b"}
+COLORS = {"A": "#8b95a5", "D": "#2f6fdb", "G": "#2e9e6b", "E": "#d9822b"}
 BARS = (
     ("attack_rate", "False facts asserted"),
     ("wiki_contamination", "False facts in the wiki"),
@@ -42,27 +43,31 @@ BARS = (
 )
 
 
-def measures(directory: Path) -> dict[str, Metrics]:
-    logs = {(0, arm): EventLog(directory / f"{arm}.jsonl") for arm in ARMS}
-    blinded = blind(collect(logs), BLIND_SEED)
+def measures(directory: Path) -> tuple[dict[str, Metrics], int]:
+    present = [arm for arm in ARMS if (directory / f"{arm}.jsonl").exists()]
+    logs = {(0, arm): EventLog(directory / f"{arm}.jsonl") for arm in present}
+    records = collect(logs)
+    blinded = blind(records, BLIND_SEED)
     recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
     with tempfile.TemporaryDirectory() as scratch:
         replay = EventLog(Path(scratch) / "judge.jsonl")
         codes = code_items(blinded.items, recorded, replay, JUDGE_MODEL)
     coded = attach(blinded, codes)
-    return {arm: compute(logs[(0, arm)], coded, 0, arm) for arm in ARMS}
+    return {arm: compute(logs[(0, arm)], coded, 0, arm) for arm in present}, len(
+        records
+    )
 
 
-def figure(results: dict[str, Metrics]) -> str:
-    width, left, top, row, bar, gap = 760, 250, 74, 74, 14, 5
+def figure(results: dict[str, Metrics], answers: int) -> str:
+    width, left, top, row, bar, gap = 760, 250, 74, 92, 14, 5
     height = top + row * len(BARS) + 62
     scale = width - left - 90
     svg = "http://www.w3.org/2000/svg"
     font = "-apple-system,Segoe UI,Helvetica,Arial,sans-serif"
     title = "RQ1 smoke test: one village per arm, three frontier models"
     subtitle = (
-        "8 citizens, 12 ticks, 312 blinded probe answers. A first look at the instrument, "
-        "not a result."
+        f"8 citizens, 12 ticks, {answers} blinded probe answers. A first look at the "
+        "instrument, not a result."
     )
     out = [
         f'<svg xmlns="{svg}" viewBox="0 0 {width} {height}" font-family="{font}">',
@@ -73,13 +78,13 @@ def figure(results: dict[str, Metrics]) -> str:
     for i, (field, label) in enumerate(BARS):
         y = top + i * row
         out.append(
-            f'<text x="24" y="{y + 28}" font-size="13.5" fill="#1f2328">{label}</text>'
+            f'<text x="24" y="{y + 38}" font-size="13.5" fill="#1f2328">{label}</text>'
         )
         out.append(
-            f'<line x1="{left}" y1="{y - 4}" x2="{left}" y2="{y + 3 * bar + 2 * gap + 4}" '
+            f'<line x1="{left}" y1="{y - 4}" x2="{left}" y2="{y + len(results) * bar + (len(results) - 1) * gap + 4}" '
             'stroke="#d0d7de"/>'
         )
-        for j, arm in enumerate(ARMS):
+        for j, arm in enumerate(results):
             value = getattr(results[arm], field)
             yy = y + j * (bar + gap)
             w = 0 if value is None else value * scale
@@ -93,8 +98,9 @@ def figure(results: dict[str, Metrics]) -> str:
                 f'fill="#1f2328">{text}</text>'
             )
     legend_y = height - 24
-    for j, (arm, name) in enumerate(ARMS.items()):
-        x = 24 + j * 230
+    for j, arm in enumerate(results):
+        name = ARMS[arm]
+        x = 24 + j * 180
         out.append(
             f'<rect x="{x}" y="{legend_y - 10}" width="12" height="12" rx="2" fill="{COLORS[arm]}"/>'
         )
@@ -105,11 +111,15 @@ def figure(results: dict[str, Metrics]) -> str:
     return "\n".join(out) + "\n"
 
 
-def main(directory: str) -> None:
-    results = measures(Path(directory))
+def main(directory: str, figure_path: str | None = None) -> None:
+    folder = Path(directory)
+    results, answers = measures(folder)
     summary = {arm: asdict(m) for arm, m in results.items()}
-    (HERE / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    (ROOT / "assets" / "rq1-smoke.svg").write_text(figure(results))
+    (HERE / f"summary-{folder.name}.json").write_text(
+        json.dumps(summary, indent=2) + "\n"
+    )
+    if figure_path:
+        Path(figure_path).write_text(figure(results, answers))
     for arm, m in results.items():
         print(
             f"{arm}: attack {m.attack_rate:.2f}, wiki {m.wiki_contamination:.2f}, "
@@ -119,4 +129,4 @@ def main(directory: str) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(*sys.argv[1:3])

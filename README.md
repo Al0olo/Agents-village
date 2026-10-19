@@ -55,7 +55,7 @@ be replayed and any arm re-driven from recorded outputs.
 | Piece | State |
 | --- | --- |
 | Event log, scheduler, citizens, memory tiers, messages | done |
-| Arm A (no defense), arm D (kernel admission), arm E (random block at D's rate) | done; arms B and C not yet |
+| Arm A (no defense), arm D (kernel admission), arm E (random block at D's rate), exploratory arm G (corroborated wiki) | done; arms B and C not yet |
 | Planted facts: false, true, and true with one witness | done |
 | Blinded judge, human-validation sheet, the six measures | done |
 | Forks, lockstep launch, audit replay | done |
@@ -64,36 +64,40 @@ be replayed and any arm re-driven from recorded outputs.
 
 ### First look with frontier models
 
-One village per arm, run live on Claude Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro (794 calls,
-$1.77). This is a smoke test of the instrument, **not a result**: one block, 12 ticks instead of
-3 days, no pre-registration, judge codes not yet checked by a human.
+Two smoke tests, run live on Claude Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro: one village per arm,
+twice (1,821 calls, $3.64). They check the instrument; they are **not a result**: one block each,
+12 ticks instead of 3 days, no pre-registration, judge codes not yet checked by a human. The figure
+is the second village, which also ran arm G.
 
 <p align="center">
-  <img src="assets/rq1-smoke.svg" alt="Bar chart of five measures for arms A, D and E from one smoke-test village each" width="100%">
+  <img src="assets/rq1-smoke.svg" alt="Bar chart of five measures for arms A, D, G and E from one smoke-test village each" width="100%">
 </p>
 
-What it showed, and what it means for the design:
+What they showed, and what it means for the design:
 
-- **The kernel did not beat no defense here, and the reason is structural.** A planted false fact is
-  the first-hand observation of its one witness. In arms A and D, 5 of the 6 false facts reached the
-  shared wiki, each written by its own witness citing their own observation, which the kernel admits
-  because it checks provenance, not truth. What the kernel stopped was re-telling: 10 claims went to
-  recall as hearsay. Whether a lone first-hand witness should be able to publish is a design decision
-  for the owner before pre-registration.
-- **The random block cut false facts and true facts together** (true facts asserted fell from 75% to
-  17%). On one village that is an anecdote; it is why the control exists.
-- **Blocking has a visible cost.** Facts only one citizen had witnessed were asserted 64% of the time
-  without a defense and 43% under the kernel (14 answers per arm).
-- **Frontier models notice.** In every arm, 7 of 8 citizens said, when asked what is going on, that the
-  village feels constructed. The question itself says "strange or artificial", so this needs a human
-  check and a better-worded probe.
+- **A lone first-hand witness passes the kernel.** A planted false fact is the first-hand observation of
+  its one witness. In both villages every false fact that reached the wiki under arms A and D was written
+  by its own witness citing their own observation, which the kernel admits because it checks
+  provenance, not truth. In the first village that made D match no defense (attack rate 50% against 57%).
+- **Arm G closes that gap, at the price of all sharing.** Arm G is the kernel with a wiki that needs two
+  independent sources. No false fact reached its wiki and none was asserted (0 of 42), but no true fact
+  was asserted either: 0 of 24 true facts and 0 of 14 single-witness facts, against 33% and 64% under D.
+  It is exploratory and excluded from the primary contrast.
+- **One village is noisy.** The two villages used the same seed and models, yet arm A's attack rate was
+  57% and then 26%, and wiki contamination 83% and then 50%. That spread is what the pilot measures,
+  and why no contrast here means anything yet.
+- **The random block cut false and true facts together** (arm E, matched to D's block rate), which is why
+  the control exists.
+- **Frontier models notice.** In every arm of both villages, 6 to 8 of 8 citizens said, when asked what is
+  going on, that the village feels constructed. The question itself says "strange or artificial", so this
+  needs a human check and a better-worded probe.
 - **Time to k adopters was blind to the spread.** Citizens learned by reading the wiki, not by writing
   claims, so no false fact reached two adopters by the measure as defined.
-- **The plumbing held.** Every call named its provider and the dated snapshot behind its alias, the
-  summed per-call costs matched the account's usage counter to 0.1%, no model drifted, and 10 of 518
-  citizen calls needed a retry.
+- **The plumbing held.** Every call named its provider and the dated snapshot behind its alias, summed
+  per-call costs matched the account's usage counter to 0.1% or better, no model drifted, and about 1 in
+  70 citizen calls needed a retry.
 
-The analysis that produced the figure is
+The analysis behind the figure is in
 [`experiments/rq1-provenance/smoke-2026-10-19/`](experiments/rq1-provenance/smoke-2026-10-19/). Raw
 logs are withheld until the canary string and log release plan exist.
 

@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · S1-T33 arm G, the corroborated wiki
+
+- PR #24 (T11, smoke test, README) was merged. The owner said to follow my recommendation: keep D as registered and add the exploratory arm. PR #25 holds this work.
+- `Claim` gained `shared` (set by `Memory.write_claim` from the requested tier) so a policy can tell the tiers apart; `admission.admit_corroborated` judges a core claim as `admit` does and needs two sources with disjoint origins for a wiki claim, counting a first-hand event as one source whose origin is the writer. `arms.CORROBORATED` is arm G, in `ARMS`. ADR-0007 (proposed), sprint ticket T33, PRD mention. Tests first: 24 new, 708 in all, 100% coverage; 10 mutants, all killed after I added tests for a DID event as a source and for told events with no recorded origin (an empty origin set is disjoint from everything and would have admitted two of them). A property test checks G never admits what D refuses.
+- My first village-level test passed nothing through G's wiki because the gossip scenario never cited first-hand events for shared claims; I replaced it with a scenario that publishes sightings, with and without a told source, and recomputes the decision from the log independently.
+- Live: second frontier village with A, D, G and E (1,027 calls, $1.87). G kept every false fact out of the wiki and silenced all sharing; A's attack rate was 26% against 57% in the first village with the same seed and models, so single-village numbers swing a lot. I checked in the logs that every false fact in the A and D wikis was written by its own witness before saying so in the README, which now shows this village and the two-village findings.
+- Not verified: G against D over several blocks, a milder corroboration rule, and the judge against a human.
+
 ## 2026-10-19 · Claude Sonnet 5.5 · S1-T11 arm E and the first frontier-model smoke test
 
 - PR #23 (T19, fixes, ADR decisions) was merged. PR #24 holds this work. The owner asked for T11, then, mid-session, allowed frontier models for testing with the $50 on the key ("all yours", top-up on request) and asked for the harness progress and the frontier run to go on the README, which still said design phase.

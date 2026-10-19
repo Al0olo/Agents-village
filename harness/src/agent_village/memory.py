@@ -60,7 +60,7 @@ class Memory:
         if tier not in (Tier.CORE, Tier.SHARED):
             raise ValueError("claims are written to core or shared memory")
         self._sync()
-        decision = self._policy(Claim(text, writer, cites), self._evidence)
+        decision = self._policy(Claim(text, writer, cites, tier is Tier.SHARED), self._evidence)
         stored = tier if decision is Admission.FACT else Tier.RECALL
         self._log.append(
             "claim",

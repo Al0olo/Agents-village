@@ -1,12 +1,14 @@
 import random
+import re
 
 import pytest
-from villages import NAMES, drive, gossip, specs
+from villages import NAMES, drive, gossip, remember, say, specs
 
-from agent_village.admission import Admission, Claim, Event, Kind, admit
+from agent_village.admission import Admission, Claim, Event, Kind, admit, admit_corroborated
 from agent_village.arms import (
     ARMS,
     BASE,
+    CORROBORATED,
     KERNEL_ADMISSION,
     NO_DEFENSE,
     RandomBlock,
@@ -66,7 +68,7 @@ def oracle(log, claim):
 
 
 def test_the_registry_holds_the_arms_by_their_names():
-    assert set(ARMS) == {"A", "D"}
+    assert set(ARMS) == {"A", "D", "G"}
     assert all(arm.name == name for name, arm in ARMS.items())
 
 
@@ -326,3 +328,108 @@ def test_in_a_village_the_random_block_stores_backed_and_unbacked_claims_alike(a
     backed = [e for e in after if oracle(world.log, e) == "fact"]
     assert backed and any(e.payload["admission"] == "hearsay" for e in backed)
     assert any(e.payload["admission"] == "fact" for e in after if oracle(world.log, e) == "hearsay")
+
+
+def test_the_corroborated_arm_differs_from_the_kernel_only_in_its_policy():
+    assert CORROBORATED.name == "G" and ARMS["G"] is CORROBORATED
+    assert CORROBORATED.prompt is KERNEL_ADMISSION.prompt
+    assert CORROBORATED.policy is admit_corroborated and CORROBORATED.settings == {}
+
+
+def sources(log, claim):
+    """Independent origins behind a claim, recomputed from the log alone."""
+    found = []
+    for c in dict.fromkeys(claim.payload["cites"]):
+        if not (c.isdigit() and int(c) < claim.id):
+            continue
+        e = log[int(c)]
+        if e.writer != claim.writer:
+            continue
+        if e.kind in ("saw", "did"):
+            found.append(frozenset({claim.writer}))
+        elif e.kind == "told" and e.payload["origins"] and claim.writer not in e.payload["origins"]:
+            found.append(frozenset(e.payload["origins"]))
+    return found
+
+
+def corroborated(log, claim):
+    found = sources(log, claim)
+    return any(a.isdisjoint(b) for i, a in enumerate(found) for b in found[i + 1 :])
+
+
+def publisher(request):
+    """Citizens who put what they saw in the wiki, citing what they were told when they can."""
+    h = int(request.hash, 16)
+    prompt = request.messages[1].content
+    saws = [int(i) for i in re.findall(r"^\[(\d+)\] You saw: ", prompt, re.MULTILINE)]
+    tolds = [int(i) for i in re.findall(r"^\[(\d+)\] \w+ told you: ", prompt, re.MULTILINE)]
+    me = request.messages[0].content.split(".")[0].removeprefix("You are ")
+    others = [n for n in NAMES if n != me]
+    if h % 3 == 0 and saws:
+        cites = [saws[(h >> 4) % len(saws)]] + tolds[:1]
+        return remember(f"saw {h % 97}", "seen", cites, "shared")
+    if h % 3 == 1:
+        return say(others[(h >> 8) % len(others)], f"news {h % 97}")
+    return '{"action": "sleep", "ticks": 2}'
+
+
+@pytest.fixture(scope="module")
+def wiki_run(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("wiki")
+    base = build(
+        EventLog(tmp / "base.jsonl"),
+        random.Random(3),
+        FakeBackend(publisher),
+        BASE.policy,
+        BASE.prompt,
+        specs(),
+        3,
+    )
+    drive(base, 24)
+    snap = base.snapshot()
+    worlds = {}
+    for arm in (KERNEL_ADMISSION, CORROBORATED):
+        worlds[arm.name] = fork(
+            snap,
+            base.log,
+            tmp / f"{arm.name}.jsonl",
+            FakeBackend(publisher),
+            arm.policy,
+            arm.prompt,
+            specs(),
+            3,
+        )
+        drive(worlds[arm.name], 48)
+    return snap, worlds
+
+
+def wiki_claims(world, after):
+    return [e for e in claims(world, after) if e.payload["requested"] == "shared"]
+
+
+def test_in_a_village_a_shared_claim_is_admitted_only_with_two_independent_sources(wiki_run):
+    snap, worlds = wiki_run
+    world = worlds["G"]
+    wiki = wiki_claims(world, snap.events)
+    assert any(e.payload["admission"] == "fact" for e in wiki)
+    assert any(e.payload["admission"] == "hearsay" and oracle(world.log, e) == "fact" for e in wiki)
+    for claim in wiki:
+        expected = "fact" if corroborated(world.log, claim) else "hearsay"
+        assert claim.payload["admission"] == expected, claim.id
+
+
+def test_the_kernel_publishes_the_first_hand_claims_the_corroborated_arm_withholds(wiki_run):
+    snap, worlds = wiki_run
+    lone = [
+        e
+        for e in wiki_claims(worlds["D"], snap.events)
+        if e.payload["admission"] == "fact" and not corroborated(worlds["D"].log, e)
+    ]
+    assert lone
+
+
+def test_in_a_village_a_private_claim_is_admitted_as_under_the_kernel(wiki_run):
+    snap, worlds = wiki_run
+    private = [e for e in claims(worlds["G"], snap.events) if e.payload["requested"] == "core"]
+    for claim in private:
+        assert claim.payload["admission"] == oracle(worlds["G"].log, claim), claim.id

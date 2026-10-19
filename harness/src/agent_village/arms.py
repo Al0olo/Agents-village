@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from agent_village.admission import Admission, Claim, Event, admit
+from agent_village.admission import Admission, Claim, Event, admit, admit_corroborated
 from agent_village.eventlog import EventLog, canonical_hash
 from agent_village.memory import Policy
 from agent_village.prompts import BASELINE, Prompt
@@ -77,6 +77,10 @@ def matched_rate(log: EventLog, start: int) -> float:
 NO_DEFENSE = Arm("A", admit_all, BASELINE)
 KERNEL_ADMISSION = Arm("D", admit, BASELINE)
 
+CORROBORATED = Arm("G", admit_corroborated, BASELINE)
+"""Exploratory: the kernel, but the shared wiki also needs two independent sources, so a lone
+first-hand witness cannot publish. Excluded from the primary contrast, like arm F."""
+
 BASE = NO_DEFENSE
 
-ARMS = {arm.name: arm for arm in (NO_DEFENSE, KERNEL_ADMISSION)}
+ARMS = {arm.name: arm for arm in (NO_DEFENSE, KERNEL_ADMISSION, CORROBORATED)}

@@ -4,7 +4,7 @@ from collections import Counter
 import pytest
 from villages import NAMES, gossip
 
-from agent_village.admission import Admission, Kind, admit
+from agent_village.admission import Admission, Kind, admit, admit_corroborated
 from agent_village.arms import BASE, KERNEL_ADMISSION, NO_DEFENSE
 from agent_village.eventlog import EventLog
 from agent_village.facts import Level, generate, utility_facts
@@ -333,3 +333,41 @@ def test_the_kernel_hears_a_utility_fact_from_its_single_witness_as_hearsay(tmp_
         listener, utility.fact.text, Kind.TOLD, (told,), Tier.SHARED
     )
     assert entry.admission is Admission.HEARSAY
+
+
+def test_the_corroborated_policy_stops_a_lone_witness_from_publishing_a_false_fact(tmp_path):
+    world = fresh(tmp_path)
+    plan = make_plan(generate(1, 0), ROSTER, 1, 0)
+    plant(world, plan)
+    false = next(p for p in plan.plantings if not p.fact.truth)
+    (witness,) = false.holders
+    seen = next(
+        str(e.id)
+        for e in world.log
+        if e.kind == "saw" and e.writer == witness and e.payload["text"] == false.fact.observation
+    )
+    kernel = Memory(world.log, admit).write_claim(
+        witness, false.fact.text, Kind.SEEN, (seen,), Tier.SHARED
+    )
+    strict = Memory(world.log, admit_corroborated).write_claim(
+        witness, false.fact.text, Kind.SEEN, (seen,), Tier.SHARED
+    )
+    assert kernel.admission is Admission.FACT and strict.admission is Admission.HEARSAY
+
+
+def test_a_true_fact_with_two_witnesses_still_reaches_the_wiki_when_one_tells_the_other(tmp_path):
+    world = fresh(tmp_path)
+    plan = make_plan(generate(1, 0), ROSTER, 1, 0)
+    plant(world, plan)
+    true = next(p for p in plan.plantings if p.fact.truth)
+    first, second = true.holders
+    seen = next(
+        str(e.id)
+        for e in world.log
+        if e.kind == "saw" and e.writer == first and e.payload["text"] == true.fact.observation
+    )
+    told = tell(world.log, second, first, true.fact.text)
+    entry = Memory(world.log, admit_corroborated).write_claim(
+        first, true.fact.text, Kind.SEEN, (seen, told), Tier.SHARED
+    )
+    assert entry.admission is Admission.FACT and entry.tier is Tier.SHARED
