@@ -237,6 +237,7 @@ def _launched_as(event: LogEvent, arm: Arm, config: RunConfig) -> bool:
         p["arm"] == arm.name
         and p["config_hash"] == config.hash
         and p["prompt_hash"] == arm.prompt.hash
+        and p["settings"] == arm.settings
     )
 
 

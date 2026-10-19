@@ -7,7 +7,7 @@ import pytest
 from villages import NAMES, drive, gossip, specs
 
 from agent_village.admission import admit
-from agent_village.arms import ARMS, BASE, KERNEL_ADMISSION, NO_DEFENSE, Arm
+from agent_village.arms import ARMS, BASE, KERNEL_ADMISSION, NO_DEFENSE, Arm, random_block_arm
 from agent_village.eventlog import EventLog
 from agent_village.fork import build
 from agent_village.launch import DriftError, Launch, RunConfig, launch
@@ -139,6 +139,7 @@ def test_each_log_records_the_launch(tmp_path, base):
         assert marker.payload["config_hash"] == CONFIG.hash
         assert marker.payload["prompt_version"] == ARMS[name].prompt.version
         assert marker.payload["prompt_hash"] == ARMS[name].prompt.hash
+        assert marker.payload["settings"] == ARMS[name].settings
 
 
 def test_the_config_hash_is_shared_and_sensitive_to_every_setting(tmp_path, base):
@@ -349,3 +350,11 @@ def test_the_launch_object_exposes_its_arms_in_order(tmp_path, base):
     assert isinstance(run, Launch)
     assert list(run.worlds) == ["D", "A"]
     assert set(NAMES) == set(run.worlds["A"].village.state().citizens)
+
+
+def test_the_launch_of_the_random_block_records_its_rate_and_salt(tmp_path, base):
+    arm = random_block_arm(0.25, "pilot")
+    _, snap = base
+    run = launch(snap, base[0].log, tmp_path / "e", [arm], lambda: FakeBackend(gossip), CONFIG)
+    (marker,) = events(run.worlds["E"], "launch")
+    assert marker.payload["settings"] == {"rate": 0.25, "salt": "pilot"}

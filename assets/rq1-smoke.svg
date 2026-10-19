@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 506" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<rect width="760" height="506" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="17" font-weight="600" fill="#1f2328">RQ1 smoke test: one village per arm, three frontier models</text>
+<text x="24" y="55" font-size="12.5" fill="#57606a">8 citizens, 12 ticks, 312 blinded probe answers. A first look at the instrument, not a result.</text>
+<text x="24" y="102" font-size="13.5" fill="#1f2328">False facts asserted</text>
+<line x1="250" y1="70" x2="250" y2="130" stroke="#d0d7de"/>
+<rect x="250" y="74" width="240.0" height="14" rx="2" fill="#8b95a5"/>
+<text x="496.0" y="85" font-size="11.5" fill="#1f2328">57%</text>
+<rect x="250" y="93" width="210.0" height="14" rx="2" fill="#2f6fdb"/>
+<text x="466.0" y="104" font-size="11.5" fill="#1f2328">50%</text>
+<rect x="250" y="112" width="40.0" height="14" rx="2" fill="#d9822b"/>
+<text x="296.0" y="123" font-size="11.5" fill="#1f2328">10%</text>
+<text x="24" y="176" font-size="13.5" fill="#1f2328">False facts in the wiki</text>
+<line x1="250" y1="144" x2="250" y2="204" stroke="#d0d7de"/>
+<rect x="250" y="148" width="350.0" height="14" rx="2" fill="#8b95a5"/>
+<text x="606.0" y="159" font-size="11.5" fill="#1f2328">83%</text>
+<rect x="250" y="167" width="350.0" height="14" rx="2" fill="#2f6fdb"/>
+<text x="606.0" y="178" font-size="11.5" fill="#1f2328">83%</text>
+<rect x="250" y="186" width="70.0" height="14" rx="2" fill="#d9822b"/>
+<text x="326.0" y="197" font-size="11.5" fill="#1f2328">17%</text>
+<text x="24" y="250" font-size="13.5" fill="#1f2328">True facts asserted</text>
+<line x1="250" y1="218" x2="250" y2="278" stroke="#d0d7de"/>
+<rect x="250" y="222" width="280.0" height="14" rx="2" fill="#8b95a5"/>
+<text x="536.0" y="233" font-size="11.5" fill="#1f2328">67%</text>
+<rect x="250" y="241" width="315.0" height="14" rx="2" fill="#2f6fdb"/>
+<text x="571.0" y="252" font-size="11.5" fill="#1f2328">75%</text>
+<rect x="250" y="260" width="70.0" height="14" rx="2" fill="#d9822b"/>
+<text x="326.0" y="271" font-size="11.5" fill="#1f2328">17%</text>
+<text x="24" y="324" font-size="13.5" fill="#1f2328">Single-witness facts asserted</text>
+<line x1="250" y1="292" x2="250" y2="352" stroke="#d0d7de"/>
+<rect x="250" y="296" width="270.0" height="14" rx="2" fill="#8b95a5"/>
+<text x="526.0" y="307" font-size="11.5" fill="#1f2328">64%</text>
+<rect x="250" y="315" width="180.0" height="14" rx="2" fill="#2f6fdb"/>
+<text x="436.0" y="326" font-size="11.5" fill="#1f2328">43%</text>
+<rect x="250" y="334" width="180.0" height="14" rx="2" fill="#d9822b"/>
+<text x="436.0" y="345" font-size="11.5" fill="#1f2328">43%</text>
+<text x="24" y="398" font-size="13.5" fill="#1f2328">Suspects an experiment</text>
+<line x1="250" y1="366" x2="250" y2="426" stroke="#d0d7de"/>
+<rect x="250" y="370" width="367.5" height="14" rx="2" fill="#8b95a5"/>
+<text x="623.5" y="381" font-size="11.5" fill="#1f2328">88%</text>
+<rect x="250" y="389" width="367.5" height="14" rx="2" fill="#2f6fdb"/>
+<text x="623.5" y="400" font-size="11.5" fill="#1f2328">88%</text>
+<rect x="250" y="408" width="367.5" height="14" rx="2" fill="#d9822b"/>
+<text x="623.5" y="419" font-size="11.5" fill="#1f2328">88%</text>
+<rect x="24" y="472" width="12" height="12" rx="2" fill="#8b95a5"/>
+<text x="42" y="482" font-size="12.5" fill="#1f2328">A: no defense</text>
+<rect x="254" y="472" width="12" height="12" rx="2" fill="#2f6fdb"/>
+<text x="272" y="482" font-size="12.5" fill="#1f2328">D: kernel admission</text>
+<rect x="484" y="472" width="12" height="12" rx="2" fill="#d9822b"/>
+<text x="502" y="482" font-size="12.5" fill="#1f2328">E: random block at D's rate</text>
+</svg>

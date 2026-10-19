@@ -18,23 +18,16 @@ funding is a later concern.
   (the original Claude Docs artifacts are stale copies, do not edit them), the monorepo with the Rust
   workspace and Python harness, research sources, agent rules, skills, sprint plan and audits,
   ADR-0001 (storage and memory), ADR-0002 (OpenTofu on AWS), and the exploratory Mem0 arm F (S1-T32).
-- Done, sprint S1 (merged), all in `harness/src/agent_village/`:
-  T1 event log `eventlog.py` (#10), T2 scheduler `village.py` (#11), T3 model interface
-  `model.py` and `openrouter.py` (#12), T5 memory tiers `memory.py` (#13), T6 messages
-  `messages.py` (#14), T4 citizen loop `runner.py`, `actions.py`, `prompts.py` (#15),
-  T13 snapshot and fork `fork.py` (#16), T7 and T8 arms D and A `arms.py` (#17), T15 launch
-  controller `launch.py` (#19), T14 replay `replay.py` (#20).
-  Status per ticket is in `docs/implementation/S1-rq1-harness.md`.
-- Done, PRs #18 to #21: `admit` ignores a told event that originates with the writer, and the shared
-  base village runs without defense until the fork (ADR-0003, `arms.BASE`); launch controller `launch.py`;
-  replay `replay.py`; facts, planting and probes (`facts.py`, `planting.py`, `probes.py`, `Runner.ask`; ADR-0004, proposed).
-- Done, PR #22: S1-T20 blinded judge `judge.py` and S1-T21 metrics `metrics.py` (ADR-0005), and the first live
-  OpenRouter check ("Live check" in `docs/implementation/S1-rq1-harness.md`): provider on the chat response,
-  generation id and cost on `Response`, `served_snapshots`, `reasoning` option, HTTP status in transport errors.
-- In progress, S1-T19 and the completion of T21 in PR #23 (`claude/gracious-albattani-osio94`): the utility
-  task (`facts.utility_facts`, `UTILITY_FRAME`, `Metrics.utility_score`; ADR-0006, proposed); `openrouter.Retrying`
-  retries 429, 5xx and failed connections with backoff and logs the attempts; the runner finds a recipient in any
-  case; a no-content response says how it ended. ADR-0004 and ADR-0005 are accepted. 661 tests, 100% coverage.
+- Done, sprint S1 so far (PRs #10 to #23), in `harness/src/agent_village/`: event log, scheduler, model interface
+  and OpenRouter backend, memory tiers, messages, citizen loop, snapshot and fork, arms A and D, launch controller,
+  replay, facts, planting, probes, judge, metrics, utility task. `admit` ignores a told event that originates
+  with the writer, and the base village runs without defense until the fork (ADR-0003). The first live checks
+  are in the audit ("Live check", `docs/implementation/S1-rq1-harness.md`). Status per ticket is there too.
+- Done, PR #23: S1-T19 utility task (ADR-0006), `Retrying`, case-insensitive recipients; ADR-0004 and ADR-0005 accepted.
+- In progress, S1-T11 in PR #24 (`claude/gracious-albattani-osio94`): arm E (`arms.RandomBlock`, `random_block_arm`,
+  `matched_rate`; arm `settings` logged at launch and checked by audit), the reasoning setting is now per model, and
+  the first frontier-model smoke test with its figure in the README (`experiments/rq1-provenance/smoke-2026-10-19/`).
+  684 tests, 100% coverage.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -43,12 +36,12 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main` and take T11
-(arm E, the random block: a deterministic policy keyed on the claim, block rate set from arm D in the
-pilot), T9 (arm B prompts, which the owner reviews), T12 and T10 (consolidation and arm C), and the
-storage tickets T25 to T31. The pre-registration is S2-T1; do not run an experiment before it is
-approved. Short live checks of plumbing are fine under a hard cap (no gateway yet: S2-T5). Open the PR
-yourself with the template filled in; the owner reviews and merges.
+Once this PR is merged, restart the branch from `main` and take S1-T9 (arm B prompts, which the owner
+reviews), then T12 and T10 (consolidation and arm C), and the storage tickets T25 to T31. First raise the
+design question below with the owner. The pre-registration is S2-T1; do not run an experiment before it is
+approved. Live checks of plumbing are fine: the owner allowed frontier models for testing and put $50 on the
+key (about $2 used so far, topped up on request); the live backend has no gateway cap, so cap every script
+and never print the key. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -63,13 +56,19 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
   full RQ1 at assumed prices; the measured cost per citizen-day replaces it).
 - Arm prompts and `LoopConfig` defaults are placeholders until the owner reviews them at the S1 gate.
-- Decided by recommendation: ADR-0004 (true facts have two independent holders, so arm D blocks single-witness
-  facts by design) and ADR-0005 (codes, k = 2, verbatim claim matcher). Still for the owner: review the fact
-  templates and name lists (`facts.py`), the awareness question and the utility frame (both pinned by tests),
-  and the judge model, accepted only if human-sample kappa is good (pilot).
-- ADR-0006 (proposed): the utility task. Two true single-witness facts per block asked as a task. In the live
-  check the score was 0 of 14 in both arms because small models did not pass them on; if the pilot shows the
-  same at frontier quality, the task needs a nudge decided before pre-registration.
+- Decided by recommendation: ADR-0004 and ADR-0005. Still for the owner: the fact templates and name lists
+  (`facts.py`), the awareness question and the utility frame (pinned by tests), and the judge model (accept only
+  if human-sample kappa is good). ADR-0006 (proposed): the utility task; if the pilot shows citizens do not pass
+  single-witness facts on, it needs a nudge decided before pre-registration.
+- **Design problem from the frontier smoke test.** A planted false fact is first-hand for its one witness, who
+  wrote it to the shared wiki citing their own observation; the kernel admitted it, so D matched A (attack 50%
+  against 57%) and only random blocking (E) cut spread. As specified the kernel cannot stop a lone first-hand
+  witness. Options: keep the PRD mechanism (a refutation is publishable) and add an exploratory arm whose shared
+  tier needs two independent origins even for first-hand claims (it blocks single-witness truths too, which T19
+  measures); or change what is planted. Recommendation: keep D as registered and add the exploratory arm.
+- The awareness question ("strange or artificial") coded `aware` for 7 of 8 citizens in every arm; reword it and
+  have a human code a sample. Time to k adopters sees only memory writes, so it missed spread by reading the
+  wiki: amend ADR-0005 or add a read-based measure.
 
 ## Gotchas
 
@@ -91,8 +90,8 @@ Research claims
   is per call and matches the key counter. The sandbox proxy adds the credential: use `urllib_transport(None)`,
   send no key, never print one. With fallbacks off, upstream HTTP 429 happens (about 1.5% of calls): wrap the
   backend in `Retrying` (2 to 30 s backoff, attempts logged); the spend cap stays with the gateway (S2-T5). Haiku 5.5 reasons by default and
-  returns empty content at small `max_tokens`: use `OpenRouterBackend(..., reasoning={"enabled": False})`.
-  `openai/gpt-oss-20b` cannot disable reasoning and is unusable. Not verified: the cost per citizen-day,
+  returns empty content at small `max_tokens`: use `OpenRouterBackend(..., reasoning={model: {"enabled": False}})`
+  per model; Opus 5.5 and `openai/gpt-oss-20b` cannot disable it (HTTP 400), so give them a larger `max_tokens`. Not verified: the cost per citizen-day,
   frontier-model behavior. The live backend has no spend cap or kill switch (S2-T5): cap any live script.
 - Write citizen names capitalized: lowercase names caused most invalid actions in the first live check (35 and 44
   invalid actions fell to 6 and 7 once capitalized). The runner also matches a recipient in any case.

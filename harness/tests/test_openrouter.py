@@ -57,11 +57,14 @@ def test_request_body_pins_fallbacks_off_and_bounds_tokens():
     }
 
 
-def test_the_reasoning_setting_is_sent_only_when_configured():
+def test_the_reasoning_setting_is_sent_per_model_and_only_when_configured():
     plain, off = Script(chat(provider="acme")), Script(chat(provider="acme"))
     OpenRouterBackend(plain).complete(ask())
-    OpenRouterBackend(off, reasoning={"enabled": False}).complete(ask())
-    assert "reasoning" not in plain.calls[0][2]
+    settings = {"vendor/model": {"enabled": False}, "other/model": {"effort": "low"}}
+    OpenRouterBackend(off, reasoning=settings).complete(ask())
+    elsewhere = Script(chat(provider="acme"))
+    OpenRouterBackend(elsewhere, reasoning={"other/model": {"enabled": False}}).complete(ask())
+    assert "reasoning" not in plain.calls[0][2] and "reasoning" not in elsewhere.calls[0][2]
     assert off.calls[0][2]["reasoning"] == {"enabled": False}
 
 

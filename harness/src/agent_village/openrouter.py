@@ -10,8 +10,9 @@ seconds after the call, so ``served_snapshots`` resolves a sample of logged gene
 after a run. A gateway that adds credentials itself takes no key.
 
 Some models reason before they answer and the reasoning spends ``max_tokens``, so a short
-budget can end with no content at all. ``reasoning`` is sent as given; ``{"enabled": False}``
-switches it off where the model allows it.
+budget can end with no content at all. ``reasoning`` maps a model to the setting sent with
+its requests; ``{"enabled": False}`` switches reasoning off where the model allows it, and
+some models do not (the endpoint answers HTTP 400), so the setting is per model.
 """
 
 from __future__ import annotations
@@ -66,11 +67,11 @@ class OpenRouterBackend:
         self,
         transport: Transport,
         only: tuple[str, ...] = (),
-        reasoning: Mapping[str, Any] | None = None,
+        reasoning: Mapping[str, Mapping[str, Any]] | None = None,
     ) -> None:
         self._transport = transport
         self._only = only
-        self._reasoning = reasoning
+        self._reasoning = reasoning or {}
 
     def complete(self, request: Request) -> Response:
         routing: dict[str, Any] = {"allow_fallbacks": False}
@@ -83,8 +84,8 @@ class OpenRouterBackend:
             "temperature": request.temperature,
             "provider": routing,
         }
-        if self._reasoning is not None:
-            body["reasoning"] = dict(self._reasoning)
+        if request.model in self._reasoning:
+            body["reasoning"] = dict(self._reasoning[request.model])
         data = self._transport("POST", "/chat/completions", body)
         try:
             choice = data["choices"][0]
