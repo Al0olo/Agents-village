@@ -28,7 +28,7 @@ funding is a later concern.
 - Done, PRs #18 to #21: `admit` ignores a told event that originates with the writer, and the shared
   base village runs without defense until the fork (ADR-0003, `arms.BASE`); launch controller `launch.py`;
   replay `replay.py`; facts, planting and probes (`facts.py`, `planting.py`, `probes.py`, `Runner.ask`; ADR-0004, proposed).
-- In progress, S1-T20 and T21 (this branch, PR to be opened): blinded judge `judge.py` and metrics `metrics.py`
+- In progress, S1-T20 and T21 in PR #22 (`claude/gracious-albattani-osio94`): blinded judge `judge.py` and metrics `metrics.py`
   (ADR-0005, proposed), 588 tests, 100% line and branch coverage. T21 is partial: utility waits for T19.
   Also OpenRouter fixes from the first live calls: provider read from the chat response, generation id and
   cost on `Response`, `served_snapshots`, `reasoning` passthrough, HTTP status in transport errors.
