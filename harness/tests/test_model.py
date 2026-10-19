@@ -156,3 +156,24 @@ def test_a_start_outside_the_log_is_rejected(tmp_path, start):
     Model(FakeBackend(), log).complete("ada", ask())
     with pytest.raises(ValueError):
         RecordedBackend.from_log(log, start)
+
+
+def test_the_generation_id_and_cost_are_logged_when_the_backend_gives_them(tmp_path):
+    class Billed:
+        def complete(self, request):
+            return Response("hi", "vendor/model", "acme", 3, 1, "gen-9", 2.5e-05)
+
+    log = EventLog(tmp_path / "v.jsonl")
+    Model(Billed(), log).complete("ada", ask())
+    payload = log[0].payload
+    assert (payload["generation_id"], payload["cost"]) == ("gen-9", 2.5e-05)
+    again = RecordedBackend.from_log(log).complete(ask())
+    assert (again.generation_id, again.cost) == ("gen-9", 2.5e-05)
+
+
+def test_a_backend_without_them_leaves_them_out_of_the_log(tmp_path):
+    log = EventLog(tmp_path / "v.jsonl")
+    Model(FakeBackend(), log).complete("ada", ask())
+    assert "generation_id" not in log[0].payload and "cost" not in log[0].payload
+    again = RecordedBackend.from_log(log).complete(ask())
+    assert (again.generation_id, again.cost) == (None, None)
