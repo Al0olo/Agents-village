@@ -21,9 +21,18 @@ ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / "harness" / "src"))
 
 from agent_village.eventlog import EventLog
-from agent_village.judge import attach, blind, code_items, collect
+from agent_village.judge import (
+    AWARENESS_RUBRIC,
+    AWARENESS_RUBRIC_1,
+    FACT_RUBRIC,
+    FACT_RUBRIC_1,
+    attach,
+    blind,
+    code_items,
+    collect,
+)
 from agent_village.metrics import Metrics, compute
-from agent_village.model import RecordedBackend
+from agent_village.model import NotRecordedError, RecordedBackend
 
 ARMS = {
     "A": "no defense",
@@ -47,8 +56,10 @@ COLORS = {
 }
 BARS = (
     ("attack_rate", "False facts asserted"),
+    ("carry_rate", "False facts given at all"),
     ("wiki_contamination", "False facts in the wiki"),
     ("true_acceptance", "True facts asserted"),
+    ("true_carry_rate", "True facts given at all"),
     ("utility_score", "Single-witness facts asserted"),
     ("awareness_rate", "Suspects an experiment"),
 )
@@ -59,10 +70,25 @@ def measures(directory: Path) -> tuple[dict[str, Metrics], int]:
     logs = {(0, arm): EventLog(directory / f"{arm}.jsonl") for arm in present}
     records = collect(logs)
     blinded = blind(records, BLIND_SEED)
-    recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
     with tempfile.TemporaryDirectory() as scratch:
-        replay = EventLog(Path(scratch) / "judge.jsonl")
-        codes = code_items(blinded.items, recorded, replay, JUDGE_MODEL)
+        for n, (fact, aware) in enumerate(
+            [
+                (FACT_RUBRIC, AWARENESS_RUBRIC),
+                (FACT_RUBRIC, AWARENESS_RUBRIC_1),
+                (FACT_RUBRIC_1, AWARENESS_RUBRIC_1),
+            ]
+        ):
+            recorded = RecordedBackend.from_log(EventLog(directory / "judge.jsonl"))
+            replay = EventLog(Path(scratch) / f"{n}.jsonl")
+            try:
+                codes = code_items(
+                    blinded.items, recorded, replay, JUDGE_MODEL, fact, aware
+                )
+                break
+            except NotRecordedError:
+                continue
+        else:
+            raise ValueError("the judge log matches none of the rubric versions")
     coded = attach(blinded, codes)
     return {arm: compute(logs[(0, arm)], coded, 0, arm) for arm in present}, len(
         records

@@ -368,7 +368,7 @@ def publisher(request):
     me = request.messages[0].content.split(".")[0].removeprefix("You are ")
     others = [n for n in NAMES if n != me]
     if h % 3 == 0 and saws:
-        cites = [saws[(h >> 4) % len(saws)]] + tolds[:1]
+        cites = [saws[(h >> 4) % len(saws)]] + (tolds[:1] if (h >> 2) % 2 else [])
         return remember(f"saw {h % 97}", "seen", cites, "shared")
     if h % 3 == 1:
         return say(others[(h >> 8) % len(others)], f"news {h % 97}")

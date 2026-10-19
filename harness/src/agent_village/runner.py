@@ -32,6 +32,10 @@ class Spec:
     model: str
 
 
+RENDER_VERSION = "render-2"
+"""Which prompt layout a step used; a change to ``_render`` is a new version."""
+
+
 @dataclass(frozen=True)
 class LoopConfig:
     max_steps: int = 4
@@ -128,6 +132,7 @@ class Runner:
                     "tick": tick,
                     "prompt_version": self._prompt.version,
                     "prompt_hash": self._prompt.hash,
+                    "render": RENDER_VERSION,
                     "through": through,
                 },
             )
@@ -209,6 +214,9 @@ class Runner:
         core = self._memory.entries(Tier.CORE, name)[-limit:]
         wiki = self._memory.entries(Tier.SHARED)[-limit:]
         recall = self._memory.entries(Tier.RECALL, name)[-limit:]
+        lived = [
+            line for line in (self._remember(self._log[i], name) for i in range(after + 1)) if line
+        ]
         fresh = [
             line
             for line in (self._perceive(self._log[i], name) for i in range(after + 1, through + 1))
@@ -222,11 +230,32 @@ class Runner:
                     "Village wiki (shared)", [f"[{e.id}] ({e.writer}) {_one(e.text)}" for e in wiki]
                 ),
                 _section("Recall", [f"[{e.id}] {_one(e.text)}" for e in recall]),
+                _section(
+                    "What you have seen and done", [x for k, x in lived if k == "own"][-limit:]
+                ),
+                _section("Recent conversations", [x for k, x in lived if k == "talk"][-limit:]),
                 _section("New since you last acted", fresh),
                 _section("This turn so far", [f"- {n}" for n in notes], "(nothing yet)"),
                 closing,
             ]
         )
+
+    @staticmethod
+    def _remember(event: LogEvent, name: str) -> tuple[str, str] | None:
+        """A line for what ``name`` saw, did, heard or said, kept in its prompt for good."""
+        if event.writer != name:
+            return None
+        text = _one(event.payload.get("text", ""))
+        if event.kind == "saw":
+            return "own", f"[{event.id}] You saw: {text}"
+        if event.kind == "did":
+            return "own", f"[{event.id}] You did: {text}"
+        if event.kind == "told":
+            return "talk", f"[{event.id}] {event.payload['from']} told you: {text}"
+        if event.kind == "message":
+            verb = "passed on to" if event.payload["forward_of"] is not None else "told"
+            return "talk", f"You {verb} {event.payload['to']}: {text}"
+        return None
 
     @staticmethod
     def _perceive(event: LogEvent, name: str) -> str | None:

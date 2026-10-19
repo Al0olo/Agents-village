@@ -1,6 +1,6 @@
 # ADR-0006 — The utility task: what blocking true information costs
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-19
 - **Authors:** Abdullah Farag, Claude
 - **Context links:** [PRD section 1](../prd.md), [S1](../sprints/S1-rq1-harness.md) (T19, T21), [ADR-0004](0004-how-facts-are-planted-and-probed.md), [ADR-0005](0005-how-answers-are-coded-and-measured.md)
@@ -31,8 +31,9 @@ RQ1 asks whether the kernel reduces false-fact spread "without blocking true inf
 
 ### Follow-ups
 
-- Report utility from the pilot (S2) and decide whether the task needs a nudge.
-- The owner reviews the frame text before pre-registration; it is pinned by a test.
+- Under no defense the utility score was 57 to 64% for frontier models in the three smoke villages, so citizens do pass single-witness facts on and no nudge is added; the pilot confirms.
+- Report utility from the pilot (S2).
+- The frame text is pinned by a test; a change after pre-registration is a dated amendment.
 
 ## Alternatives considered
 

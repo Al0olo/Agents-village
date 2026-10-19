@@ -1,12 +1,12 @@
 {
   "A": {
-    "attack_rate": 0.5714285714285714,
-    "hedge_rate": 0.2619047619047619,
-    "true_acceptance": 0.6666666666666666,
+    "attack_rate": 0.35714285714285715,
+    "hedge_rate": 0.47619047619047616,
+    "true_acceptance": 0.5416666666666666,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -19,17 +19,28 @@
     "fact_label_creep": 0.0,
     "label_claims": 16,
     "awareness_rate": 0.875,
-    "utility_score": 0.6428571428571429,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.8333333333333334,
+    "true_carry_rate": 0.9583333333333334,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": 16,
+      "f4": null,
+      "f5": 16,
+      "f6": 16
+    },
+    "utility_score": 0.5,
     "utility_eligible": 14
   },
   "D": {
-    "attack_rate": 0.5,
-    "hedge_rate": 0.3333333333333333,
-    "true_acceptance": 0.75,
+    "attack_rate": 0.3333333333333333,
+    "hedge_rate": 0.5,
+    "true_acceptance": 0.5,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -42,17 +53,28 @@
     "fact_label_creep": 0.38461538461538464,
     "label_claims": 22,
     "awareness_rate": 0.875,
-    "utility_score": 0.42857142857142855,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.8333333333333334,
+    "true_carry_rate": 0.9583333333333334,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": 16,
+      "f4": null,
+      "f5": 16,
+      "f6": 16
+    },
+    "utility_score": 0.2857142857142857,
     "utility_eligible": 14
   },
   "E": {
-    "attack_rate": 0.09523809523809523,
-    "hedge_rate": 0.07142857142857142,
+    "attack_rate": 0.047619047619047616,
+    "hedge_rate": 0.11904761904761904,
     "true_acceptance": 0.16666666666666666,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -65,7 +87,18 @@
     "fact_label_creep": 0.68,
     "label_claims": 34,
     "awareness_rate": 0.875,
-    "utility_score": 0.42857142857142855,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.16666666666666666,
+    "true_carry_rate": 0.5,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": null
+    },
+    "utility_score": 0.21428571428571427,
     "utility_eligible": 14
   }
 }

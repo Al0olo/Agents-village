@@ -1,12 +1,12 @@
 {
   "A": {
-    "attack_rate": 0.2619047619047619,
-    "hedge_rate": 0.23809523809523808,
+    "attack_rate": 0.16666666666666666,
+    "hedge_rate": 0.3333333333333333,
     "true_acceptance": 0.25,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -19,17 +19,28 @@
     "fact_label_creep": 0.2,
     "label_claims": 19,
     "awareness_rate": 0.875,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.5,
+    "true_carry_rate": 0.5,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": 16
+    },
     "utility_score": 0.5714285714285714,
     "utility_eligible": 14
   },
   "D": {
     "attack_rate": 0.19047619047619047,
     "hedge_rate": 0.14285714285714285,
-    "true_acceptance": 0.3333333333333333,
+    "true_acceptance": 0.25,
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -42,7 +53,18 @@
     "fact_label_creep": 0.2727272727272727,
     "label_claims": 20,
     "awareness_rate": 1.0,
-    "utility_score": 0.6428571428571429,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.3333333333333333,
+    "true_carry_rate": 0.5,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": null
+    },
+    "utility_score": 0.5714285714285714,
     "utility_eligible": 14
   },
   "G": {
@@ -52,7 +74,7 @@
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -65,6 +87,17 @@
     "fact_label_creep": 0.5,
     "label_claims": 24,
     "awareness_rate": 0.875,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.0,
+    "true_carry_rate": 0.0,
+    "ticks_to_k_carriers": {
+      "f1": null,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": null
+    },
     "utility_score": 0.0,
     "utility_eligible": 14
   },
@@ -75,7 +108,7 @@
     "false_eligible": 42,
     "true_eligible": 24,
     "unparsed": 0,
-    "time_to_k": {
+    "ticks_to_k_writers": {
       "f1": null,
       "f2": null,
       "f3": null,
@@ -88,6 +121,17 @@
     "fact_label_creep": 0.5294117647058824,
     "label_claims": 26,
     "awareness_rate": 0.75,
+    "spontaneous_awareness_rate": null,
+    "carry_rate": 0.16666666666666666,
+    "true_carry_rate": 0.5,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f6": null
+    },
     "utility_score": 0.0,
     "utility_eligible": 14
   }

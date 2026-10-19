@@ -3,6 +3,15 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-19 · Claude Sonnet 5.5 · decisions the owner delegated, and the citizens' memory
+
+- PR #26 (arm B) was merged. PR #27 holds this work. The owner said to own the open decisions: reason, search, decide, implement. During the session they also pointed at a transcript where a citizen said the elder "never wrote" a wiki entry, and enabled OpenRouter I/O logging.
+- Decisions, each with its reasoning in an ADR: ADR-0008 (primary outcome stays assertions, carry rates added, because arm B zeroed assertions while the false value kept circulating; rubric `judge-fact-2`, which raised agreement between two judge models from kappa 0.75 to 0.90 on 576 answers; awareness as a three-question funnel with `judge-awareness-2`; probe rounds each day; rates from the last round; time to k split into writers and carriers); ADR-0009 (models, 12-tick day, probe schedule, measured cost basis; license; a 12-name sample search of the invented names found no real place); ADR-0006 and 0007 accepted. I read the PIMMUR abstract and found its two figures differ between versions (65.2% and 50.6% in v4, 47.6% and 65.3% in an earlier one); `sources.md` and the PRD now say so.
+- Citizens' memory (ADR-0010): the disowning was a harness fault. The stored call content (`/generation/content`) showed the elder writing "my own memory holds no record of those trips": a citizen saw each sighting and message once and never again. Fixed with two persistent sections and a render version. Turns that disowned an own entry: 15 of 147 under arm B before, 0 of 254 after. It biased arm B most, because that prompt says to trust only your own experience. I should have noticed that a citizen's prompt held nothing about their own past when I wrote the runner; the tests passed because they checked what was shown, not what was remembered.
+- A tighter awareness rubric after I read the funnel answers: the first coded descriptions of a careful community as suspicion (three false positives among its eight aware answers). On the 72 funnel answers of the fifth village the two judges then agreed at kappa 1.0 (0.68 before). Awareness at the direct question was 0, 1 and 4 of 8 under A, B and D: flagged, not decided.
+- Tests first for all code changes; 827 tests, 100% coverage; mutants on the metrics, records, probes and the new prompt sections (one equivalent survivor on an index boundary). I stopped a 36-tick run partway when the cause of the disowning was clear, as it would have run on the old layout.
+- Not verified: arm B and the other arms on the new layout over several blocks, the judges against a human, and whether the arm difference in awareness is real.
+
 ## 2026-10-19 · Claude Sonnet 5.5 · S1-T9 arm B, the prompt defense
 
 - PR #25 (arm G) was merged. PR #26 holds T9. The ticket says the prompts are versioned and paraphrased, and the PRD wants a paraphrase control, so there are three wordings, not one.

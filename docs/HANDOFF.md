@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `fa62722`
+Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `394f775`
 
 ## Objective
 
@@ -24,9 +24,13 @@ funding is a later concern.
   facts, planting, probes, utility task (ADR-0006), judge and metrics (ADR-0005). ADR-0004 and 0005 are accepted.
   `admit` ignores a told event that originates with the writer; the base village runs without defense until
   the fork (ADR-0003). Live checks and smoke villages are in the audit; status per ticket is there too.
-- In progress, S1-T9 in PR #26 (`claude/gracious-albattani-osio94`): arm B (`prompts.ANCHOR_SCRUTINY`, three pinned
-  wordings; `arms.PROMPT_DEFENSE` is B, `PROMPT_DEFENSE_PARAPHRASES` are B2 and B3 for the paraphrase control),
-  a third frontier village that ran them, and the README showing villages 2 and 3. 780 tests, 100% coverage.
+- Done, PR #26: S1-T9 arm B (three pinned wordings; arms B, B2, B3).
+- In progress, owner-delegated decisions in PR #27 (`claude/gracious-albattani-osio94`): the owner handed the open
+  decisions to Claude; they are ADR-0008 (measures: assertion primary, carry rates, rubric `judge-fact-2`, two
+  judges, awareness funnel with `judge-awareness-2`, interim probe rounds), ADR-0009 (run configuration: models,
+  a day of 12 ticks, probe schedule, cost basis), ADR-0010 (citizens remember their own experience, `render-2`);
+  ADR-0006 and 0007 are accepted. Found with OpenRouter I/O logging: citizens forgot their own sightings and
+  disowned wiki entries, which distorted arm B; fixed. 827 tests, 100% coverage.
 - Decided: IaC is OpenTofu on AWS in `infra/`. Memory is a projection of an event log we own
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
@@ -35,11 +39,16 @@ funding is a later concern.
 
 ## Next step
 
-Once this PR is merged, restart the branch from `main` and take T12 and T10 (consolidation and arm C), and the storage tickets T25 to T31. First raise the
-design question below with the owner. The pre-registration is S2-T1; do not run an experiment before it is
-approved. Live checks of plumbing are fine: the owner allowed frontier models for testing and put $50 on the
-key (about $9 used so far, topped up on request); the live backend has no gateway cap, so cap every script
-and never print the key. Open the PR yourself with the template filled in; the owner reviews and merges.
+Once this PR is merged, restart the branch from `main`. First re-run arm B and its paraphrases (and A, D, E, G)
+on `render-2` and a 36-tick village with the interim probe rounds (ADR-0009), about $8 to $10 and 40 minutes:
+the old arm B numbers are partly the forgetting artifact. Then T12 and T10 (consolidation at ticks 12 and 24,
+and arm C; design it as ADR-0011, reading the Manufactured Confidence paper beyond its abstract), then the
+storage tickets T25 to T31, then the pre-registration (S2-T1) from ADRs 0004 to 0010. The owner still owns:
+approving and registering the pre-registration, a human coding the sample sheet, and the real gateway. Live
+checks are fine: the owner put $50 on the key (about $18 used) and allowed frontier models; the live backend has
+no gateway cap, so cap every script and never print the key. Stored prompts and outputs of calls made since
+logging was enabled are readable at `/generation/content?id=<generation id>` (HTTP 404 for older calls): read
+them before changing a prompt. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -47,32 +56,23 @@ Follow the sprint plan in `docs/sprints/`: S1 harness (weeks 1 to 4), S2 pilot a
 pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in parallel
 (5 to 16). S5 to S8 are outlined and wait for RQ1. Ticket status is in `docs/implementation/`.
 
-## Open decisions (owner)
+## Decisions (taken by Claude on the owner's delegation, 2026-10-19)
 
-- License is Apache-2.0, chosen by the agent without asking; confirm.
-- Model mix for RQ1: two frontier models and one pinned open-weight model; which ones.
-- Where to run the pilot and who pays for inference (estimate about $1k to $10k for the
-  full RQ1 at assumed prices; the measured cost per citizen-day replaces it).
-- Arm prompts and `LoopConfig` defaults are placeholders until the owner reviews them at the S1 gate.
-- Decided by recommendation: ADR-0004 and ADR-0005. Still for the owner: the fact templates and name lists
-  (`facts.py`), the awareness question and the utility frame (pinned by tests), and the judge model (accept only
-  if human-sample kappa is good). ADR-0006 (proposed): the utility task; if the pilot shows citizens do not pass
-  single-witness facts on, it needs a nudge decided before pre-registration.
-- Lone first-hand witness (resolved by recommendation): D keeps the PRD mechanism and arm G is the exploratory
-  fix (ADR-0007). Both smoke villages showed D admitting the witness's own wiki write; G stopped false facts
-  but also every shared true fact (true facts asserted 0 of 24, single-witness 0 of 14, against 33% and 64%
-  under D). Whether that trade is useful is for the pilot; G may need a milder rule (one first-hand witness
-  plus any single other source) if the pilot shows it just silences the wiki.
-- Single villages are noisy: the same seed and models gave A attack 57%, 26% and 29%. The pilot's
+- Primary outcome is the assertion rate; carry rates (asserted or hedged) are secondary and say whether spread
+  fell (ADR-0008). Arm B wording stands. Arm G stays strict and exploratory, no milder variant until the pilot
+  shows G silences the wiki (ADR-0007). The utility task needs no nudge: frontier citizens pass single-witness
+  facts on (ADR-0006). Model mix is Opus 5.5, GPT-5.6 Sol and DeepSeek V4 Pro; a day is 12 ticks; cost basis is
+  measured, about $20 to $30 a block extrapolated (ADR-0009). License Apache-2.0 stands; inference runs on the
+  owner's OpenRouter key behind a spend cap before any reported run. Names and templates stand after a 12-name
+  sample search (none real).
+- Still open and owner-only: human validation of the judge on the sample sheet (the two judges agree at
+  kappa 0.90 and 1.0, which is not human validation); registering the pre-registration; a real self-hosted
+  open-weight replicate (S2-T13).
+- Flagged, not decided: in the fifth village awareness at the direct question was 0 of 8 under no defense, 1
+  under the prompt defense and 4 under the kernel; an arm difference would threaten the unawareness control,
+  so replicate it before registering. A kernel arm's hearsay is visible in the citizen's Recall section.
+- Single villages are noisy: the same seed and models gave A attack 36%, 17% and 26% (rubric 2). The pilot's
   between-village variance sets the number of blocks; do not read a contrast from one block.
-- **Arm B hedges instead of refusing the fact.** It cut false facts asserted to 0 to 7% (A: 29%) but true facts
-  to 0% too, and false facts still reached the wiki (67 to 83%) as "one unconfirmed account", which the judge
-  codes `hedges`. Decide before registering whether the primary outcome counts hedges (a hedged report still
-  carries the false value) or only assertions (ADR-0005), and whether B's wording is the strongest honest
-  prompt baseline; the owner reviews the wording (`prompts.py`, ADR-less, pinned by hash).
-- The awareness question ("strange or artificial") coded `aware` for 7 of 8 citizens in every arm; reword it and
-  have a human code a sample. Time to k adopters sees only memory writes, so it missed spread by reading the
-  wiki: amend ADR-0005 or add a read-based measure.
 
 ## Gotchas
 
