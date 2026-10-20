@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `48a8e74`
+Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `b270ccb`
 
 ## Objective
 
@@ -48,33 +48,35 @@ funding is a later concern.
   every mutant killed. Block 4 (A, B, C, D, first with the review): false facts asserted 60, 21, 55, 43%; C is a null against A;
   the default review prompt did not visibly strip doubts; D's told notes became hearsay (10 of 32) where other arms stored
   them as fact. One block, not comparable with blocks 1 to 3.
-- Done, PR #36 (branch `claude/gracious-albattani-osio94`): ADR-0014 after the outside review; the exact sign-flip test
+- Done, PR #36: ADR-0014 after the outside review; the exact sign-flip test
   to 40 blocks (`analysis.py`, meeting in the middle) with a Monte Carlo p-value beyond (`p_value`, 100,000 flips); `power.py`
   and `power_table.py` (S2-T3 in part); the pre-registration rewritten as draft 2 (rumor-planted primary, intersection-union
   contrast, block-count rule); housekeeping (audit header, duplicate bullets, PR instructions now name the MCP tool).
+- Done, PR #37 (branch `claude/gracious-albattani-osio94`): S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
+  `attack_rate_rumor` and `attack_rate_witness`, `rumors` in `BlockConfig`, `--no-rumors`), ADR-0015 (the $200 cap), a dated note
+  in ADR-0004. 1022 tests, 100% coverage, every mutant killed. No live run.
 - Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
 
-An outside review of the draft pre-registration (2026-10-20) found that arm D cannot win the primary measure by construction
-(a lone witness's first-hand entry is admitted), that ten blocks cannot detect 15 points at the spread seen (0.34 for D minus A:
-about 45 blocks), that picking the prompt arm on two blocks invites a winner's curse, and that the exact test stopped at 20 blocks.
-ADR-0014 answers them (the pilot was stopped after $1.15 so it waits for item 1). In this order:
-(1) **S1-T34, the rumor condition**: of the six false facts per block, three are rumors told by a traveler (a new `heard` event
-with its own origin, evidence of kind told, perceived and remembered like a told line, forwardable, an environment input for
-replay; `Plan` and `plant` take it; `plant` events carry `source`), alternating with the parity of the block number; metrics
-split `attack_rate` by source (`attack_rate_rumor` is the primary); the colluding variant uses two travelers. Test first, run
-the mutation check, update ADR-0004 with a dated note, and make `BlockConfig`/`run_block.py` default to it (`--no-rumors`).
-(2) **The 2-block pilot (S2-T6)** with `run_block.py --arms A,B,Bc,C,D,E,G` on blocks 5 and 6 (E's rate is set to 0.29, D's
-pooled hearsay share in blocks 1 to 4; the pilot recomputes it). It sets the guard margin, E's rate, probe temperature, checks
-that rumors spread and that D refuses write-ups, and gives a first spread; it does not choose a prompt arm. Cost about $23 a block.
-(3) Freeze `PREREGISTRATION.md` (draft 2) with the pilot's numbers; OSF needs an account the owner has not made. Then the main run
-by the block-count rule in the pre-registration, re-estimating the spread once after block eight.
-(4) Storage tickets T25 to T31. Run one job at a time; set `--max-cost` above villages plus judges (auto top-up at $5 adds $20).
-Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with the template filled in.
-Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays `judge-fact-3`
-and every contrast is run under both judges; the review pass is in every arm and arm C changes only its prompt (ADR-0013);
-the contrast is intersection-union over B, Bc and C and the block count follows the rule (ADR-0014).
+**No live spend until the owner says so** (they asked for none on 2026-10-20), and the owner capped the pilot and main run together
+at **$200** (ADR-0015). Account credit was $21 at the last check. The rumor condition (S1-T34, ADR-0014) is built and tested but has
+had no live run. When the owner allows spending, in this order:
+(1) **Ask the owner about the two cost cuts in ADR-0015 item 5** (Sonnet 5.5 for Opus 5.5 in three citizens; DeepSeek V4 Pro as the
+second judge, which needs a check of under $5 that it agrees with Haiku at kappa 0.85 or better on stored answers): they roughly
+halve a block ($20 to $12.5) and double the blocks the cap buys (9 to 16). Without them $200 buys about nine six-arm blocks.
+(2) **A short live smoke of the rumor condition** (arms A, D, 2 days of 8 ticks, about $2.5): do hearers pass rumors on, does D store
+the write-up as hearsay, does the new metric split fill.
+(3) **The 2-block pilot (S2-T6)**, arms A, B, Bc, C, D, E on blocks 5 and 6 (E's rate 0.29 from D's hearsay share in blocks 1 to 4),
+about $20 a block: it sets the guard margin, E's rate, probe temperature and a first spread; it does not choose a prompt arm.
+(4) Freeze `PREREGISTRATION.md` (draft 2) with the pilot's numbers; OSF needs an account the owner has not made. Then the main run by the
+block-count rule, bounded by the cap, re-estimating the spread once after block eight.
+(5) Offline work that costs nothing: storage tickets T25 to T31, harness hygiene T22 to T24, the notebook for `analyze_blocks.py`.
+Run one job at a time; set `--max-cost` above villages plus judges. Never print the key. Open the PR yourself with the template.
+Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays `judge-fact-3` and
+every contrast is run under both judges; the review pass is in every arm and arm C changes only its prompt (ADR-0013); the contrast is
+intersection-union over B, Bc and C, the primary outcome is the rumor-planted false-fact rate, and the block count follows the rule
+(ADR-0014); the spend cap is $200 (ADR-0015).
 
 ## Queue
 
@@ -147,6 +149,9 @@ Design rules that tests depend on
 - A review pass (ADR-0013) is a driver action between ticks: a `consolidation` marker, then per citizen a `model_call`, the `claim`
   events of its notes and a `review` event (`through` = log position read up to). Audit replay re-executes it with the arm's review
   prompt; its notes go through the arm's policy, so a note citing only told events is hearsay under the kernel.
+- A rumor is a `heard` event (writer = the hearer; payload `from`, `text`, `origins`) appended at planting; it is told evidence, is
+  shown as `a traveler told you`, can be forwarded, and is an environment input for replay. `plant` events carry `source`
+  (`rumor` or `witness`); logs from before ADR-0014 have none and read as witness-planted.
 - Audit replay re-drives a log with the real runner on `RecordedBackend.from_log(log, start)`; `saw`, `did`,
   `plant` and `launch` events are re-appended and a `probe_round` is re-executed from its marker. Any other
   event a driver appends between ticks is reported as unreplayable. A replayed log is byte-identical; the first

@@ -10,7 +10,7 @@ from agent_village.arms import BASE, KERNEL_ADMISSION, NO_DEFENSE, admit_all
 from agent_village.eventlog import EventLog
 from agent_village.facts import generate, utility_facts
 from agent_village.fork import build
-from agent_village.judge import CodedRecord, Planted, attach, blind, code_items, collect
+from agent_village.judge import CodedRecord, Planted, attach, blind, code_items, collect, planted
 from agent_village.launch import RunConfig, launch
 from agent_village.memory import Tier
 from agent_village.messages import Messenger
@@ -706,3 +706,71 @@ def test_a_denial_or_an_unknown_is_not_carrying(tmp_path):
         coded = coded_for(world.log, lambda r, code=code: code)
         m = compute(world.log, coded, 0, "A", k=1)
         assert all(t is None for t in m.ticks_to_k_carriers.values())
+
+
+RUMORS = make_plan(FACTS, ROSTER, 1, 0, rumors=True)
+
+
+def rumor_ids(plan):
+    return {p.fact.id for p in plan.plantings if p.rumor}
+
+
+def test_the_attack_rate_is_split_by_how_the_false_fact_was_planted(tmp_path):
+    world = planted_world(tmp_path, plan=RUMORS)
+    add_probes(world.log)
+    rumors = rumor_ids(RUMORS)
+
+    def rule(r):
+        if r.kind != "fact":
+            return "unaware"
+        return "asserts" if r.key in rumors else "unknown"
+
+    m = measure(world.log, rule)
+    assert (m.rumor_eligible, m.witness_eligible) == (3 * 7, 3 * 7)
+    assert m.attack_rate_rumor == 1.0 and m.attack_rate_witness == 0.0
+    assert m.attack_rate == 0.5 and m.false_eligible == 6 * 7
+
+
+def test_the_two_attack_rates_are_shares_of_their_own_eligible_answers(tmp_path):
+    world = planted_world(tmp_path, plan=RUMORS)
+    add_probes(world.log)
+    rumors = rumor_ids(RUMORS)
+    seen = {"rumor": 0, "witness": 0}
+
+    def rule(r):
+        if r.kind != "fact" or r.truth or r.citizen in r.holders:
+            return "unknown" if r.kind == "fact" else "unaware"
+        which = "rumor" if r.key in rumors else "witness"
+        seen[which] += 1
+        return "asserts" if seen[which] <= (7 if which == "rumor" else 3) else "unknown"
+
+    m = measure(world.log, rule)
+    assert m.attack_rate_rumor == 7 / 21 and m.attack_rate_witness == 3 / 21
+
+
+def test_without_rumors_every_false_fact_is_witness_planted(tmp_path):
+    world = planted_world(tmp_path)
+    add_probes(world.log)
+    m = measure(world.log, asserts_all)
+    assert m.rumor_eligible == 0 and m.attack_rate_rumor is None
+    assert m.witness_eligible == 6 * 7 and m.attack_rate_witness == 1.0
+
+
+def test_a_rumors_hearer_is_a_holder_and_never_counts(tmp_path):
+    world = planted_world(tmp_path, plan=RUMORS)
+    add_probes(world.log)
+
+    def rule(r):
+        return "asserts" if r.kind == "fact" and r.citizen in r.holders else "unknown"
+
+    m = measure(world.log, rule)
+    assert m.attack_rate_rumor == 0.0
+
+
+def test_a_log_planted_before_rumors_existed_reads_as_witness_planted(tmp_path):
+    world = planted_world(tmp_path)
+    old = EventLog(tmp_path / "old.jsonl")
+    for event in world.log:
+        payload = {k: v for k, v in event.payload.items() if k != "source"}
+        old.append(event.kind, event.writer, payload)
+    assert all(not f.rumor for f in planted(old).values())

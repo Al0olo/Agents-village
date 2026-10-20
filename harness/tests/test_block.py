@@ -186,3 +186,17 @@ def test_a_one_day_block_has_nothing_to_review(tmp_path):
     result = go(tmp_path, days=1)
     for path in result.logs.values():
         assert markers(EventLog(path), CONSOLIDATION) == []
+
+
+def plants_of(path):
+    return [e.payload for e in EventLog(path) if e.kind == "plant"]
+
+
+def test_a_block_plants_three_rumors_by_default_and_none_when_asked_not_to(tmp_path):
+    result = go(tmp_path)
+    plants = plants_of(result.base_log)
+    assert sorted(p["source"] for p in plants if not p["truth"]) == ["rumor"] * 3 + ["witness"] * 3
+    assert len([e for e in EventLog(result.base_log) if e.kind == "heard"]) == 3
+    other = run_block(config(rumors=False), lambda: FakeBackend(gossip), tmp_path / "no-rumors")
+    assert {p["source"] for p in plants_of(other.base_log)} == {"witness"}
+    assert [e for e in EventLog(other.base_log) if e.kind == "heard"] == []

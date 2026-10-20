@@ -17,6 +17,10 @@ The PRD fixes the counts (six false facts and four true facts about fictional en
 4. **Probes are questions put to a citizen as a visitor would.** Each is a separate call in the citizen's usual context and under its arm's own prompt, answered as a `say` to the visitor, and it changes nothing the citizen knows or remembers. The fact questions are the plain questions from the generator. The awareness question comes last and avoids the words that would give the hypothesis away. A round is one driver action between ticks that audit replay reproduces.
 5. **The counterbalancing is the one in `facts.py`**: true facts cover every plausibility and status cell once; false facts cover every cell and two cells twice, the pair rotating; the assignment rotates over ten templates.
 
+## Amendment, 2026-10-20
+
+[ADR-0014](0014-what-the-kernel-can-answer-and-how-many-blocks.md) adds a second way to plant a false fact: three of the six false facts per block are rumors, told to one citizen by a traveler as a `heard` event with an origin of its own (two travelers in the colluding variant). The first clause of this decision still describes true facts and witness-planted false facts. Alternative 1 (injecting messages from the planter) still holds: a `heard` event is appended between ticks by the planting function and replayed as an environment input, and no citizen is made to say anything.
+
 ## Consequences
 
 ### Positive

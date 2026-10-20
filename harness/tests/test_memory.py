@@ -183,3 +183,33 @@ def test_a_lone_witness_reaches_core_but_not_the_wiki_under_the_corroborated_pol
     assert (core.admission, core.tier) == (Admission.FACT, Tier.CORE)
     assert (wiki.admission, wiki.tier) == (Admission.HEARSAY, Tier.RECALL)
     assert memory.entries(Tier.SHARED) == ()
+
+
+def heard(log, who, origin):
+    return str(log.append("heard", who, {"from": "a traveler", "origins": [origin]}).id)
+
+
+def test_a_rumor_a_traveler_told_is_told_evidence_with_its_own_origin(tmp_path):
+    log, memory = setup(tmp_path)
+    one = heard(log, "ada", "traveler:f1")
+    entry = memory.write_claim("ada", "x", Kind.TOLD, (one,), Tier.SHARED)
+    assert (entry.admission, entry.tier) == (Admission.HEARSAY, Tier.RECALL)
+    two = heard(log, "ada", "traveler:f2")
+    both = memory.write_claim("ada", "x", Kind.TOLD, (one, two), Tier.SHARED)
+    assert both.admission is Admission.FACT
+
+
+def test_a_rumor_is_never_first_hand_evidence(tmp_path):
+    log, memory = setup(tmp_path)
+    one = heard(log, "ada", "traveler:f1")
+    entry = memory.write_claim("ada", "x", Kind.SEEN, (one,), Tier.CORE)
+    assert entry.admission is Admission.HEARSAY
+
+
+def test_a_rumor_cannot_back_another_citizens_claim(tmp_path):
+    log, memory = setup(tmp_path)
+    one = heard(log, "ada", "traveler:f1")
+    two = heard(log, "ada", "traveler:f2")
+    assert memory.write_claim("bo", "x", Kind.TOLD, (one, two), Tier.SHARED).admission is (
+        Admission.HEARSAY
+    )

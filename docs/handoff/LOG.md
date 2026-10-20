@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-20 · Claude Sonnet 5.5 · the rumor condition and a spend cap
+
+- PR #36 was merged (this work is PR #37). The owner agreed to the rumor condition and capped the whole study at $200; then, partway through the build, asked for no live spend today.
+- Built S1-T34 test first: `heard` events (told evidence with an origin of their own, forwardable, replayed as environment input), a rumor plan (even blocks: false facts 1, 3, 5; odd blocks: 2, 4, 6; one hearer, two travelers when colluding), `source` on `plant` events, `attack_rate_rumor` and `attack_rate_witness` in the metrics, `rumors` in `BlockConfig`. 1022 tests, 100% coverage; a mutation run left three survivors (the parity rule, a redundant `utility` clause, a missing test for a note citing a rumor), all fixed or removed.
+- ADR-0015: the cap and what it buys. At measured cost ($2.9 an arm of villages, $0.45 of judging) and six arms, $200 is about nine blocks, two of them the pilot; that cannot detect 15 points. Two cuts would roughly halve a block (Sonnet 5.5 for Opus 5.5; DeepSeek as the second judge) but change the instrument and need a small check, so they wait for the owner.
+- A slip: I ran `ruff format ..` from `harness/`, which reformatted two unrelated scripts; I reverted them. Format from `harness/` only.
+- Nothing live ran after the stopped pilot block ($1.15 earlier). Not verified: that rumors spread under any arm, that D stores the write-up as hearsay in a real village.
+
 ## 2026-10-20 · Claude Sonnet 5.5 · outside review of the pre-registration
 
 - PR #32 was merged (this work is PR #36) and I started the pilot (block 5, seven arms) on "go for it". The owner then interrupted with an outside review and its recommendation to settle the design before the pilot, so I stopped the block with the kill file ($1.15 spent).

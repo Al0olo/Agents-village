@@ -7,7 +7,8 @@ else is stored as hearsay in the writer's recall. The decision is logged, so the
 rebuilds from the log without running the policy again.
 
 Evidence comes from log events of kind ``saw`` and ``did`` (written by the citizen) and
-``told`` (written by the recipient, with ``origins`` in the payload). No other event kind
+``told`` (written by the recipient, with ``origins`` in the payload) and ``heard`` (a rumor a
+traveler told a citizen, which is ``told`` evidence with an origin of its own). No other event kind
 is evidence, claims included.
 """
 
@@ -22,7 +23,7 @@ from agent_village.eventlog import EventLog
 
 Policy = Callable[[Claim, dict[str, Event]], Admission]
 
-_EVIDENCE = {"saw": Kind.SEEN, "did": Kind.DID, "told": Kind.TOLD}
+_EVIDENCE = {"saw": Kind.SEEN, "did": Kind.DID, "told": Kind.TOLD, "heard": Kind.TOLD}
 
 
 class Tier(str, Enum):

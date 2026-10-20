@@ -1,7 +1,7 @@
 """Run one block of the RQ1 design: a base village, planting, forked arms, probes.
 
 A block is the paired unit. The base village runs without defense (ADR-0003) with the
-elders announced, ten facts and two single-witness facts are planted between ticks, and
+elders announced, ten facts (three of the six false ones as rumors, ADR-0014) and two single-witness facts are planted between ticks, and
 every arm forks from that snapshot and runs in lockstep for a number of simulated days.
 At the end of each day every arm answers the fact and utility questions; after the last day
 it answers them again with the awareness funnel (ADR-0008). After each day but the last every
@@ -40,6 +40,7 @@ class BlockConfig:
     days: int = 3
     colluding: bool = False
     consolidate: bool = True
+    rumors: bool = True
 
     def __post_init__(self) -> None:
         names = [arm.name for arm in self.arms]
@@ -66,7 +67,7 @@ def run_block(
     citizens = tuple(s.name for s in config.run.specs)
     roster = Roster(citizens, config.elders)
     facts = generate(config.seed, config.block) + utility_facts(config.seed, config.block)
-    plan = make_plan(facts, roster, config.seed, config.block, config.colluding)
+    plan = make_plan(facts, roster, config.seed, config.block, config.colluding, config.rumors)
 
     base_log = directory / "base.jsonl"
     base = build(
