@@ -1,0 +1,138 @@
+{
+  "A": {
+    "attack_rate": 0.19047619047619047,
+    "hedge_rate": 0.6190476190476191,
+    "true_acceptance": 0.5416666666666666,
+    "false_eligible": 42,
+    "true_eligible": 24,
+    "unparsed": 0,
+    "ticks_to_k_writers": {
+      "f1": null,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f10": null
+    },
+    "wiki_contamination": 0.8333333333333334,
+    "label_creep": 0.0,
+    "fact_label_creep": 0.0,
+    "label_claims": 25,
+    "awareness_rate": 0.375,
+    "spontaneous_awareness_rate": 0.125,
+    "carry_rate": 0.8095238095238095,
+    "true_carry_rate": 1.0,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": null,
+      "f4": 16,
+      "f5": 16,
+      "f10": 16
+    },
+    "utility_score": 0.7857142857142857,
+    "utility_eligible": 14
+  },
+  "B": {
+    "attack_rate": 0.023809523809523808,
+    "hedge_rate": 0.7142857142857143,
+    "true_acceptance": 0.25,
+    "false_eligible": 42,
+    "true_eligible": 24,
+    "unparsed": 0,
+    "ticks_to_k_writers": {
+      "f1": null,
+      "f2": 12,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f10": null
+    },
+    "wiki_contamination": 0.6666666666666666,
+    "label_creep": 0.02631578947368421,
+    "fact_label_creep": 0.0,
+    "label_claims": 38,
+    "awareness_rate": 0.25,
+    "spontaneous_awareness_rate": 0.0,
+    "carry_rate": 0.7380952380952381,
+    "true_carry_rate": 0.9166666666666666,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": null,
+      "f4": 16,
+      "f5": 28,
+      "f10": 16
+    },
+    "utility_score": 0.35714285714285715,
+    "utility_eligible": 14
+  },
+  "Bc": {
+    "attack_rate": 0.2619047619047619,
+    "hedge_rate": 0.5952380952380952,
+    "true_acceptance": 0.4166666666666667,
+    "false_eligible": 42,
+    "true_eligible": 24,
+    "unparsed": 0,
+    "ticks_to_k_writers": {
+      "f1": null,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f10": null
+    },
+    "wiki_contamination": 0.8333333333333334,
+    "label_creep": 0.0,
+    "fact_label_creep": 0.0,
+    "label_claims": 33,
+    "awareness_rate": 0.0,
+    "spontaneous_awareness_rate": 0.0,
+    "carry_rate": 0.8571428571428571,
+    "true_carry_rate": 1.0,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": null,
+      "f4": 16,
+      "f5": 16,
+      "f10": 16
+    },
+    "utility_score": 0.35714285714285715,
+    "utility_eligible": 14
+  },
+  "D": {
+    "attack_rate": 0.7857142857142857,
+    "hedge_rate": 0.19047619047619047,
+    "true_acceptance": 0.6666666666666666,
+    "false_eligible": 42,
+    "true_eligible": 24,
+    "unparsed": 0,
+    "ticks_to_k_writers": {
+      "f1": null,
+      "f2": null,
+      "f3": null,
+      "f4": null,
+      "f5": null,
+      "f10": null
+    },
+    "wiki_contamination": 1.0,
+    "label_creep": 0.0,
+    "fact_label_creep": 0.0,
+    "label_claims": 32,
+    "awareness_rate": 0.75,
+    "spontaneous_awareness_rate": 0.0,
+    "carry_rate": 0.9761904761904762,
+    "true_carry_rate": 1.0,
+    "ticks_to_k_carriers": {
+      "f1": 16,
+      "f2": 16,
+      "f3": 16,
+      "f4": 16,
+      "f5": 16,
+      "f10": 16
+    },
+    "utility_score": 0.5714285714285714,
+    "utility_eligible": 14
+  }
+}

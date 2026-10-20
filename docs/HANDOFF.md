@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `394f775`
+Updated: 2026-10-19 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `c27124e`
 
 ## Objective
 
@@ -36,19 +36,29 @@ funding is a later concern.
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
   without defense (ADR-0003).
-- Not started: RQ1 pre-registration, the pilot, the real kernel (M1), the observer UI.
+- Done, this session (PR #29, branch `claude/gracious-albattani-osio94`): replication block 1 on `render-2`
+  (arms A, B, Bc, D, 40 ticks, $11.17, judges kappa 0.86 and 0.95) and `experiments/rq1-provenance/rate_sheet.py`, which
+  had Opus 5.5 code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges;
+  a model, not a person, and documented so). Result of block 1, last round, false facts asserted: A 19%, B 2%, Bc 26%,
+  D 79%; aware at any stage of 8: A 3, B 2, Bc 0, D 6. Arm D beat no defense in the wrong direction: no messages, the
+  wiki the only channel, lone witnesses' first-hand entries admitted and repeated as first-hand counts. One block:
+  A alone ranged 36 to 71% across villages. Details in `docs/implementation/S1-rq1-harness.md`.
+- Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
 
-**Blocked on credit.** The OpenRouter account ran out (HTTP 402; $3 of $330 left, the key's own $50 limit was not the
-cause), so the awareness replication and every further live run wait for a top-up. When credit exists, in this order:
-(1) three replication blocks of arms A, B, Bc, D with `run_block.py` (about $6 to $8 per three-arm block; run at most
-two at a time, they killed each other's budget before), to see whether awareness differs by arm and whether B and Bc
-hold up on `render-2`; (2) a human, or at least a second reader, codes a fresh `validate.py` sheet; (3) arm C and
-the consolidator (S1-T10, T12; ADR-0012, read the Manufactured Confidence paper's prompt first); (4) the 2-block
-pilot (S2-T6), after which the pre-registration is frozen with the pilot's numbers and filed on OSF (needs an account);
-(5) storage tickets T25 to T31. Live checks are fine; the live backend has the gateway now, so use it, and never print
-the key. Open the PR yourself with the template filled in; the owner reviews and merges.
+**Credit is the limit again.** The account had $20 at the start of this session, block 1 and the rater took $11.5, and
+$8.99 is left; auto top-up did not fire (total credits stayed at $350). A block of arms A, B, Bc, D costs about $11 and
+`run_block.py` refuses to start under its `--max-cost`. When credit exists, in this order:
+(1) replication blocks 2 and 3 of arms A, B, Bc, D (add G: block 1 says the lone-witness weakness is the story), one
+block at a time or two at most, to see whether D's 79% against A's 19% and D's 6 of 8 aware repeat; (2) if D repeats,
+write it up as a finding and decide with the owner whether the pre-registered contrast stays D against the better prompt
+defense (ADR-0007 keeps G exploratory); (3) arm C and the consolidator (S1-T10, T12; ADR-0012, read the Manufactured
+Confidence paper's prompt first); (4) the 2-block pilot (S2-T6), then freeze the pre-registration with the pilot's
+numbers (OSF needs an account); (5) storage tickets T25 to T31. Before the pilot, `judge-fact-3` should say `denies`
+needs an explicit conclusion that the value is wrong (the stand-in rater and both judges still split on it: new rubric
+version, re-code block 1 with haiku for pennies and compare to `rated` codes). Live checks are fine, behind `Gateway`;
+never print the key. Open the PR yourself with the template filled in; the owner reviews and merges.
 
 ## Queue
 
@@ -70,8 +80,9 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 - Judge validity: two models agree at kappa 0.79 to 0.85; Claude's blind coding of 85 answers agrees with them at 0.73
   and 0.79. That is not a person. The remaining disagreement is `hedges` against `denies` (implausible but left
   open); before the pilot the rubric should say `denies` needs an explicit conclusion that the value is wrong.
-- Still unresolved, owner-independent: whether awareness differs by arm (village 5: A 0 of 8, B 1, D 4; not replicated),
-  and the pre-registration is a draft until the pilot and the OSF filing.
+- Still unresolved, owner-independent: whether awareness differs by arm (village 5: A 0 of 8, B 1, D 4; block 1: A 3,
+  B 2, Bc 0, D 6; D is highest both times, two samples of one village each), and the pre-registration is a draft
+  until the pilot and the OSF filing.
 - Single villages are noisy: arm A's assertion rate was 71%, 36%, 36% and 67% in four villages with the same seed and
   models. The pilot's between-village variance sets the number of blocks; do not read a contrast from one block.
 

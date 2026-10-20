@@ -75,9 +75,11 @@ All fact answers come from non-holders in the last round. Coded blind by a model
   reported as a limitation, not corrected for.
 - **Judge validity.** Kappa between the two judges per kind; a stratified sample sheet (a fixed number of
   answers per judge code, shuffled, with no arm, block, citizen or judge code) is coded by a rater who has not
-  seen the judge's codes. In the draft the rater is Claude, not a person (kappa 0.82 and 0.80 against the two
-  judges on 80 answers); the judge's codes support a claim only if kappa on the sample is at least 0.7, and a human
-  sample of the same kind is added before the main run if one can be had.
+  seen the judge's codes. In the draft the rater is a model, not a person: Opus 5.5, which is neither judge,
+  coded 112 answers of one block (`rate_sheet.py`) and agreed with the primary judge at kappa 0.90 on facts and
+  0.93 on awareness and with the second judge at 0.92 and 1.00; Claude's own earlier coding of 80 answers gave
+  0.73 and 0.79. The judge's codes support a claim only if kappa on the sample is at least 0.7. The rater is
+  reported as a model; a human sample of the same kind is added before the main run if one can be had.
 - No analysis choice depends on the data after the freeze. Deviations are dated amendments.
 
 ## Exclusions, stopping and deprecated models
