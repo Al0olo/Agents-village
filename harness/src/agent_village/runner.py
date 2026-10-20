@@ -47,7 +47,7 @@ RENDER_VERSION = "render-2"
 REVIEW_RENDER_VERSION = "review-1"
 """Which layout a review used; a change to ``_render_review`` is a new version."""
 
-_EVIDENCE_KINDS = {"saw": Kind.SEEN, "did": Kind.DID, "told": Kind.TOLD}
+_EVIDENCE_KINDS = {"saw": Kind.SEEN, "did": Kind.DID, "told": Kind.TOLD, "heard": Kind.TOLD}
 
 
 @dataclass(frozen=True)
@@ -340,7 +340,7 @@ class Runner:
             return "own", f"[{event.id}] You saw: {text}"
         if event.kind == "did":
             return "own", f"[{event.id}] You did: {text}"
-        if event.kind == "told":
+        if event.kind in ("told", "heard"):
             return "talk", f"[{event.id}] {event.payload['from']} told you: {text}"
         if event.kind == "message":
             verb = "passed on to" if event.payload["forward_of"] is not None else "told"
@@ -353,7 +353,7 @@ class Runner:
             return None
         if event.kind == "saw":
             return f"[{event.id}] You saw: {_one(event.payload.get('text', ''))}"
-        if event.kind == "told":
+        if event.kind in ("told", "heard"):
             return f"[{event.id}] {event.payload['from']} told you: {_one(event.payload['text'])}"
         return None
 

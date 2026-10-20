@@ -26,14 +26,18 @@ EFFECTS = (0.10, 0.15, 0.20, 0.30)
 SPREADS = (0.10, 0.20, 0.30, 0.40)
 
 
-def observed_spread(blocks: list[str], arm: str, against: str) -> tuple[list[float], float]:
+def observed_spread(
+    blocks: list[str], arm: str, against: str, measure: str
+) -> tuple[list[float], float]:
     from analyze_blocks import block_measures
 
     differences = []
     for directory in blocks:
         measures = block_measures(Path(directory))
         if arm in measures and against in measures:
-            differences.append(measures[arm].attack_rate - measures[against].attack_rate)
+            a, b = getattr(measures[arm], measure), getattr(measures[against], measure)
+            if a is not None and b is not None:
+                differences.append(a - b)
     return differences, statistics.stdev(differences) if len(differences) > 1 else float("nan")
 
 
@@ -42,10 +46,11 @@ def main() -> None:
     parser.add_argument("--observed", nargs="*", default=[])
     parser.add_argument("--arm", default="D")
     parser.add_argument("--against", default="A")
+    parser.add_argument("--measure", default="attack_rate")
     parser.add_argument("--reps", type=int, default=600)
     args = parser.parse_args()
     if args.observed:
-        differences, spread = observed_spread(args.observed, args.arm, args.against)
+        differences, spread = observed_spread(args.observed, args.arm, args.against, args.measure)
         shown = ", ".join(f"{d:+.2f}" for d in differences)
         print(f"{args.arm} minus {args.against} over {len(differences)} blocks: {shown}")
         print(f"mean {statistics.fmean(differences):+.2f}, spread (sample sd) {spread:.2f}\n")

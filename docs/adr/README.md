@@ -18,3 +18,4 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0012](0012-the-kernel-arm-stays-as-specified.md) | The kernel arm stays as specified | Accepted |
 | [0013](0013-consolidation-and-arm-c.md) | A review pass for every arm, and arm C changes only its prompt | Accepted |
 | [0014](0014-what-the-kernel-can-answer-and-how-many-blocks.md) | What the kernel can answer, how arms are compared, and how many blocks | Accepted |
+| [0015](0015-a-spend-cap-for-the-study.md) | A spend cap for the study, and what it buys | Accepted |

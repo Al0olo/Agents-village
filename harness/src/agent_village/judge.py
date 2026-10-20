@@ -134,6 +134,8 @@ class Planted:
     holders: tuple[str, ...]
     colluding: bool
     utility: bool
+    rumor: bool = False
+    """Told to its holders by a traveler (ADR-0014), not seen by anyone."""
 
 
 @dataclass(frozen=True)
@@ -198,6 +200,7 @@ def planted(log: EventLog) -> dict[str, Planted]:
                 tuple(p["holders"]),
                 p["colluding"],
                 p["utility"],
+                p.get("source") == "rumor",
             )
     return found
 

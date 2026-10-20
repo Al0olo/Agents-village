@@ -31,7 +31,7 @@ from agent_village.model import Backend, NotRecordedError, RecordedBackend, Requ
 from agent_village.probes import PROBE_ROUND, Question, run_round
 from agent_village.prompts import Prompt
 
-ENVIRONMENT = frozenset({"saw", "did", "plant"})
+ENVIRONMENT = frozenset({"saw", "heard", "did", "plant"})
 INPUTS = ENVIRONMENT | {"launch"}
 DRIVEN = ("tick", PROBE_ROUND, CONSOLIDATION)
 """The events that mark a driver action: a replay re-executes it and compares what it wrote."""

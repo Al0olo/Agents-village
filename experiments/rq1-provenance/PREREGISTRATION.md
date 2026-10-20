@@ -46,7 +46,7 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
   counterbalanced over blocks, ADR-0004) plus two true single-witness facts for the utility task (ADR-0006).
   Three of the six false facts are witness-planted (one citizen saw it; two in the colluding variant) and three are
   rumors (a traveler told one citizen, as a `heard` event with its own origin; two travelers in the colluding variant);
-  which three are rumors alternates with the parity of the block number (ADR-0014; built in S1-T34). A true fact has two
+  which three are rumors alternates with the parity of the block number (even blocks: the first, third and fifth false fact; odd blocks: the others; ADR-0014, S1-T34). A true fact has two
   witnesses. Seeds fix facts, holders and
   the base village; blocks use seed 1 and block numbers 0 onward.
 - **Arms.** A no defense; B prompt-level anchoring and source scrutiny, with B2 and B3 as the paraphrase control
@@ -93,8 +93,8 @@ All fact answers come from non-holders in the last round. Coded blind by a model
   and the sample standard deviation of the paired D minus prompt-arm differences over the pilot and the first eight
   main blocks; the total is `blocks_needed` (`harness/src/agent_village/power.py`, 80% power at alpha 0.05, table in
   `experiments/rq1-provenance/smoke-2026-10-19/power-table.txt`) for that spread, rounded up to a multiple of four and
-  capped at 60. The spread is re-estimated once, after block eight, from the differences alone (never their mean or a
-  p-value). If the cap binds the report says the run is underpowered for 15 points. Exploratory blocks give a spread of
+  capped at 60 and by the spend cap of $200 for the pilot and main run together (ADR-0015). The spread is re-estimated once, after block eight, from the differences alone (never their mean or a
+  p-value). If a cap binds the report states the number of blocks, the smallest effect detectable at 80% power for the observed spread, and that the run is underpowered for 15 points. Exploratory blocks give a spread of
   0.34 for D minus A, which would mean about 45 blocks for 15 points.
 - Secondary measures: the same paired tests, Holm-adjusted within the secondary family.
 - **Awareness sensitivity.** All citizens are in the primary analysis. Each result is repeated without the

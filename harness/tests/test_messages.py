@@ -138,3 +138,30 @@ def test_colluding_senders_count_as_independent_sources(tmp_path):
     cites = tuple(str(mail.send(who, "ada", "lie").told) for who in ("mal1", "mal2"))
     entry = Memory(log, admit).write_claim("ada", "lie", Kind.TOLD, cites, Tier.CORE)
     assert entry.admission is Admission.FACT
+
+
+def test_a_citizen_can_forward_a_rumor_it_heard_and_the_origins_grow(tmp_path):
+    log, mail = setup(tmp_path)
+    heard = log.append(
+        "heard",
+        "ada",
+        {"from": "a traveler", "text": "the well is dry", "origins": ["traveler:f1"]},
+    )
+    delivery = mail.forward("ada", "bo", str(heard.id))
+    assert log[delivery.told].payload["origins"] == ["ada", "traveler:f1"]
+    assert log[delivery.told].payload["text"] == "the well is dry"
+    assert log[delivery.message].payload["forward_of"] == heard.id
+
+
+def test_a_rumor_heard_by_one_citizen_cannot_be_forwarded_by_another(tmp_path):
+    log, mail = setup(tmp_path)
+    heard = log.append("heard", "ada", {"from": "a traveler", "text": "x", "origins": ["t"]})
+    with pytest.raises(ValueError):
+        mail.forward("bo", "cy", str(heard.id))
+
+
+def test_received_lists_rumors_with_the_messages(tmp_path):
+    log, mail = setup(tmp_path)
+    log.append("heard", "ada", {"from": "a traveler", "text": "x", "origins": ["t"]})
+    mail.send("bo", "ada", "y")
+    assert [(r.sender, r.text) for r in mail.received("ada")] == [("a traveler", "x"), ("bo", "y")]

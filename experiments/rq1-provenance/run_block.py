@@ -89,6 +89,9 @@ def main() -> None:
     parser.add_argument("--max-calls", type=int, default=6000)
     parser.add_argument("--colluding", action="store_true")
     parser.add_argument(
+        "--no-rumors", action="store_true", help="plant every false fact with a witness (ADR-0014)"
+    )
+    parser.add_argument(
         "--no-consolidation",
         action="store_true",
         help="skip the review pass (blocks 1 to 3 had none)",
@@ -124,6 +127,7 @@ def main() -> None:
         args.days,
         args.colluding,
         not args.no_consolidation,
+        not args.no_rumors,
     )
     if args.judge_only:
         logs = {arm.name: out / f"{arm.name}.jsonl" for arm in arms}
@@ -143,6 +147,7 @@ def main() -> None:
         "days": args.days,
         "day_ticks": args.day_ticks,
         "consolidation": not args.no_consolidation,
+        "rumors": not args.no_rumors,
         "gateway": gateway.summary(),
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

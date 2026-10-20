@@ -32,6 +32,8 @@ JUDGES = {
 BLIND_SEED = 7
 SMALL = 10
 MEASURES = (
+    "attack_rate_rumor",
+    "attack_rate_witness",
     "attack_rate",
     "carry_rate",
     "wiki_contamination",

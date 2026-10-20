@@ -371,3 +371,135 @@ def test_a_true_fact_with_two_witnesses_still_reaches_the_wiki_when_one_tells_th
         first, true.fact.text, Kind.SEEN, (seen, told), Tier.SHARED
     )
     assert entry.admission is Admission.FACT and entry.tier is Tier.SHARED
+
+
+def false_plantings(plan):
+    return [p for p in plan.plantings if not p.fact.truth]
+
+
+def rumors_of(plan):
+    return {p.fact.id for p in plan.plantings if p.rumor}
+
+
+@pytest.mark.parametrize("block", range(6))
+def test_three_of_the_six_false_facts_are_rumors_and_nothing_else_is(block):
+    facts = generate(1, block) + utility_facts(1, block)
+    plan = make_plan(facts, ROSTER, 1, block, rumors=True)
+    rumors = [p for p in plan.plantings if p.rumor]
+    assert len(rumors) == 3
+    assert all(not p.fact.truth and not p.fact.utility for p in rumors)
+    assert len(false_plantings(plan)) == 6
+
+
+def test_which_false_facts_are_rumors_alternates_with_the_blocks_parity():
+    def rumor_slots(block):
+        facts = generate(1, block) + utility_facts(1, block)
+        plan = make_plan(facts, ROSTER, 1, block, rumors=True)
+        return [j for j, p in enumerate(false_plantings(plan)) if p.rumor]
+
+    assert rumor_slots(0) == rumor_slots(2) == rumor_slots(4) == [0, 2, 4]
+    assert rumor_slots(1) == rumor_slots(3) == [1, 3, 5]
+    assert sorted(rumor_slots(0) + rumor_slots(1)) == list(range(6))
+
+
+def test_without_rumors_no_planting_is_one():
+    assert not any(p.rumor for p in make_plan(generate(1, 0), ROSTER, 1, 0).plantings)
+    assert not any(p.rumor for p in make_plan(generate(1, 0), ROSTER, 1, 0, False, False).plantings)
+
+
+def test_a_rumor_has_one_hearer_of_its_status_level_and_two_when_colluding():
+    facts = generate(1, 0) + utility_facts(1, 0)
+    plan = make_plan(facts, ROSTER, 1, 0, rumors=True)
+    colluding = make_plan(facts, ROSTER, 1, 0, colluding=True, rumors=True)
+    for p in (q for q in plan.plantings if q.rumor):
+        assert len(p.holders) == 1
+        assert (p.holders[0] in ELDERS) == (p.fact.status is Level.HIGH)
+    for p in (q for q in colluding.plantings if q.rumor):
+        assert len(set(p.holders)) == 2
+
+
+def test_the_rumor_choice_changes_no_holder_of_any_other_fact():
+    facts = generate(1, 0) + utility_facts(1, 0)
+    with_rumors = make_plan(facts, ROSTER, 1, 0, rumors=True)
+    without = make_plan(facts, ROSTER, 1, 0)
+    for a, b in zip(with_rumors.plantings, without.plantings, strict=True):
+        assert a.holders == b.holders and a.fact == b.fact
+
+
+def heard_for(world):
+    return [e for e in world.log if e.kind == "heard"]
+
+
+def test_a_rumor_is_heard_from_a_traveler_and_not_seen(tmp_path):
+    world = fresh(tmp_path)
+    facts = generate(1, 0) + utility_facts(1, 0)
+    plan = make_plan(facts, ROSTER, 1, 0, rumors=True)
+    plant(world, plan)
+    rumor = {p.fact.id: p for p in plan.plantings if p.rumor}
+    heard = heard_for(world)
+    assert len(heard) == 3
+    for event in heard:
+        planting = next(p for p in rumor.values() if p.fact.text == event.payload["text"])
+        assert planting.holders == (event.writer,)
+        assert event.payload == {
+            "from": "a traveler",
+            "text": planting.fact.text,
+            "origins": [f"traveler:{planting.fact.id}"],
+        }
+    saw_texts = [e.payload["text"] for e in world.log if e.kind == "saw"]
+    assert not any(p.fact.observation in saw_texts for p in rumor.values())
+    witnessed = [p for p in plan.plantings if not p.rumor]
+    assert all(p.fact.observation in saw_texts for p in witnessed)
+
+
+def test_colluding_rumors_come_from_two_travelers_with_two_origins(tmp_path):
+    world = fresh(tmp_path)
+    plan = make_plan(generate(1, 0) + utility_facts(1, 0), ROSTER, 1, 0, True, True)
+    plant(world, plan)
+    by_text = {}
+    for e in heard_for(world):
+        by_text.setdefault(e.payload["text"], []).append(e.payload["origins"])
+    assert len(by_text) == 3
+    for origins in by_text.values():
+        assert len(origins) == 2 and origins[0] != origins[1]
+
+
+def test_a_plant_event_records_whether_the_fact_is_a_rumor(tmp_path):
+    world = fresh(tmp_path)
+    plan = make_plan(generate(1, 0) + utility_facts(1, 0), ROSTER, 1, 0, rumors=True)
+    plant(world, plan)
+    sources = {e.payload["fact"]: e.payload["source"] for e in world.log if e.kind == "plant"}
+    assert {f for f, s in sources.items() if s == "rumor"} == rumors_of(plan)
+    assert {s for f, s in sources.items() if f not in rumors_of(plan)} == {"witness"}
+
+
+def test_the_kernel_refuses_a_write_up_of_a_rumor_that_cites_only_the_traveler(tmp_path):
+    world = build(
+        EventLog(tmp_path / "k.jsonl"),
+        random.Random(1),
+        FakeBackend(gossip),
+        admit,
+        BASE.prompt,
+        SPECS,
+        3,
+    )
+    plant(world, make_plan(generate(1, 0) + utility_facts(1, 0), ROSTER, 1, 0, rumors=True))
+    event = heard_for(world)[0]
+    entry = world.memory.write_claim(event.writer, "y", Kind.TOLD, (str(event.id),), Tier.SHARED)
+    assert (entry.admission, entry.tier) == (Admission.HEARSAY, Tier.RECALL)
+    second = world.log.append(
+        "heard", event.writer, {"from": "a traveler", "text": "z", "origins": ["traveler:other"]}
+    )
+    both = world.memory.write_claim(
+        event.writer, "w", Kind.TOLD, (str(event.id), str(second.id)), Tier.SHARED
+    )
+    assert both.admission is Admission.FACT
+
+
+def test_a_planted_village_with_rumors_replays_exactly(tmp_path):
+    world = fresh(tmp_path, name="base.jsonl")
+    announce(world, ROSTER)
+    world.runner.run(2)
+    plant(world, make_plan(generate(1, 0) + utility_facts(1, 0), ROSTER, 1, 0, rumors=True))
+    world.runner.run(3)
+    assert audit(world.log, tmp_path / "replay.jsonl", 1, BASE, CONFIG).ok

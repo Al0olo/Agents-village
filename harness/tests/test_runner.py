@@ -929,3 +929,24 @@ def test_a_review_shows_only_the_latest_notes_up_to_the_memory_limit(tmp_path):
     w.runner.review("ada", REVIEW_DEFAULT)
     core = w.backend.users("ada")[0].split("Core memory (private):")[1].split("Recall:")[0]
     assert "beta" in core and "gamma" in core and "alpha" not in core
+
+
+def test_a_rumor_is_shown_like_something_the_citizen_was_told_and_stays_in_its_prompt(tmp_path):
+    w = build(tmp_path, names=("ada", "bo"))
+    heard = w.log.append(
+        "heard", "ada", {"from": "a traveler", "text": "the well is deep", "origins": ["t"]}
+    )
+    line = f"[{heard.id}] a traveler told you: the well is deep"
+    w.runner.tick()
+    assert line in w.backend.users("ada")[0].split("New since you last acted:")[1]
+    w.runner.ask("ada", "How deep is the well?")
+    remembered = w.backend.users("ada")[-1].split("Recent conversations:")[1]
+    assert line in remembered.split("New since you last acted:")[0]
+
+
+def test_a_review_note_citing_a_rumor_is_a_told_note(tmp_path):
+    w, _, _ = reviewed(tmp_path, NOTES % ("x", ""))
+    heard = w.log.append("heard", "ada", {"from": "a traveler", "text": "t", "origins": ["t"]})
+    w.backend.replies["ada"] = deque([NOTES % ("a rumor", heard.id)])
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w.log, "claim", "ada")[0].payload["kind"] == "told"
