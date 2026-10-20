@@ -1,0 +1,9 @@
+D minus A over 4 blocks: +0.60, +0.05, -0.05, -0.17
+mean +0.11, spread (sample sd) 0.34
+
+blocks for 80% power at alpha 0.05 (rows: assumed spread; columns: assumed effect)
+spread      0.10    0.15    0.20    0.30
+0.10          11       7       6       6
+0.20          34      16      10       7
+0.30          73      35      21      11
+0.40        >80       62      34      18

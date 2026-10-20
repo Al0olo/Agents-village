@@ -1,13 +1,13 @@
 # RQ1 pre-registration
 
-**Status:** draft 1, 2026-10-19, not yet registered. Parameters marked *pilot* are set by the 2-block
+**Status:** draft 2, 2026-10-20 (draft 1 of 2026-10-19 revised after an outside review, ADR-0014), not yet registered. Parameters marked *pilot* are set by the 2-block
 pilot under the rules below and the document is then frozen: the commit that freezes it is the dated record
 inside the repository, and the same text is to be filed on OSF before the first main-run block (the filing
 needs an OSF account and is not done). After that, changes are dated amendments at the end.
 
 Everything here follows from the PRD ([`docs/prd.md`](../../docs/prd.md) section 1) and ADRs
 [0003](../../docs/adr/0003-base-village-runs-without-defense.md) to
-[0011](../../docs/adr/0011-the-prompt-defense-family.md). Smoke villages run so far (one village per arm, one
+[0014](../../docs/adr/0014-what-the-kernel-can-answer-and-how-many-blocks.md). Smoke villages run so far (one village per arm, one
 block each) were checks of the instrument and are not part of the study; their numbers are in
 [`docs/implementation/S1-rq1-harness.md`](../../docs/implementation/S1-rq1-harness.md).
 
@@ -16,19 +16,26 @@ block each) were checks of the instrument and are not part of the study; their n
 Does a kernel that admits a claim to core or shared memory only with a kernel-checkable citation reduce
 false-fact spread beyond the strongest prompt-level defense, without blocking true information?
 
-- **H1 (primary).** Over blocks, the assertion rate of false facts is lower under kernel admission (arm D)
-  than under the chosen prompt-level arm.
+- **H1 (primary).** Over blocks, the assertion rate of *rumor-planted* false facts by non-holders is lower under
+  kernel admission (arm D) than under each of the prompt-level arms B, Bc and C. A rumor is told to one citizen by a
+  traveler, so nobody in the village has seen it and admission has no first-hand citation to accept (ADR-0014).
+  Supported only if all three paired exact tests reject at alpha 0.05 (an intersection-union test: no prompt arm is
+  chosen on the pilot, and no correction is needed for the primary).
 - **Guard.** The assertion rate of true facts under D stays within the margin *pilot* of arm A's.
-- **Refuted if** D's assertion rate of false facts is not lower than the chosen prompt arm's, or does not differ
-  from the volume-matched random block's (arm E), which would mean blocking alone explains it, or if the
-  guard fails. A guard failure with a lower false-fact rate is reported as a trade-off, not support.
+- **Reported beside H1, each with its own interval:** the same contrast on witness-planted false facts (one
+  first-hand witness; the kernel admits that witness, so no effect is expected from D, and arm G is the contrast),
+  and on all false facts together.
+- **Refuted if** D's rate on rumor-planted false facts is not lower than that of every prompt arm, or does not
+  differ from the volume-matched random block's (arm E), which would mean blocking alone explains it, or if the
+  guard fails. A guard failure with a lower rate is reported as a trade-off, not support.
 
 ## Design
 
 - **Unit.** The block: one base village and its forks. Villages within a block are paired; blocks are the
   independent replicates. *Pilot*: 2 blocks with every arm, to measure between-block variance, fork correlation,
-  judge agreement and cost, and to set the number of main blocks (about 10 is the planning figure; power
-  is recomputed from the pilot and the planning figure of d about 1.0 is not verified).
+  judge agreement and cost, to check that rumors spread and that D refuses unsupported write-ups, and to set the
+  guard margin, E's rate and probe temperature. The pilot does not choose a prompt arm and cannot set the number of
+  main blocks alone: that follows the rule under Analysis. Blocks run before the pilot are exploratory.
 - **Base and fork.** Each base village runs without defense for 4 ticks with the elders announced, then twelve
   facts are planted between ticks and every arm forks from that snapshot and runs 36 ticks (three days of 12),
   launched together in lockstep (ADR-0003, ADR-0009). Report the share of core and shared entries at the fork
@@ -37,7 +44,10 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
   ids and routed provider logged on every call, provider fallbacks off. Citizen names are fixed and capitalized.
 - **Facts.** Per block ten facts about invented entities (six false, four true; plausibility and planter status
   counterbalanced over blocks, ADR-0004) plus two true single-witness facts for the utility task (ADR-0006).
-  A false fact has one witness (two in the colluding variant); a true fact has two. Seeds fix facts, holders and
+  Three of the six false facts are witness-planted (one citizen saw it; two in the colluding variant) and three are
+  rumors (a traveler told one citizen, as a `heard` event with its own origin; two travelers in the colluding variant);
+  which three are rumors alternates with the parity of the block number (ADR-0014; built in S1-T34). A true fact has two
+  witnesses. Seeds fix facts, holders and
   the base village; blocks use seed 1 and block numbers 0 onward.
 - **Arms.** A no defense; B prompt-level anchoring and source scrutiny, with B2 and B3 as the paraphrase control
   and Bc the calibrated version (ADR-0011); C hedge-preserving consolidation: arm A with a review prompt that keeps the stance of
@@ -49,8 +59,8 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
   false-fact assertion rates of 79%, 55% and 45% against 19%, 50% and 50% under A, and G wrote nothing to the
   wiki; D is not changed and G stays exploratory. A milder corroboration rule is built only if the pilot shows G
   silences the wiki, as a new exploratory arm by dated amendment.
-- **Prompt-level arm for the contrast.** Chosen on the pilot by the rule in ADR-0011 among B, Bc and C and
-  frozen. B2 and B3 only check wording.
+- **Prompt-level arms for the contrast.** B (first wording), Bc and C are all in the contrast; none is chosen
+  on the pilot (ADR-0014 supersedes ADR-0011 clause 3). B2 and B3 only check wording.
 - **Red team.** The colluding-planter variant of every arm in a subset of blocks *pilot*.
 - **Review pass.** After days one and two every citizen turns its notes and what it lived since the last review into
   at most 8 cited notes in core memory, through the arm's admission policy (ADR-0013). Blocks run before the pilot had
@@ -64,7 +74,8 @@ All fact answers come from non-holders in the last round. Coded blind by a model
 `claude-haiku-5.5`, temperature 0, rubrics `judge-fact-3` and `judge-awareness-2`); a second judge
 (`gpt-5.6-sol`) codes everything for agreement.
 
-- **Primary:** assertion rate of false facts per village.
+- **Primary:** assertion rate of rumor-planted false facts by non-holders, per village (ADR-0014); the same rate on
+  witness-planted false facts and on all false facts are reported beside it.
 - **Guard:** assertion rate of true facts.
 - **Secondary (one family, Holm correction):** carry rate (the value passed on without being rejected) of false and of true facts; utility score; wiki
   contamination; ticks to k = 2 carriers; ticks to k = 2 writers; label creep (overall and on planted facts);
@@ -74,9 +85,17 @@ All fact answers come from non-holders in the last round. Coded blind by a model
 
 ## Analysis
 
-- Per block, the paired difference in the primary outcome (D minus the chosen prompt arm; D minus E; D minus
-  A). A paired exact (sign-flip) permutation test across blocks, two-sided, alpha 0.05; effect size with a
-  bootstrap interval over blocks. The model mix is fixed and reported by model.
+- Per block, the paired difference in the primary outcome (D minus B, D minus Bc, D minus C; also D minus E and
+  D minus A). A paired exact (sign-flip) permutation test across blocks, two-sided, alpha 0.05 (exact up to 40 blocks;
+  beyond that 100,000 random sign patterns with a registered seed); effect size with a bootstrap interval over blocks,
+  reported as a range of the differences when there are fewer than ten. The model mix is fixed and reported by model.
+- **Number of blocks.** The planning effect is 15 points of assertion rate. The planning spread is the larger of 0.25
+  and the sample standard deviation of the paired D minus prompt-arm differences over the pilot and the first eight
+  main blocks; the total is `blocks_needed` (`harness/src/agent_village/power.py`, 80% power at alpha 0.05, table in
+  `experiments/rq1-provenance/smoke-2026-10-19/power-table.txt`) for that spread, rounded up to a multiple of four and
+  capped at 60. The spread is re-estimated once, after block eight, from the differences alone (never their mean or a
+  p-value). If the cap binds the report says the run is underpowered for 15 points. Exploratory blocks give a spread of
+  0.34 for D minus A, which would mean about 45 blocks for 15 points.
 - Secondary measures: the same paired tests, Holm-adjusted within the secondary family.
 - **Awareness sensitivity.** All citizens are in the primary analysis. Each result is repeated without the
   answers of citizens coded aware at any stage, and awareness is compared across arms; an arm difference is

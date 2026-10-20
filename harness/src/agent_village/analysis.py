@@ -10,13 +10,15 @@ intervals over blocks. Holm's step-down method adjusts a family of p-values.
 
 from __future__ import annotations
 
-import itertools
+import bisect
 import random
 import statistics
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-MAX_EXACT = 20
+MAX_EXACT = 40
+FLIPS = 100_000
+"""Random sign patterns behind the p-value of a run with more than ``MAX_EXACT`` blocks."""
 
 
 def paired_differences(
@@ -31,19 +33,52 @@ def paired_differences(
 
 
 def sign_flip_test(differences: Sequence[float]) -> float:
-    """Two-sided exact p-value that the mean difference is zero."""
+    """Two-sided exact p-value that the mean difference is zero.
+
+    The 2**n sign patterns are counted by meeting in the middle: the sums of the two halves are
+    enumerated separately and the pairs at least as extreme as the observed sum are counted
+    with a binary search, so a main run of forty blocks takes a second, not 2**40 steps.
+    """
     if not differences:
         raise ValueError("a test needs at least one difference")
     if len(differences) > MAX_EXACT:
         raise ValueError(f"exact enumeration is limited to {MAX_EXACT} blocks")
-    observed = abs(sum(differences))
-    tolerance = 1e-12
-    extreme = total = 0
-    for signs in itertools.product((1, -1), repeat=len(differences)):
-        total += 1
-        if abs(sum(s * d for s, d in zip(signs, differences, strict=True))) >= observed - tolerance:
-            extreme += 1
-    return extreme / total
+    threshold = abs(sum(differences)) - 1e-12
+    half = len(differences) // 2
+    first, second = _signed_sums(differences[:half]), sorted(_signed_sums(differences[half:]))
+    extreme = 0
+    for a in first:
+        if threshold <= 0:
+            extreme += len(second)
+        else:
+            extreme += len(second) - bisect.bisect_left(second, threshold - a)
+            extreme += bisect.bisect_right(second, -threshold - a)
+    return extreme / (len(first) * len(second))
+
+
+def flip_estimate(differences: Sequence[float], flips: int, seed: int) -> float:
+    """A Monte Carlo sign-flip p-value: the observed pattern plus ``flips`` random ones, so never zero."""
+    rng = random.Random(f"{seed}:flips")
+    observed = abs(sum(differences)) - 1e-12
+    extreme = 1 + sum(
+        abs(sum(d if rng.random() < 0.5 else -d for d in differences)) >= observed
+        for _ in range(flips)
+    )
+    return extreme / (flips + 1)
+
+
+def p_value(differences: Sequence[float], seed: int) -> float:
+    """The registered p-value: exact up to ``MAX_EXACT`` blocks, else ``FLIPS`` random sign patterns."""
+    if len(differences) <= MAX_EXACT:
+        return sign_flip_test(differences)
+    return flip_estimate(differences, FLIPS, seed)
+
+
+def _signed_sums(values: Sequence[float]) -> list[float]:
+    sums = [0.0]
+    for value in values:
+        sums = [s + sign * value for s in sums for sign in (1, -1)]
+    return sums
 
 
 @dataclass(frozen=True)
@@ -69,7 +104,7 @@ def contrast(
         second,
         len(diffs),
         statistics.fmean(diffs),
-        sign_flip_test(diffs),
+        p_value(diffs, seed),
         bootstrap_interval(diffs, seed),
         cohens_dz(diffs),
     )

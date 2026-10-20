@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 to T8 and T13 to T18 done.
+**Status:** 🚧 In progress. T1 to T21 and T33 done; T34 (rumor condition) is next; T22 to T24 (harness hygiene), T25 to T31 (storage) and T32 (arm F, exploratory) not started.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -46,6 +46,7 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T31 | Single writer per village | ⏳ | |
 | T32 | Arm F (exploratory): Mem0 OSS adapter | ⏳ | |
 | T33 | Arm G (exploratory): kernel admission with a corroborated shared tier | ✅ | `harness/src/agent_village/admission.py` (`admit_corroborated`, `Claim.shared`), `arms.py` (`CORROBORATED`, in `ARMS`), `memory.py` passes the requested tier to the policy; tests `test_admission.py`, `test_memory.py`, `test_arms.py`, `test_planting.py`. A private claim is judged as under the kernel; a shared claim needs two sources with disjoint origins even when the writer saw it first-hand. It never admits what the kernel refuses. Design is ADR-0007 (proposed). `pytest -q` |
+| T34 | Rumor condition: `heard` events, rumor plan, metrics split by source, replay (ADR-0014) | ⏳ | Decided in ADR-0014; the pilot waits for it. |
 
 ## Live check against OpenRouter (2026-10-19)
 
