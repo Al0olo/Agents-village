@@ -4,7 +4,8 @@ A block is the paired unit. The base village runs without defense (ADR-0003) wit
 elders announced, ten facts and two single-witness facts are planted between ticks, and
 every arm forks from that snapshot and runs in lockstep for a number of simulated days.
 At the end of each day every arm answers the fact and utility questions; after the last day
-it answers them again with the awareness funnel (ADR-0008). The judge runs afterwards, on
+it answers them again with the awareness funnel (ADR-0008). After each day but the last every
+citizen reviews its notes under its arm's review prompt (ADR-0013). The judge runs afterwards, on
 the finished logs, so a failed block leaves no codes to mix in.
 """
 
@@ -17,6 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_village.arms import BASE, Arm
+from agent_village.consolidation import run_consolidation
 from agent_village.eventlog import EventLog
 from agent_village.facts import generate, utility_facts
 from agent_village.fork import Snapshot, World, build
@@ -37,6 +39,7 @@ class BlockConfig:
     day_ticks: int = 12
     days: int = 3
     colluding: bool = False
+    consolidate: bool = True
 
     def __post_init__(self) -> None:
         names = [arm.name for arm in self.arms]
@@ -85,6 +88,8 @@ def run_block(
         run.run(config.day_ticks)
         final = day == config.days
         _probe(list(run.worlds.values()), questions(facts, awareness=final))
+        if config.consolidate and not final:
+            _review({arm.name: arm for arm in config.arms}, run.worlds)
     return BlockResult(
         base_log, {name: directory / f"{name}.jsonl" for name in run.worlds}, snapshot
     )
@@ -93,3 +98,8 @@ def run_block(
 def _probe(worlds: list[World], asked: Sequence[Question]) -> None:
     with ThreadPoolExecutor(max_workers=len(worlds)) as pool:
         list(pool.map(lambda world: run_round(world, asked), worlds))
+
+
+def _review(arms: dict[str, Arm], worlds: dict[str, World]) -> None:
+    with ThreadPoolExecutor(max_workers=len(worlds)) as pool:
+        list(pool.map(lambda name: run_consolidation(worlds[name], arms[name].review), worlds))

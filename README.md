@@ -55,7 +55,8 @@ be replayed and any arm re-driven from recorded outputs.
 | Piece | State |
 | --- | --- |
 | Event log, scheduler, citizens, memory tiers, messages | done |
-| Arm A (no defense), arm B (anchoring and scrutiny prompts, with a calibrated variant), arm D (kernel admission), arm E (random block at D's rate), exploratory arm G (corroborated wiki) | done; arm C not yet |
+| Arm A (no defense), arm B (anchoring and scrutiny prompts, with a calibrated variant), arm C (hedge-preserving review prompt), arm D (kernel admission), arm E (random block at D's rate), exploratory arm G (corroborated wiki) | done |
+| A review pass at the end of each simulated day, under each arm's review prompt | done |
 | Planted facts: false, true, and true with one witness | done |
 | Blinded judge, human-validation sheet, the six measures | done |
 | Forks, lockstep launch, audit replay | done |
@@ -146,6 +147,12 @@ that give a false value as the answer; all coded with the third judge rubric):
   Awareness at any stage (of 8) did not differ consistently by arm: A 3, 3, 4; D 6, 2, 4. Three blocks cannot
   settle anything (the exact test cannot go below p = 0.25 at three), and block 1's 79% for D did not repeat;
   the pilot sets how many blocks the main run needs.
+- **A review pass, and arm C, changed little in one block.** With the end-of-day review in every arm (block 4;
+  arms A, B, C, D, $13.40 with judges), false facts asserted were A 60%, B 21%, C 55%, D 43% (second judge 60%,
+  24%, 60%, 48%). The hedge-preserving review prompt did not differ from the default, which did not visibly
+  strip doubts from what citizens were told here; under the kernel, notes that cite only what was told were
+  stored as hearsay (10 of 32) where the other arms stored them as fact. It is one block, and D's rate was 79%,
+  55% and 45% in the three before it.
 - **Time to k adopters was blind to the spread.** Citizens learned by reading the wiki, not by writing
   claims, so no false fact reached two adopters by the measure as defined; spread is now also followed
   over probe rounds.

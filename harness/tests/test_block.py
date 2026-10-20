@@ -6,9 +6,11 @@ from agent_village.arms import (
     KERNEL_ADMISSION,
     NO_DEFENSE,
     PROMPT_DEFENSE,
+    STANCE_PRESERVING,
     random_block_arm,
 )
 from agent_village.block import BlockConfig, run_block
+from agent_village.consolidation import CONSOLIDATION
 from agent_village.eventlog import EventLog
 from agent_village.facts import generate, utility_facts
 from agent_village.launch import RunConfig
@@ -153,3 +155,34 @@ def test_a_model_failure_stops_the_block_and_is_not_swallowed(tmp_path):
 
     with pytest.raises(ModelError):
         run_block(config(), lambda: Fails(), tmp_path / "block")
+
+
+def markers(log, kind):
+    return [(i, e) for i, e in enumerate(log) if e.kind == kind]
+
+
+def test_every_arm_reviews_after_each_day_but_the_last_with_its_own_review_prompt(tmp_path):
+    result = go(tmp_path, arms=(NO_DEFENSE, STANCE_PRESERVING, KERNEL_ADMISSION))
+    for name, arm in (("A", NO_DEFENSE), ("C", STANCE_PRESERVING), ("D", KERNEL_ADMISSION)):
+        log = EventLog(result.logs[name])
+        reviews = markers(log, CONSOLIDATION)
+        assert len(reviews) == 2
+        assert {e.payload["prompt_hash"] for _, e in reviews} == {arm.review.hash}
+        rounds = markers(log, PROBE_ROUND)
+        ticks = [i for i, e in enumerate(log) if e.kind == "tick"]
+        for day, (at, _) in enumerate(reviews):
+            assert rounds[day][0] < at < rounds[day + 1][0]
+            assert ticks[(day + 1) * 4 - 1] < rounds[day][0]
+        assert len([e for e in log if e.kind == "review"]) == 2 * len(NAMES)
+
+
+def test_a_block_can_run_without_the_review_pass(tmp_path):
+    result = go(tmp_path, consolidate=False)
+    for path in result.logs.values():
+        assert markers(EventLog(path), CONSOLIDATION) == []
+
+
+def test_a_one_day_block_has_nothing_to_review(tmp_path):
+    result = go(tmp_path, days=1)
+    for path in result.logs.values():
+        assert markers(EventLog(path), CONSOLIDATION) == []

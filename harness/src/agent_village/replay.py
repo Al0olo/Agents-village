@@ -23,14 +23,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent_village.arms import Arm
+from agent_village.consolidation import CONSOLIDATION, run_consolidation
 from agent_village.eventlog import EventLog, LogEvent
 from agent_village.fork import Snapshot, World, build, fork
 from agent_village.launch import RunConfig
 from agent_village.model import Backend, NotRecordedError, RecordedBackend, Request, Response
 from agent_village.probes import PROBE_ROUND, Question, run_round
+from agent_village.prompts import Prompt
 
 ENVIRONMENT = frozenset({"saw", "did", "plant"})
 INPUTS = ENVIRONMENT | {"launch"}
+DRIVEN = ("tick", PROBE_ROUND, CONSOLIDATION)
+"""The events that mark a driver action: a replay re-executes it and compares what it wrote."""
 
 
 @dataclass(frozen=True)
@@ -73,10 +77,13 @@ class ReplayBackend:
 
 
 class Branch:
-    def __init__(self, world: World, backend: ReplayBackend, steps: deque[LogEvent]) -> None:
+    def __init__(
+        self, world: World, backend: ReplayBackend, steps: deque[LogEvent], review: Prompt
+    ) -> None:
         self.world = world
         self.backend = backend
         self._steps = steps
+        self._review = review
 
     def run(self) -> None:
         """Replay the rest of the original's ticks and environment events."""
@@ -86,6 +93,8 @@ class Branch:
                 self.world.runner.tick()
             elif step.kind == PROBE_ROUND:
                 run_round(self.world, _asked(step))
+            elif step.kind == CONSOLIDATION:
+                run_consolidation(self.world, self._review)
             else:
                 self.world.log.append(step.kind, step.writer, step.payload)
 
@@ -146,9 +155,9 @@ def branch(
     steps = deque(
         event
         for event in (original[i] for i in range(cut, len(original)))
-        if event.kind in ENVIRONMENT | {"tick", PROBE_ROUND}
+        if event.kind in ENVIRONMENT | {"tick", PROBE_ROUND, CONSOLIDATION}
     )
-    return Branch(branched, backend, steps)
+    return Branch(branched, backend, steps, new_arm.review)
 
 
 def _start(
@@ -192,12 +201,17 @@ def _redrive(
         return prefix, 0
     while index < stop:
         event = original[index]
-        if event.kind in ("tick", PROBE_ROUND):
+        if event.kind in DRIVEN:
+            if event.kind == CONSOLIDATION and event.payload["prompt_hash"] != arm.review.hash:
+                reason = "the recorded review used a different prompt"
+                return Divergence(index, event, None, reason), index
             try:
                 if event.kind == "tick":
                     world.runner.tick()
-                else:
+                elif event.kind == PROBE_ROUND:
                     run_round(world, _asked(event))
+                else:
+                    run_consolidation(world, arm.review)
             except NotRecordedError:
                 at = len(log)
                 earlier = _differ_common(
@@ -245,7 +259,7 @@ def _segment_end(original: EventLog, index: int) -> int:
     end = index + 1
     while (
         end < len(original)
-        and original[end].kind not in ("tick", PROBE_ROUND)
+        and original[end].kind not in DRIVEN
         and original[end].kind not in INPUTS
     ):
         end += 1

@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `6025032`
+Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `dfeacd3`
 
 ## Objective
 
@@ -36,10 +36,19 @@ funding is a later concern.
   (SQLite in the harness, Postgres in the kernel, forks by log prefix; ADR-0001). Observer UI
   is TypeScript with Next.js in `apps/observer/`, not scaffolded yet. Base village runs
   without defense (ADR-0003).
-- Done, PR #29: replication block 1 on `render-2` and `experiments/rq1-provenance/rate_sheet.py`, which had Opus 5.5
-  code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges; a model, not
-  a person, and documented so).
-- Done, PR #31 (branch `claude/gracious-albattani-osio94`): ADR-0012 (D stays as specified, G exploratory), the
+- Done, PRs #29 to #31: replication blocks 1 to 3 on `render-2` (false facts asserted: A 19, 50, 50%; B 2, 10%; Bc 26, 60%;
+  D 79, 55, 45%; G 0, 0%; B lowers true-fact assertion and utility as much and not carriage, Bc does nothing, D is not better
+  than A because the lone witness is admitted, G silences the wiki; awareness did not differ by arm), `rate_sheet.py` (Opus 5.5 as
+  the stand-in human, kappa 0.90 and 0.92 with the judges; a model, not a person), `analyze_blocks.py` (`--judge 1|2`),
+  ADR-0012 (D stays as specified, G exploratory), and a test that three rewordings of the rubric's `denies` line shift a
+  borderline class, so the rubric stays. Numbers: `docs/implementation/S1-rq1-harness.md`, `experiments/rq1-provenance/smoke-2026-10-19/`.
+- Done, PR #32 (branch `claude/gracious-albattani-osio94`): S1-T10 and T12, ADR-0013: a review pass at the end
+  of days 1 and 2 in every arm (`consolidation.py`, `Runner.review`, `parse_notes`, `BlockConfig.consolidate`), with audit
+  replay support, and arm C (`STANCE_PRESERVING`: arm A with the hedge-preserving review prompt). 958 tests, 100% coverage,
+  every mutant killed. Block 4 (A, B, C, D, first with the review): false facts asserted 60, 21, 55, 43%; C is a null against A;
+  the default review prompt did not visibly strip doubts; D's told notes became hearsay (10 of 32) where other arms stored
+  them as fact. One block, not comparable with blocks 1 to 3.
+- Done, PR #31: ADR-0012 (D stays as specified, G exploratory), the
   decision written into the pre-registration, a judge-sensitivity analysis (`analyze_blocks.py --judge 2`: same
   contrasts under GPT-5.6 Sol), and a test that three rewordings of the `denies` line of the rubric shift 23 to 27% of a
   borderline class (so the rubric is not changed; the skill and the audit say how to test a rewording).
@@ -54,20 +63,20 @@ funding is a later concern.
 
 ## Next step
 
-Credit is no longer the limit: the account's auto top-up fires at $5 and adds $20. A block of five arms costs about $14;
-`run_block.py` refuses to start if the account is below `--max-cost`, so set the cap above villages plus judges and under
-the balance (`--judge-only` re-codes from the start and appends to the judge logs). In this order:
-(1) **Arm C and the consolidator (S1-T10, T12; ADR-0013).** Nothing consolidates memory yet: no code, and blocks 1 to 3
-ran without it, although ADR-0009 plans consolidation at ticks 12 and 24. Design before code, because it touches every
-arm: a consolidation pass that rewrites a citizen's recall is an LLM in the write path (ADR-0001 keeps that out of the
-treatment), its output must go through the arm's admission policy, and arm C changes only the consolidator's prompt to
-keep the stated stance (read the Manufactured Confidence prompt first). Then re-run one block to see what consolidation
-does to A, B, D.
-(2) The 2-block pilot (S2-T6), then freeze the pre-registration with the pilot's numbers (OSF needs an account).
-(3) Storage tickets T25 to T31. Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with
-the template filled in; the owner reviews and merges.
-Settled this session, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric
-stays `judge-fact-3` and every contrast is run under both judges (`analyze_blocks.py --judge 1|2`).
+Credit is not the limit (auto top-up at $5 adds $20; a four-arm block with judges costs about $13). Run one job at a time
+and set `--max-cost` above villages plus judges: a second job beside a block caused HTTP 429s that killed a block, and the
+pinned DeepSeek endpoint throttles in bursts (`run_block.py` now retries for about 6 minutes). In this order:
+(1) **The 2-block pilot (S2-T6)**: every arm A, B, Bc, C, D, E (rate from D's measured hearsay share, `matched_rate`), G, with
+the review pass, two judges; then the numbers it sets: the margin for the true-fact guard, the number of main blocks, the
+prompt-level arm for the contrast by the rule in ADR-0011, E's rate, probe temperature (0.7 placeholder). Run a block per
+call; `run_block.py` takes `--arms A,B,Bc,C,D,E,G` (E is built by `chosen`). Then freeze `PREREGISTRATION.md` with those numbers
+(OSF needs an account the owner has not made).
+(2) A power/cost estimate from the pilot (S2-T3) and the notebook for `analyze_blocks.py`.
+(3) Storage tickets T25 to T31. Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with the
+template filled in; the owner reviews and merges.
+Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays
+`judge-fact-3` and every contrast is run under both judges; the review pass is in every arm and arm C changes only its
+prompt (ADR-0013).
 
 ## Queue
 
@@ -137,6 +146,9 @@ Design rules that tests depend on
   model served more than one snapshot or provider, base run included) is dead and excluded. Whether the real
   OpenRouter reports a stable served id for a pinned snapshot is NOT verified, so the drift check may false-alarm
   on the first live call. S3-T3 (run monitor) and S2-T15 (cloud batch runner) build on `Launch`.
+- A review pass (ADR-0013) is a driver action between ticks: a `consolidation` marker, then per citizen a `model_call`, the `claim`
+  events of its notes and a `review` event (`through` = log position read up to). Audit replay re-executes it with the arm's review
+  prompt; its notes go through the arm's policy, so a note citing only told events is hearsay under the kernel.
 - Audit replay re-drives a log with the real runner on `RecordedBackend.from_log(log, start)`; `saw`, `did`,
   `plant` and `launch` events are re-appended and a `probe_round` is re-executed from its marker. Any other
   event a driver appends between ticks is reported as unreplayable. A replayed log is byte-identical; the first

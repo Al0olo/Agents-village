@@ -14,6 +14,7 @@ from agent_village.arms import (
     NO_DEFENSE,
     PROMPT_DEFENSE,
     PROMPT_DEFENSE_PARAPHRASES,
+    STANCE_PRESERVING,
     RandomBlock,
     admit_all,
     matched_rate,
@@ -23,6 +24,7 @@ from agent_village.eventlog import EventLog
 from agent_village.fork import build, fork
 from agent_village.memory import Tier
 from agent_village.model import FakeBackend
+from agent_village.prompts import REVIEW_DEFAULT, REVIEW_HEDGE_PRESERVING
 
 
 @pytest.fixture(scope="module")
@@ -71,7 +73,7 @@ def oracle(log, claim):
 
 
 def test_the_registry_holds_the_arms_by_their_names():
-    assert set(ARMS) == {"A", "B", "Bc", "D", "G"}
+    assert set(ARMS) == {"A", "B", "Bc", "C", "D", "G"}
     assert all(arm.name == name for name, arm in ARMS.items())
 
 
@@ -462,3 +464,18 @@ def test_the_calibrated_arm_is_no_defense_with_the_calibrated_prompt():
     assert CALIBRATED_DEFENSE.policy is admit_all and CALIBRATED_DEFENSE.settings == {}
     assert CALIBRATED_DEFENSE.prompt.version == "anchor-calibrated-1"
     assert CALIBRATED_DEFENSE.prompt is not PROMPT_DEFENSE.prompt
+
+
+def test_every_arm_but_c_reviews_with_the_default_prompt():
+    for arm in (*ARMS.values(), *PROMPT_DEFENSE_PARAPHRASES, random_block_arm(0.5, "s")):
+        if arm.name != "C":
+            assert arm.review is REVIEW_DEFAULT, arm.name
+
+
+def test_arm_c_is_no_defense_with_only_the_review_prompt_changed():
+    assert STANCE_PRESERVING.name == "C" and ARMS["C"] is STANCE_PRESERVING
+    assert STANCE_PRESERVING.policy is NO_DEFENSE.policy
+    assert STANCE_PRESERVING.prompt is NO_DEFENSE.prompt
+    assert STANCE_PRESERVING.settings == NO_DEFENSE.settings == {}
+    assert STANCE_PRESERVING.review is REVIEW_HEDGE_PRESERVING
+    assert NO_DEFENSE.review is not STANCE_PRESERVING.review

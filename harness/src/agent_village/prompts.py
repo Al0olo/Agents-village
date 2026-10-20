@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from agent_village.actions import MAX_NOTES
 from agent_village.eventlog import canonical_hash
 
 ACTION_FORMAT = """\
@@ -99,3 +100,30 @@ CALIBRATED = Prompt("anchor-calibrated-1", _WORLD + "\n\n" + _CALIBRATED + "\n\n
 """Arm Bc: the same two ideas as arm B without the instruction to doubt everything, so the
 prompt-level baseline is not only a strict one (a strict distrust prompt makes models refuse
 true facts too)."""
+
+REVIEW_FORMAT = """\
+Reply with exactly one JSON object, with one entry per note:
+{"notes": [{"text": "<a note>", "cites": [<numbers of the events behind it>]}]}"""
+
+_REVIEW = (
+    "It is time to review your day. You will be shown your notes and what you have seen, done, "
+    "heard and said since your last review. Write the durable facts from it as short standalone "
+    "notes that a later you can rely on, one note per fact, each citing the numbers of the "
+    f"events it rests on. Keep at most {MAX_NOTES} notes and leave out what is not worth keeping."
+)
+
+REVIEW_DEFAULT = Prompt("review-default-1", _WORLD + "\n\n" + _REVIEW + "\n\n" + REVIEW_FORMAT)
+"""The review prompt of every arm but C: the default instruction of a memory layer, in the
+village's terms (ADR-0013)."""
+
+_STANCE = (
+    "Keep the stance of what you were told: note who said it, how sure they were, and whether "
+    "you saw it yourself. Never turn a tentative or secondhand claim into a settled one, and do "
+    "not drop a doubt that was raised."
+)
+
+REVIEW_HEDGE_PRESERVING = Prompt(
+    "review-hedge-1", _WORLD + "\n\n" + _REVIEW + " " + _STANCE + "\n\n" + REVIEW_FORMAT
+)
+"""Arm C: the review prompt with the hedge-preserving rule of Manufactured Confidence. It is
+the only difference from arm A."""

@@ -15,7 +15,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 
-from agent_village.actions import ActionError, Forward, Remember, Say, Sleep, parse
+from agent_village.actions import (
+    ActionError,
+    Forward,
+    Remember,
+    Say,
+    Sleep,
+    parse,
+    parse_notes,
+)
+from agent_village.admission import Kind
 from agent_village.eventlog import EventLog, LogEvent
 from agent_village.memory import Memory, Tier
 from agent_village.messages import Messenger
@@ -34,6 +43,11 @@ class Spec:
 
 RENDER_VERSION = "render-2"
 """Which prompt layout a step used; a change to ``_render`` is a new version."""
+
+REVIEW_RENDER_VERSION = "review-1"
+"""Which layout a review used; a change to ``_render_review`` is a new version."""
+
+_EVIDENCE_KINDS = {"saw": Kind.SEEN, "did": Kind.DID, "told": Kind.TOLD}
 
 
 @dataclass(frozen=True)
@@ -77,6 +91,7 @@ class Runner:
         self._config = config or LoopConfig()
         self._specs = {s.name: s for s in specs}
         self._cursor: dict[str, int] = {}
+        self._reviewed: dict[str, int] = {}
         self._queued: set[str] = set()
         if village.state().citizens:
             if set(village.state().citizens) != set(self._specs):
@@ -84,6 +99,8 @@ class Runner:
             for event in log:
                 if event.kind == "step":
                     self._cursor[event.writer] = event.payload["through"]
+                elif event.kind == "review":
+                    self._reviewed[event.writer] = event.payload["through"]
         else:
             for spec in specs:
                 village.add_citizen(spec.name)
@@ -109,6 +126,44 @@ class Runner:
         )
         user = self._render(name, tick, self._cursor.get(name, -1), through, [], closing)
         return self._model.complete(name, self._request(name, user)).text
+
+    def review(self, name: str, prompt: Prompt) -> None:
+        """Have a citizen turn its notes and what it lived since its last review into new notes.
+
+        Each note goes through the memory policy like one the citizen writes in its turn, in
+        core memory; nothing a citizen has been shown or who is awake changes (ADR-0013).
+        """
+        tick = self._village.state().tick
+        through = len(self._log) - 1
+        user = self._render_review(name, tick, self._reviewed.get(name, -1), through)
+        system = f"You are {name}.\n\n{prompt.system}"
+        request = Request(
+            self._specs[name].model,
+            (Message("system", system), Message("user", user)),
+            self._config.max_tokens,
+            self._config.temperature,
+        )
+        reply = self._model.complete(name, request).text
+        try:
+            notes = parse_notes(reply)
+        except ActionError as error:
+            self._invalid(name, str(error))
+            notes = ()
+        for note in notes:
+            kind = self._kind_of(name, note.cites)
+            self._memory.write_claim(name, note.text, kind, note.cites, Tier.CORE)
+        self._log.append(
+            "review",
+            name,
+            {
+                "through": through,
+                "notes": len(notes),
+                "prompt_version": prompt.version,
+                "prompt_hash": prompt.hash,
+                "render": REVIEW_RENDER_VERSION,
+            },
+        )
+        self._reviewed[name] = through
 
     def cursors(self) -> dict[str, int]:
         """The last log position each citizen has been shown, by citizen."""
@@ -237,6 +292,41 @@ class Runner:
                 _section("New since you last acted", fresh),
                 _section("This turn so far", [f"- {n}" for n in notes], "(nothing yet)"),
                 closing,
+            ]
+        )
+
+    def _kind_of(self, name: str, cites: Sequence[str]) -> Kind:
+        """The kind of the first cited event the writer wrote itself; told when there is none."""
+        for cited in cites:
+            index = int(cited)
+            if index < len(self._log):
+                event = self._log[index]
+                if event.writer == name and event.kind in _EVIDENCE_KINDS:
+                    return _EVIDENCE_KINDS[event.kind]
+        return Kind.TOLD
+
+    def _render_review(self, name: str, tick: int, after: int, through: int) -> str:
+        limit = self._config.memory_limit
+        core = self._memory.entries(Tier.CORE, name)[-limit:]
+        recall = self._memory.entries(Tier.RECALL, name)[-limit:]
+        lived = [
+            line
+            for line in (self._remember(self._log[i], name) for i in range(after + 1, through + 1))
+            if line
+        ]
+        return "\n\n".join(
+            [
+                f"Tick {tick}.",
+                _section("Core memory (private)", [f"[{e.id}] {_one(e.text)}" for e in core]),
+                _section("Recall", [f"[{e.id}] {_one(e.text)}" for e in recall]),
+                _section(
+                    "What you have seen and done since your last review",
+                    [x for k, x in lived if k == "own"],
+                ),
+                _section(
+                    "Conversations since your last review", [x for k, x in lived if k == "talk"]
+                ),
+                "Write your notes now.",
             ]
         )
 

@@ -58,15 +58,12 @@ PINS = {
 JUDGES = ("anthropic/claude-haiku-5.5", "openai/gpt-5.6-sol")
 BLIND_SEED = 7
 RANDOM_BLOCK_RATE = 0.5
-LOOP = LoopConfig(
-    max_steps=3, default_sleep=2, max_sleep=6, max_tokens=700, memory_limit=20
-)
+RETRY_DELAYS = (2.0, 5.0, 10.0, 20.0, 30.0, 30.0, 60.0, 60.0, 60.0, 60.0)
+LOOP = LoopConfig(max_steps=3, default_sleep=2, max_sleep=6, max_tokens=700, memory_limit=20)
 
 
 def specs() -> tuple[Spec, ...]:
-    models = [
-        MODELS[i % 3] if name != "Hal" else MODELS[1] for i, name in enumerate(NAMES)
-    ]
+    models = [MODELS[i % 3] if name != "Hal" else MODELS[1] for i, name in enumerate(NAMES)]
     return tuple(Spec(name, model) for name, model in zip(NAMES, models, strict=True))
 
 
@@ -77,7 +74,7 @@ def chosen(letters: list[str], block: int) -> list[Arm]:
 
 
 def stack(gateway: Gateway) -> Backend:
-    return Retrying(gateway)
+    return Retrying(gateway, RETRY_DELAYS)
 
 
 def main() -> None:
@@ -92,8 +89,11 @@ def main() -> None:
     parser.add_argument("--max-calls", type=int, default=6000)
     parser.add_argument("--colluding", action="store_true")
     parser.add_argument(
-        "--judge-only", action="store_true", help="code the logs already in OUT"
+        "--no-consolidation",
+        action="store_true",
+        help="skip the review pass (blocks 1 to 3 had none)",
     )
+    parser.add_argument("--judge-only", action="store_true", help="code the logs already in OUT")
     args = parser.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -123,6 +123,7 @@ def main() -> None:
         args.day_ticks,
         args.days,
         args.colluding,
+        not args.no_consolidation,
     )
     if args.judge_only:
         logs = {arm.name: out / f"{arm.name}.jsonl" for arm in arms}
@@ -134,12 +135,14 @@ def main() -> None:
         "seed": args.seed,
         "block": args.block,
         "arms": {
-            a.name: {"prompt": a.prompt.version, "settings": a.settings} for a in arms
+            a.name: {"prompt": a.prompt.version, "review": a.review.version, "settings": a.settings}
+            for a in arms
         },
         "config_hash": run.hash,
         "models": sorted({s.model for s in run.specs}),
         "days": args.days,
         "day_ticks": args.day_ticks,
+        "consolidation": not args.no_consolidation,
         "gateway": gateway.summary(),
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -164,7 +167,7 @@ def judge(logs: dict[str, Path], out: Path, gateway: Gateway) -> None:
     def run_judge(model: str) -> None:
         name = "judge.jsonl" if model == JUDGES[0] else "judge2.jsonl"
         result = code_items(
-            blinded.items, Retrying(gateway), EventLog(out / name), model
+            blinded.items, Retrying(gateway, RETRY_DELAYS), EventLog(out / name), model
         )
         with lock:
             codes[model] = result
@@ -172,24 +175,16 @@ def judge(logs: dict[str, Path], out: Path, gateway: Gateway) -> None:
     with ThreadPoolExecutor(max_workers=len(JUDGES)) as pool:
         list(pool.map(run_judge, JUDGES))
     both = [
-        i.item_id
-        for i in blinded.items
-        if all(codes[m][i.item_id] is not None for m in JUDGES)
+        i.item_id for i in blinded.items if all(codes[m][i.item_id] is not None for m in JUDGES)
     ]
     for kind in ("fact", "awareness"):
-        ids = [
-            i
-            for i in both
-            if (blinded.key[i].kind == "awareness") == (kind == "awareness")
-        ]
+        ids = [i for i in both if (blinded.key[i].kind == "awareness") == (kind == "awareness")]
         if ids:
             a = agreement(
                 {i: codes[JUDGES[0]][i] for i in ids},
                 {i: codes[JUDGES[1]][i] for i in ids},
             )
-            print(
-                f"judges agree on {kind}: n={a.n} observed={a.observed:.3f} kappa={a.kappa:.3f}"
-            )
+            print(f"judges agree on {kind}: n={a.n} observed={a.observed:.3f} kappa={a.kappa:.3f}")
     stats = Counter(str(codes[JUDGES[0]][i.item_id]) for i in blinded.items)
     print("primary judge codes:", dict(stats))
 
