@@ -17,7 +17,14 @@ from typing import Any
 from agent_village.admission import Admission, Claim, Event, admit, admit_corroborated
 from agent_village.eventlog import EventLog, canonical_hash
 from agent_village.memory import Policy
-from agent_village.prompts import ANCHOR_SCRUTINY, BASELINE, CALIBRATED, Prompt
+from agent_village.prompts import (
+    ANCHOR_SCRUTINY,
+    BASELINE,
+    CALIBRATED,
+    REVIEW_DEFAULT,
+    REVIEW_HEDGE_PRESERVING,
+    Prompt,
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +34,8 @@ class Arm:
     prompt: Prompt
     settings: dict[str, Any] = field(default_factory=dict)
     """What parameterizes the policy, recorded at launch so an audit can tell arms apart."""
+    review: Prompt = REVIEW_DEFAULT
+    """The prompt of the review pass at the end of a simulated day (ADR-0013)."""
 
 
 def admit_all(claim: Claim, evidence: dict[str, Event]) -> Admission:
@@ -89,6 +98,10 @@ PROMPT_DEFENSE_PARAPHRASES = (
 )
 """The same defense in other words, run as the paraphrase control. Not in ``ARMS``."""
 
+STANCE_PRESERVING = Arm("C", admit_all, BASELINE, review=REVIEW_HEDGE_PRESERVING)
+"""Hedge-preserving consolidation: no defense, except that the review pass is told to keep the
+stance of what citizens were told. It differs from arm A in that prompt alone (ADR-0013)."""
+
 CORROBORATED = Arm("G", admit_corroborated, BASELINE)
 """Exploratory: the kernel, but the shared wiki also needs two independent sources, so a lone
 first-hand witness cannot publish. Excluded from the primary contrast, like arm F."""
@@ -97,5 +110,12 @@ BASE = NO_DEFENSE
 
 ARMS = {
     arm.name: arm
-    for arm in (NO_DEFENSE, PROMPT_DEFENSE, CALIBRATED_DEFENSE, KERNEL_ADMISSION, CORROBORATED)
+    for arm in (
+        NO_DEFENSE,
+        PROMPT_DEFENSE,
+        CALIBRATED_DEFENSE,
+        STANCE_PRESERVING,
+        KERNEL_ADMISSION,
+        CORROBORATED,
+    )
 }

@@ -16,8 +16,14 @@ from agent_village.model import (
     RecordedBackend,
     Response,
 )
-from agent_village.prompts import BASELINE, Prompt
-from agent_village.runner import RENDER_VERSION, LoopConfig, Runner, Spec
+from agent_village.prompts import BASELINE, REVIEW_DEFAULT, REVIEW_HEDGE_PRESERVING, Prompt
+from agent_village.runner import (
+    RENDER_VERSION,
+    REVIEW_RENDER_VERSION,
+    LoopConfig,
+    Runner,
+    Spec,
+)
 from agent_village.village import SimClock, Village
 
 SLEEP = '{"action": "sleep", "ticks": 10}'
@@ -782,3 +788,144 @@ def test_resuming_with_different_citizens_is_rejected(tmp_path):
         Runner(*args, [Spec("ada", "m"), Spec("cy", "m")], BASELINE)
     with pytest.raises(ValueError):
         Runner(*args, [Spec("ada", "m")], BASELINE)
+
+
+NOTES = '{"notes": [{"text": "%s", "cites": [%s]}]}'
+
+
+def reviewed(tmp_path, reply, policy=admit, names=("ada", "bo"), **over):
+    """A world where ada saw something and bo told her something, then ada reviews."""
+    w = build(tmp_path, names=names, policy=policy, **over)
+    saw = w.log.append("saw", "ada", {"text": "the well is deep"})
+    delivery = w.mail.send("bo", "ada", "bo counted forty hives")
+    w.backend.replies["ada"] = deque([reply(saw.id, delivery.told) if callable(reply) else reply])
+    return w, saw, delivery
+
+
+def test_a_review_asks_the_citizen_under_the_review_prompt_with_the_loop_bounds(tmp_path):
+    config = LoopConfig(max_tokens=77, temperature=0.25)
+    w, saw, _ = reviewed(tmp_path, NOTES % ("x", ""), config=config)
+    w.runner.review("ada", REVIEW_HEDGE_PRESERVING)
+    ((name, request),) = w.backend.requests
+    assert name == "ada" and request.model == "fake/model"
+    assert request.messages[0].content == f"You are ada.\n\n{REVIEW_HEDGE_PRESERVING.system}"
+    assert (request.max_tokens, request.temperature) == (77, 0.25)
+    user = request.messages[1].content
+    assert f"[{saw.id}] You saw: the well is deep" in user
+    assert "bo told you: bo counted forty hives" in user
+
+
+def test_a_note_citing_a_sighting_is_a_seen_claim_the_kernel_admits_to_core(tmp_path):
+    w, saw, _ = reviewed(tmp_path, lambda saw, told: NOTES % ("the well is deep", saw))
+    w.runner.review("ada", REVIEW_DEFAULT)
+    (claim,) = of_kind(w.log, "claim", "ada")
+    assert claim.payload == {
+        "text": "the well is deep",
+        "kind": "seen",
+        "cites": [str(saw.id)],
+        "requested": "core",
+        "admission": "fact",
+        "stored": "core",
+    }
+
+
+def test_a_note_citing_only_what_was_told_is_hearsay_under_the_kernel_and_fact_without_it(tmp_path):
+    def reply(saw, told):
+        return NOTES % ("bo keeps forty hives", told)
+
+    w, _, delivery = reviewed(tmp_path, reply)
+    w.runner.review("ada", REVIEW_DEFAULT)
+    (claim,) = of_kind(w.log, "claim", "ada")
+    assert claim.payload["kind"] == "told" and claim.payload["cites"] == [str(delivery.told)]
+    assert (claim.payload["admission"], claim.payload["stored"]) == ("hearsay", "recall")
+    (tmp_path / "x").mkdir()
+    w2, _, _ = reviewed(tmp_path / "x", reply, policy=lambda c, e: Admission.FACT)
+    w2.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w2.log, "claim", "ada")[0].payload["stored"] == "core"
+
+
+def test_the_kind_of_a_note_comes_from_its_first_cited_event_of_the_writers_own(tmp_path):
+    w, saw, _ = reviewed(tmp_path, lambda s, t: NOTES % ("a", f"{t}, {s}"))
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w.log, "claim", "ada")[0].payload["kind"] == "told"
+    other = w.log.append("saw", "bo", {"text": "bo's"})
+    w.backend.replies["ada"] = deque([NOTES % ("b", f"{other.id}, 9999, {saw.id}")])
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w.log, "claim", "ada")[1].payload["kind"] == "seen"
+    w.backend.replies["ada"] = deque([NOTES % ("c", f"{other.id}, 9999")])
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w.log, "claim", "ada")[2].payload["kind"] == "told"
+
+
+def test_a_reply_that_is_not_a_note_list_writes_nothing_and_is_logged(tmp_path):
+    w, _, _ = reviewed(tmp_path, '{"action": "sleep", "ticks": 3}')
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert of_kind(w.log, "claim") == []
+    (invalid,) = of_kind(w.log, "invalid_action", "ada")
+    assert "notes" in invalid.payload["reason"]
+    assert of_kind(w.log, "review", "ada")[0].payload["notes"] == 0
+
+
+def test_a_review_event_records_where_it_read_to_and_what_it_used(tmp_path):
+    w, _, _ = reviewed(tmp_path, NOTES % ("x", ""))
+    through = len(w.log) - 1
+    w.runner.review("ada", REVIEW_DEFAULT)
+    (review,) = of_kind(w.log, "review", "ada")
+    assert review.payload == {
+        "through": through,
+        "notes": 1,
+        "prompt_version": REVIEW_DEFAULT.version,
+        "prompt_hash": REVIEW_DEFAULT.hash,
+        "render": REVIEW_RENDER_VERSION,
+    }
+    assert of_kind(w.log, "model_call", "ada")[-1].id < review.id
+
+
+def test_a_second_review_shows_only_what_came_after_the_first_and_the_notes_kept(tmp_path):
+    w, saw, _ = reviewed(tmp_path, NOTES % ("the well is deep", ""))
+    w.backend.replies["ada"] = deque([NOTES % ("the well is deep", saw.id)])
+    w.runner.review("ada", REVIEW_DEFAULT)
+    later = w.log.append("saw", "ada", {"text": "a new thing"})
+    w.backend.replies["ada"] = deque([NOTES % ("a new thing", later.id)])
+    w.runner.review("ada", REVIEW_DEFAULT)
+    first, second = w.backend.users("ada")
+    assert "the well is deep" in first and "a new thing" not in first
+    assert "a new thing" in second and "You saw: the well is deep" not in second
+    assert "the well is deep" in second.split("Core memory")[1]
+
+
+def test_a_new_runner_over_the_same_log_resumes_after_the_last_review(tmp_path):
+    w, _, _ = reviewed(tmp_path, NOTES % ("x", ""))
+    w.runner.review("ada", REVIEW_DEFAULT)
+    rebuilt = build(tmp_path, names=("ada", "bo"), file="v.jsonl")
+    rebuilt.backend.replies["ada"] = deque([NOTES % ("y", "")])
+    rebuilt.runner.review("ada", REVIEW_DEFAULT)
+    assert "You saw: the well is deep" not in rebuilt.backend.users("ada")[0]
+
+
+def test_a_review_changes_neither_what_a_citizen_has_been_shown_nor_who_is_awake(tmp_path):
+    w, _, _ = reviewed(tmp_path, NOTES % ("x", ""))
+    cursors, state = w.runner.cursors(), w.village.state()
+    w.runner.review("ada", REVIEW_DEFAULT)
+    assert w.runner.cursors() == cursors and w.village.state() == state
+
+
+def test_a_note_citing_an_event_that_does_not_exist_yet_is_not_an_error(tmp_path):
+    w, _, delivery = reviewed(tmp_path, lambda saw, told: NOTES % ("x", told + 2))
+    w.runner.review("ada", REVIEW_DEFAULT)
+    (claim,) = of_kind(w.log, "claim", "ada")
+    assert claim.payload["cites"] == [str(delivery.told + 2)] and claim.payload["kind"] == "told"
+
+
+def test_a_review_shows_only_the_latest_notes_up_to_the_memory_limit(tmp_path):
+    w, _, _ = reviewed(
+        tmp_path,
+        NOTES % ("x", ""),
+        policy=lambda claim, evidence: Admission.FACT,
+        config=LoopConfig(memory_limit=2),
+    )
+    for text in ("alpha", "beta", "gamma"):
+        w.memory.write_claim("ada", text, Kind.SEEN, (), Tier.CORE)
+    w.runner.review("ada", REVIEW_DEFAULT)
+    core = w.backend.users("ada")[0].split("Core memory (private):")[1].split("Recall:")[0]
+    assert "beta" in core and "gamma" in core and "alpha" not in core

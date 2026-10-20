@@ -46,6 +46,15 @@ class Sleep:
 
 Action = Say | Forward | Remember | Sleep
 
+MAX_NOTES = 8
+"""The most notes one review may write, so a reply cannot write without bound."""
+
+
+@dataclass(frozen=True)
+class Note:
+    text: str
+    cites: tuple[str, ...]
+
 
 def parse(reply: str) -> Action:
     data = _first_action_object(reply)
@@ -69,7 +78,25 @@ def parse(reply: str) -> Action:
     raise ActionError(f"unknown action {name!r}")
 
 
+def parse_notes(reply: str) -> tuple[Note, ...]:
+    """The notes of a review reply: the first JSON object with a ``notes`` list, capped."""
+    data = _first_object(reply, "notes")
+    items = data["notes"]
+    if not isinstance(items, list):
+        raise ActionError("notes must be a list")
+    notes = []
+    for item in items[:MAX_NOTES]:
+        if not isinstance(item, dict):
+            raise ActionError("each note must be an object with text and cites")
+        notes.append(Note(_text(item, "text"), _ids(item.get("cites"))))
+    return tuple(notes)
+
+
 def _first_action_object(reply: str) -> dict[str, Any]:
+    return _first_object(reply, "action")
+
+
+def _first_object(reply: str, key: str) -> dict[str, Any]:
     decoder = json.JSONDecoder()
     index = reply.find("{")
     while index != -1:
@@ -77,10 +104,10 @@ def _first_action_object(reply: str) -> dict[str, Any]:
             value, _ = decoder.raw_decode(reply, index)
         except ValueError:
             value = None
-        if isinstance(value, dict) and "action" in value:
+        if isinstance(value, dict) and key in value:
             return value
         index = reply.find("{", index + 1)
-    raise ActionError("no JSON action found")
+    raise ActionError(f"no JSON {key} found")
 
 
 def _is_int(value: Any) -> bool:

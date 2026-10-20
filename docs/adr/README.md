@@ -16,3 +16,4 @@ Architecture decision records. One file per decision, numbered in order, using [
 | [0010](0010-citizens-remember-their-own-experience.md) | Citizens remember what they saw, did, heard and said | Accepted |
 | [0011](0011-the-prompt-defense-family.md) | The prompt defense is a family, chosen on the pilot and frozen | Accepted |
 | [0012](0012-the-kernel-arm-stays-as-specified.md) | The kernel arm stays as specified | Accepted |
+| [0013](0013-consolidation-and-arm-c.md) | A review pass for every arm, and arm C changes only its prompt | Accepted |

@@ -40,8 +40,8 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
   A false fact has one witness (two in the colluding variant); a true fact has two. Seeds fix facts, holders and
   the base village; blocks use seed 1 and block numbers 0 onward.
 - **Arms.** A no defense; B prompt-level anchoring and source scrutiny, with B2 and B3 as the paraphrase control
-  and Bc the calibrated version (ADR-0011); C hedge-preserving consolidation, a prompt for the consolidator at
-  ticks 12 and 24 (S1-T10, not yet built); D kernel admission; E volume-matched random block at the rate
+  and Bc the calibrated version (ADR-0011); C hedge-preserving consolidation: arm A with a review prompt that keeps the stance of
+  what citizens were told (`review-hedge-1`; every other arm uses `review-default-1`, ADR-0013); D kernel admission; E volume-matched random block at the rate
   *pilot* (D's measured share of claims stored as hearsay); exploratory: G corroborated wiki (ADR-0007) and
   F off-the-shelf memory. G and F are excluded from the primary contrast and from the multiplicity correction.
 - **The kernel arm is D as specified (ADR-0012).** A claim is admitted with one first-hand event of the writer
@@ -52,6 +52,9 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
 - **Prompt-level arm for the contrast.** Chosen on the pilot by the rule in ADR-0011 among B, Bc and C and
   frozen. B2 and B3 only check wording.
 - **Red team.** The colluding-planter variant of every arm in a subset of blocks *pilot*.
+- **Review pass.** After days one and two every citizen turns its notes and what it lived since the last review into
+  at most 8 cited notes in core memory, through the arm's admission policy (ADR-0013). Blocks run before the pilot had
+  no review pass and are not part of the study.
 - **Probes.** Fact and utility questions at ticks 12 and 24 (interim) and at tick 36 with the awareness funnel
   (ADR-0008). Each probe is an independent call under the arm's own prompt that changes nothing the citizen knows.
 

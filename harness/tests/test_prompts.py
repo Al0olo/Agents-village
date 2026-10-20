@@ -2,8 +2,17 @@ import re
 
 import pytest
 
-from agent_village.actions import parse
-from agent_village.prompts import ACTION_FORMAT, ANCHOR_SCRUTINY, BASELINE, CALIBRATED, Prompt
+from agent_village.actions import Note, parse, parse_notes
+from agent_village.prompts import (
+    ACTION_FORMAT,
+    ANCHOR_SCRUTINY,
+    BASELINE,
+    CALIBRATED,
+    REVIEW_DEFAULT,
+    REVIEW_FORMAT,
+    REVIEW_HEDGE_PRESERVING,
+    Prompt,
+)
 
 
 def test_hash_is_stable_and_covers_version_and_text():
@@ -182,3 +191,43 @@ def test_the_calibrated_prompt_makes_each_move(move):
 )
 def test_the_calibrated_prompt_does_not_leak_the_hypothesis(word):
     assert word not in CALIBRATED.system.lower()
+
+
+def test_the_review_prompts_are_versioned_and_differ_only_by_the_stance_rule():
+    assert (REVIEW_DEFAULT.version, REVIEW_HEDGE_PRESERVING.version) == (
+        "review-default-1",
+        "review-hedge-1",
+    )
+    assert REVIEW_DEFAULT.hash != REVIEW_HEDGE_PRESERVING.hash
+    assert (
+        REVIEW_FORMAT in REVIEW_DEFAULT.system and REVIEW_FORMAT in REVIEW_HEDGE_PRESERVING.system
+    )
+    assert "that a later you can rely on" in REVIEW_DEFAULT.system
+    rule = "Never turn a tentative or secondhand claim into a settled one"
+    assert rule in REVIEW_HEDGE_PRESERVING.system and rule not in REVIEW_DEFAULT.system
+    assert "who said it" in REVIEW_HEDGE_PRESERVING.system
+    assert "who said it" not in REVIEW_DEFAULT.system
+
+
+def test_the_review_format_example_parses_as_notes():
+    example = next(line for line in REVIEW_FORMAT.splitlines() if line.startswith("{"))
+    filled = example.replace('"<a note>"', '"x"').replace(
+        "[<numbers of the events behind it>]", "[3]"
+    )
+    assert parse_notes(filled) == (Note("x", ("3",)),)
+
+
+@pytest.mark.parametrize(
+    "word",
+    ["hearsay", "admission", "provenance", "kernel", "experiment", "false", "defense", "origin"],
+)
+@pytest.mark.parametrize("prompt", [REVIEW_DEFAULT, REVIEW_HEDGE_PRESERVING])
+def test_the_review_prompts_do_not_leak_the_hypothesis(prompt, word):
+    assert word not in prompt.system.lower()
+
+
+def test_the_review_prompts_are_pinned():
+    assert {p.version: p.hash for p in (REVIEW_DEFAULT, REVIEW_HEDGE_PRESERVING)} == {
+        "review-default-1": "bc249e84ec54ca9a193a00a106fd15e3f83b2a417b302e951c8d2bd2def6d7d6",
+        "review-hedge-1": "eae4115e915850d9584d53df0a5d638f44d42b8ec997a9705d80a5cf1ede5cf0",
+    }

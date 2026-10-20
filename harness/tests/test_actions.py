@@ -1,6 +1,16 @@
 import pytest
 
-from agent_village.actions import ActionError, Forward, Remember, Say, Sleep, parse
+from agent_village.actions import (
+    MAX_NOTES,
+    ActionError,
+    Forward,
+    Note,
+    Remember,
+    Say,
+    Sleep,
+    parse,
+    parse_notes,
+)
 from agent_village.admission import Kind
 from agent_village.memory import Tier
 
@@ -101,3 +111,41 @@ def test_invalid_replies_raise_action_error(reply):
 def test_action_error_is_a_value_error_with_a_reason():
     with pytest.raises(ValueError, match="no JSON action"):
         parse("nothing here")
+
+
+def test_a_note_list_parses_text_and_cites():
+    notes = parse_notes('{"notes": [{"text": "Hal counted forty hives", "cites": [12, "15"]}]}')
+    assert notes == (Note("Hal counted forty hives", ("12", "15")),)
+
+
+def test_notes_tolerate_prose_and_fences_and_take_the_first_list():
+    reply = 'Here you go:\n```json\n{"notes": [{"text": "a", "cites": []}]}\n```\n{"notes": []}'
+    assert parse_notes(reply) == (Note("a", ()),)
+
+
+def test_an_empty_note_list_is_fine():
+    assert parse_notes('{"notes": []}') == ()
+
+
+def test_notes_are_capped_so_a_review_cannot_write_without_bound():
+    many = ", ".join(f'{{"text": "n{i}", "cites": []}}' for i in range(MAX_NOTES + 5))
+    assert len(parse_notes(f'{{"notes": [{many}]}}')) == MAX_NOTES
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        "no json here",
+        '{"action": "sleep", "ticks": 1}',
+        '{"notes": "text"}',
+        '{"notes": {"text": "x", "cites": []}}',
+        '{"notes": [{"text": "", "cites": []}]}',
+        '{"notes": [{"cites": []}]}',
+        '{"notes": [{"text": "x", "cites": "12"}]}',
+        '{"notes": [{"text": "x", "cites": [-1]}]}',
+        '{"notes": ["x"]}',
+    ],
+)
+def test_a_reply_that_is_not_a_valid_note_list_is_an_error(reply):
+    with pytest.raises(ActionError):
+        parse_notes(reply)
