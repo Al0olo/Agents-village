@@ -5,7 +5,7 @@ this file is history, so a future agent can see how decisions were reached.
 
 ## 2026-10-20 · Claude Sonnet 5.5 · arm C and the review pass
 
-- PR #31 was merged. The owner said to go ahead with arm C and the consolidator.
+- PR #31 was merged. The owner said to go ahead with arm C and the consolidator (this work is PR #32).
 - Design (ADR-0013): nothing consolidated memory, so I added a review pass to every arm: after days 1 and 2 each citizen turns its notes and what it lived since the last review into at most 8 cited notes, written to core through the arm's own admission policy, so the kernel keeps its meaning. Arm C is arm A with the hedge-preserving review prompt only. The paper's full prompt is not available (Appendix C is abbreviated, the repository does not open), so the wording is ours and only the two quoted phrases are the paper's; `sources.md` says so. Replay support: a `consolidation` marker re-executed by audit and branch, a different prompt reported as a divergence.
 - Built test first: 958 tests, 100% coverage, a mutation run over the new code (three survivors at first, each a missing test: a cite one past the end of the log, the memory limit in the review prompt, a non-list `notes`; all killed after).
 - Live: a 2-day smoke ($2.63) showed valid note lists from real models. Block 4 (A, B, C, D) first died at tick 21 on HTTP 429 because I had left the smoke's judges running beside it, then died at once on a burst of 429s from the pinned DeepSeek endpoint; about $6 of villages were lost. `run_block.py` now retries for about 6 minutes. The block that finished cost $13.40 with judges.

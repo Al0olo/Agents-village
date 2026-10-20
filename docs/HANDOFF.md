@@ -42,7 +42,7 @@ funding is a later concern.
   the stand-in human, kappa 0.90 and 0.92 with the judges; a model, not a person), `analyze_blocks.py` (`--judge 1|2`),
   ADR-0012 (D stays as specified, G exploratory), and a test that three rewordings of the rubric's `denies` line shift a
   borderline class, so the rubric stays. Numbers: `docs/implementation/S1-rq1-harness.md`, `experiments/rq1-provenance/smoke-2026-10-19/`.
-- Done, this session (branch `claude/gracious-albattani-osio94`): S1-T10 and T12, ADR-0013: a review pass at the end
+- Done, PR #32 (branch `claude/gracious-albattani-osio94`): S1-T10 and T12, ADR-0013: a review pass at the end
   of days 1 and 2 in every arm (`consolidation.py`, `Runner.review`, `parse_notes`, `BlockConfig.consolidate`), with audit
   replay support, and arm C (`STANCE_PRESERVING`: arm A with the hedge-preserving review prompt). 958 tests, 100% coverage,
   every mutant killed. Block 4 (A, B, C, D, first with the review): false facts asserted 60, 21, 55, 43%; C is a null against A;
