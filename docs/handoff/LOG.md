@@ -5,7 +5,7 @@ this file is history, so a future agent can see how decisions were reached.
 
 ## 2026-10-20 · Claude Sonnet 5.5 · replication blocks 2 and 3
 
-- PR #29 was merged. The owner said the account's auto top-up fires at $5.
+- PR #29 was merged; this work is PR #30. The owner said the account's auto top-up fires at $5.
 - Live: block 2 (arms A, D, G, $7.48 villages) and block 3 (A, B, Bc, D, G, $14.04 with judging). The top-up fired during block 2 ($3.61 to $21.27). Mistake: I capped block 2 below the village-plus-judge cost, judging stopped on the cap, and `--judge-only` re-coded from the start (about $0.4 wasted; the judge log has duplicates that replay handles). Set the cap with the judges in mind.
 - Result, false facts asserted (blocks 1 to 3): A 19, 50, 50%; B 2, 10%; Bc 26, 60%; D 79, 55, 45%; G 0, 0%. The strict prompt lowers assertion of true facts and utility as much, the calibrated prompt does nothing, kernel admission does not beat no defense (lone witness admitted), G silences the wiki. Awareness did not differ consistently by arm. Block 1's D result (no messages in that village) did not repeat; I had flagged it as one block.
 - Added `experiments/rq1-provenance/analyze_blocks.py` (S2-T2 remainder). Updated the S1 and S2 audits, README, HANDOFF.

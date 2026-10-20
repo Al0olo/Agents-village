@@ -39,7 +39,7 @@ funding is a later concern.
 - Done, PR #29: replication block 1 on `render-2` and `experiments/rq1-provenance/rate_sheet.py`, which had Opus 5.5
   code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges; a model, not
   a person, and documented so).
-- Done, this session (branch `claude/gracious-albattani-osio94`): replication blocks 2 (A, D, G) and 3 (A, B, Bc, D, G)
+- Done, PR #30 (branch `claude/gracious-albattani-osio94`): replication blocks 2 (A, D, G) and 3 (A, B, Bc, D, G)
   and `experiments/rq1-provenance/analyze_blocks.py` (per-block table, paired differences from arm A). False facts
   asserted, blocks 1 to 3: A 19, 50, 50%; B 2, 10%; Bc 26, 60%; D 79, 55, 45%; G 0, 0%. B lowers true-fact assertion and
   utility as much (25%; 36, 0%) without lowering carriage; Bc does nothing; D is not better than A (+20 points,
