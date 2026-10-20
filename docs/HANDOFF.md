@@ -52,7 +52,7 @@ funding is a later concern.
   to 40 blocks (`analysis.py`, meeting in the middle) with a Monte Carlo p-value beyond (`p_value`, 100,000 flips); `power.py`
   and `power_table.py` (S2-T3 in part); the pre-registration rewritten as draft 2 (rumor-planted primary, intersection-union
   contrast, block-count rule); housekeeping (audit header, duplicate bullets, PR instructions now name the MCP tool).
-- Done, this session (branch `claude/gracious-albattani-osio94`): S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
+- Done, PR #37 (branch `claude/gracious-albattani-osio94`): S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
   `attack_rate_rumor` and `attack_rate_witness`, `rumors` in `BlockConfig`, `--no-rumors`), ADR-0015 (the $200 cap), a dated note
   in ADR-0004. 1022 tests, 100% coverage, every mutant killed. No live run.
 - Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
