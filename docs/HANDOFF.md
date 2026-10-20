@@ -48,7 +48,7 @@ funding is a later concern.
   every mutant killed. Block 4 (A, B, C, D, first with the review): false facts asserted 60, 21, 55, 43%; C is a null against A;
   the default review prompt did not visibly strip doubts; D's told notes became hearsay (10 of 32) where other arms stored
   them as fact. One block, not comparable with blocks 1 to 3.
-- Done, this session (branch `claude/gracious-albattani-osio94`): ADR-0014 after the outside review; the exact sign-flip test
+- Done, PR #36 (branch `claude/gracious-albattani-osio94`): ADR-0014 after the outside review; the exact sign-flip test
   to 40 blocks (`analysis.py`, meeting in the middle) with a Monte Carlo p-value beyond (`p_value`, 100,000 flips); `power.py`
   and `power_table.py` (S2-T3 in part); the pre-registration rewritten as draft 2 (rumor-planted primary, intersection-union
   contrast, block-count rule); housekeeping (audit header, duplicate bullets, PR instructions now name the MCP tool).
