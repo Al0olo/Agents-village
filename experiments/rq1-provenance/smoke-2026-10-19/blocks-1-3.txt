@@ -1,0 +1,42 @@
+attack_rate
+  A  0.19 0.50 0.50
+  B  0.02  n/a 0.10   minus A: -0.29 over 2 blocks, interval -0.40 to -0.17, p=0.500
+  Bc 0.26  n/a 0.60   minus A: +0.08 over 2 blocks, interval +0.07 to +0.10, p=0.500
+  D  0.79 0.55 0.45   minus A: +0.20 over 3 blocks, interval -0.05 to +0.60, p=0.750
+  G   n/a 0.00 0.00   minus A: -0.50 over 2 blocks, interval -0.50 to -0.50, p=0.500
+carry_rate
+  A  0.81 0.86 0.86
+  B  0.74  n/a 1.00   minus A: +0.04 over 2 blocks, interval -0.07 to +0.14, p=1.000
+  Bc 0.86  n/a 1.00   minus A: +0.10 over 2 blocks, interval +0.05 to +0.14, p=0.500
+  D  0.98 1.00 0.81   minus A: +0.09 over 3 blocks, interval -0.05 to +0.17, p=0.500
+  G   n/a 0.00 0.00   minus A: -0.86 over 2 blocks, interval -0.86 to -0.86, p=0.500
+wiki_contamination
+  A  0.83 0.67 0.83
+  B  0.67  n/a 1.00   minus A: -0.00 over 2 blocks, interval -0.17 to +0.17, p=1.000
+  Bc 0.83  n/a 1.00   minus A: +0.08 over 2 blocks, interval +0.00 to +0.17, p=1.000
+  D  1.00 1.00 0.67   minus A: +0.11 over 3 blocks, interval -0.17 to +0.33, p=0.750
+  G   n/a 0.00 0.00   minus A: -0.75 over 2 blocks, interval -0.83 to -0.67, p=0.500
+true_acceptance
+  A  0.54 0.42 0.75
+  B  0.25  n/a 0.25   minus A: -0.40 over 2 blocks, interval -0.50 to -0.29, p=0.500
+  Bc 0.42  n/a 0.67   minus A: -0.10 over 2 blocks, interval -0.12 to -0.08, p=0.500
+  D  0.67 0.46 0.83   minus A: +0.08 over 3 blocks, interval +0.04 to +0.12, p=0.250
+  G   n/a 0.00 0.08   minus A: -0.54 over 2 blocks, interval -0.67 to -0.42, p=0.500
+true_carry_rate
+  A  1.00 0.54 1.00
+  B  0.92  n/a 1.00   minus A: -0.04 over 2 blocks, interval -0.08 to +0.00, p=1.000
+  Bc 1.00  n/a 1.00   minus A: +0.00 over 2 blocks, interval +0.00 to +0.00, p=1.000
+  D  1.00 0.83 1.00   minus A: +0.10 over 3 blocks, interval +0.00 to +0.29, p=1.000
+  G   n/a 0.08 0.29   minus A: -0.58 over 2 blocks, interval -0.71 to -0.46, p=0.500
+utility_score
+  A  0.79 0.79 0.71
+  B  0.36  n/a 0.00   minus A: -0.57 over 2 blocks, interval -0.71 to -0.43, p=0.500
+  Bc 0.36  n/a 0.57   minus A: -0.29 over 2 blocks, interval -0.43 to -0.14, p=0.500
+  D  0.57 0.50 0.57   minus A: -0.21 over 3 blocks, interval -0.29 to -0.14, p=0.250
+  G   n/a 0.00 0.07   minus A: -0.71 over 2 blocks, interval -0.79 to -0.64, p=0.500
+awareness_rate
+  A  0.38 0.38 0.50
+  B  0.25  n/a 0.38   minus A: -0.12 over 2 blocks, interval -0.12 to -0.12, p=0.500
+  Bc 0.00  n/a 0.25   minus A: -0.31 over 2 blocks, interval -0.38 to -0.25, p=0.500
+  D  0.75 0.25 0.50   minus A: +0.08 over 3 blocks, interval -0.12 to +0.38, p=1.000
+  G   n/a 0.12 0.00   minus A: -0.38 over 2 blocks, interval -0.50 to -0.25, p=0.500

@@ -124,11 +124,28 @@ that give a false value as the answer; all coded with the third judge rubric):
   has not coded anything.
 - **A real run was killed by a drifting provider.** Unpinned, DeepSeek V4 Pro was served by two different
   providers inside one block and the launch controller rejected all three replication blocks; each model is now
-  pinned to one provider. A second attempt then ran out of account credit (HTTP 402) in its last round. A
-  third block, complete this time (arms A, B, Bc, D, 40 ticks, $11), gave assertions of false facts of 19%, 2%,
-  26% and 79%: the kernel arm asserted more than no defense, because it admitted each lone witness's
-  first-hand wiki entry and the others then repeated it as a first-hand count. One block, so not a result,
-  but it is the weakness the exploratory corroboration arm (G) was built for.
+  pinned to one provider. A second attempt then ran out of account credit (HTTP 402) in its last round.
+- **Three complete blocks followed** (40 ticks, 8 citizens, three models each pinned to one provider, two
+  judges at kappa 0.91 to 0.96). Share of non-witnesses' answers that give the false value as the answer,
+  per block (blank: arm not run):
+
+  | | block 1 | block 2 | block 3 |
+  |---|---|---|---|
+  | A, no defense | 19% | 50% | 50% |
+  | B, strict prompt | 2% | | 10% |
+  | Bc, calibrated prompt | 26% | | 60% |
+  | D, kernel admission | 79% | 55% | 45% |
+  | G, corroborated wiki | | 0% | 0% |
+
+  The strict prompt cut false assertions and also true ones (25% against 42 to 75%) and the single-witness
+  task (36% and 0% against 71 to 79%), without lowering how often the false value was passed on
+  (carry rate 74% and 100% against 81% and 86%): it lowers confidence in everything. The calibrated prompt
+  did nothing. Kernel admission was not better than no defense (mean difference +20 points, interval -5 to
+  +60 over three blocks): every false fact reached the wiki under it in two blocks, because its lone
+  witness is admitted. Arm G wrote nothing to the wiki and gave out almost no true facts (0% and 8%).
+  Awareness at any stage (of 8) did not differ consistently by arm: A 3, 3, 4; D 6, 2, 4. Three blocks cannot
+  settle anything (the exact test cannot go below p = 0.25 at three), and block 1's 79% for D did not repeat;
+  the pilot sets how many blocks the main run needs.
 - **Time to k adopters was blind to the spread.** Citizens learned by reading the wiki, not by writing
   claims, so no false fact reached two adopters by the measure as defined; spread is now also followed
   over probe rounds.
