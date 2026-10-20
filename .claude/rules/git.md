@@ -7,7 +7,8 @@
 - Every commit ends with `Co-Authored-By:` trailers for everyone who contributed,
   including the human owner. Keep the trailers the project owner or the harness gives you.
 - One logical change per PR. Say what changed and why, and what you ran to check it.
-- In cloud sessions `gh pr create` fails (GraphQL is blocked). Use the REST API:
+- In cloud sessions `gh pr create` fails (GraphQL is blocked). Use the GitHub MCP tool
+  (`mcp__github__create_pull_request`), which works where `gh` is not available, or else the REST API:
   `gh api repos/al0olo/agents-village/pulls -f title=... -f head=BRANCH -f base=main -F body=@body.md`.
 - The clone may be shallow. Fetch with `git fetch origin main` and reset to `FETCH_HEAD`
   if `origin/main` does not resolve.

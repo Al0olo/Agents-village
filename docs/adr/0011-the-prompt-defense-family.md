@@ -1,6 +1,6 @@
 # ADR-0011 — The prompt defense is a family, chosen on the pilot and frozen
 
-- **Status:** Accepted
+- **Status:** Accepted; clause 3 (the pilot picks the better prompt arm) is superseded by [ADR-0014](0014-what-the-kernel-can-answer-and-how-many-blocks.md)
 - **Date:** 2026-10-19
 - **Authors:** Abdullah Farag, Claude (the owner delegated these decisions to Claude on 2026-10-19)
 - **Context links:** [PRD section 1](../prd.md), [ADR-0008](0008-measures-amended-after-the-smoke-tests.md), [`.claude/skills/experiment-design/SKILL.md`](../../.claude/skills/experiment-design/SKILL.md)

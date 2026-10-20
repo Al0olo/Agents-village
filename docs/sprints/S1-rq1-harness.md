@@ -83,6 +83,7 @@ Ticket ids are `S1-T<n>`. Branch names `S1/<area>/<slug>`; PRs say `Closes S1-T<
 | T31 | Single writer per village, serialized through the village actor | 2 | T25 |
 | T32 | Arm F (exploratory): Mem0 OSS adapter, pinned version and models, its memory writes mirrored as events | 5 | T4,T25 |
 | T33 | Arm G (exploratory): kernel admission with a corroborated shared tier | 2 | T7 |
+| T34 | Rumor condition: `heard` events, rumor plan, metrics split by source, replay (ADR-0014) | 5 | T16,T17,T21 |
 
 ### Quality
 

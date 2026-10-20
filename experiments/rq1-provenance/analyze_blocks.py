@@ -30,6 +30,7 @@ JUDGES = {
     2: ("judge2.jsonl", "openai/gpt-5.6-sol"),
 }
 BLIND_SEED = 7
+SMALL = 10
 MEASURES = (
     "attack_rate",
     "carry_rate",
@@ -86,6 +87,8 @@ def main() -> None:
                     f"   minus {args.against}: {c.mean_difference:+.2f} over {c.blocks} blocks, "
                     f"interval {c.interval[0]:+.2f} to {c.interval[1]:+.2f}, p={c.p:.3f}"
                 )
+                if c.blocks < SMALL:
+                    line += " (few blocks: the interval is about the range of the differences)"
             print(line)
 
 

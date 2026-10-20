@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-20 · Claude Sonnet 5.5 · outside review of the pre-registration
+
+- PR #32 was merged (this work is PR #36) and I started the pilot (block 5, seven arms) on "go for it". The owner then interrupted with an outside review and its recommendation to settle the design before the pilot, so I stopped the block with the kill file ($1.15 spent).
+- I checked the review against the code. Confirmed: D cannot win by construction (wiki contamination 100% in three of four blocks), the bootstrap of three numbers is their range, the exact test stopped at 20 blocks, the audit header and the duplicate handoff bullets were stale, and CLAUDE.md said to open PRs with `gh api` while the MCP tool is what works here. The 25-plus-block estimate is right: a simulation gives about 45 blocks for 15 points at the observed spread of 0.34.
+- Done: exact test by meeting in the middle to 40 blocks (brute-force comparison for n up to 12, a thirty-block case by hand), a Monte Carlo p-value beyond, `power.py` and `power_table.py`, ADR-0014 (rumor condition, intersection-union contrast replacing the pilot's choice of prompt arm, block-count rule), the pre-registration as draft 2. A mutation run over the new statistics left five survivors, each equivalent (a different split of the halves, a tie that the 1e-12 tolerance already moves, a strict against a non-strict comparison at a probability of zero).
+- A mistake of mine: I had set up and launched a seven-arm pilot without first asking whether the primary measure could show an effect; the review was right that it could not, and ADR-0012 named the limit while leaving H1 unchanged.
+- Not done: the rumor condition itself (S1-T34), which the pilot waits for.
+
 ## 2026-10-20 · Claude Sonnet 5.5 · arm C and the review pass
 
 - PR #31 was merged. The owner said to go ahead with arm C and the consolidator (this work is PR #32).

@@ -12,7 +12,7 @@ anyone and without re-deriving anything.
 
 1. Read `docs/HANDOFF.md` in full, then the top 3 entries of `docs/handoff/LOG.md`.
 2. Verify it against reality: `git status`, `git log --oneline -10`,
-   `git branch -a`, and open PRs (`gh api repos/al0olo/agents-village/pulls --jq '.[].title'`).
+   `git branch -a`, and open PRs (the GitHub MCP `list_pull_requests`, or `gh api repos/al0olo/agents-village/pulls --jq '.[].title'`).
 3. If the handoff and reality disagree, believe reality, then fix the handoff before
    starting new work and say so in the log.
 4. Restate the next step to the user in one or two sentences, then do it.

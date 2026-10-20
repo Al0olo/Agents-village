@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `dfeacd3`
+Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `48a8e74`
 
 ## Objective
 
@@ -17,7 +17,7 @@ funding is a later concern.
 - Done, project setup (PRs #1 to #9): PRD and milestones in `docs/prd.md` and `docs/milestones.md`
   (the original Claude Docs artifacts are stale copies, do not edit them), the monorepo with the Rust
   workspace and Python harness, research sources, agent rules, skills, sprint plan and audits,
-  ADR-0001 (storage and memory), ADR-0002 (OpenTofu on AWS), and the exploratory Mem0 arm F (S1-T32).
+  ADR-0001 (storage and memory), ADR-0002 (OpenTofu on AWS), and the plan for an exploratory Mem0 arm F (S1-T32, not built).
 - Done, sprint S1 so far (PRs #10 to #25), in `harness/src/agent_village/`: event log, scheduler, model interface
   and OpenRouter backend (with `Retrying`), memory tiers, messages, citizen loop, snapshot and fork, arms A, D,
   E (`RandomBlock`, `matched_rate`) and exploratory G (`admit_corroborated`, ADR-0007), launch controller, replay,
@@ -42,41 +42,39 @@ funding is a later concern.
   the stand-in human, kappa 0.90 and 0.92 with the judges; a model, not a person), `analyze_blocks.py` (`--judge 1|2`),
   ADR-0012 (D stays as specified, G exploratory), and a test that three rewordings of the rubric's `denies` line shift a
   borderline class, so the rubric stays. Numbers: `docs/implementation/S1-rq1-harness.md`, `experiments/rq1-provenance/smoke-2026-10-19/`.
-- Done, PR #32 (branch `claude/gracious-albattani-osio94`): S1-T10 and T12, ADR-0013: a review pass at the end
+- Done, PR #32: S1-T10 and T12, ADR-0013: a review pass at the end
   of days 1 and 2 in every arm (`consolidation.py`, `Runner.review`, `parse_notes`, `BlockConfig.consolidate`), with audit
   replay support, and arm C (`STANCE_PRESERVING`: arm A with the hedge-preserving review prompt). 958 tests, 100% coverage,
   every mutant killed. Block 4 (A, B, C, D, first with the review): false facts asserted 60, 21, 55, 43%; C is a null against A;
   the default review prompt did not visibly strip doubts; D's told notes became hearsay (10 of 32) where other arms stored
   them as fact. One block, not comparable with blocks 1 to 3.
-- Done, PR #31: ADR-0012 (D stays as specified, G exploratory), the
-  decision written into the pre-registration, a judge-sensitivity analysis (`analyze_blocks.py --judge 2`: same
-  contrasts under GPT-5.6 Sol), and a test that three rewordings of the `denies` line of the rubric shift 23 to 27% of a
-  borderline class (so the rubric is not changed; the skill and the audit say how to test a rewording).
-- Done, PR #30: replication blocks 2 (A, D, G) and 3 (A, B, Bc, D, G)
-  and `experiments/rq1-provenance/analyze_blocks.py` (per-block table, paired differences from arm A). False facts
-  asserted, blocks 1 to 3: A 19, 50, 50%; B 2, 10%; Bc 26, 60%; D 79, 55, 45%; G 0, 0%. B lowers true-fact assertion and
-  utility as much (25%; 36, 0%) without lowering carriage; Bc does nothing; D is not better than A (+20 points,
-  interval -5 to +60) because the lone witness's wiki entry is admitted (wiki contamination 100, 100, 67%); G silences
-  the wiki (true facts 0, 8%). Awareness did not differ consistently (D 6, 2, 4 of 8; A 3, 3, 4). Numbers in
-  `docs/implementation/S1-rq1-harness.md` and `experiments/rq1-provenance/smoke-2026-10-19/blocks-1-3.txt`.
+- Done, PR #36 (branch `claude/gracious-albattani-osio94`): ADR-0014 after the outside review; the exact sign-flip test
+  to 40 blocks (`analysis.py`, meeting in the middle) with a Monte Carlo p-value beyond (`p_value`, 100,000 flips); `power.py`
+  and `power_table.py` (S2-T3 in part); the pre-registration rewritten as draft 2 (rumor-planted primary, intersection-union
+  contrast, block-count rule); housekeeping (audit header, duplicate bullets, PR instructions now name the MCP tool).
 - Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
 
-Credit is not the limit (auto top-up at $5 adds $20; a four-arm block with judges costs about $13). Run one job at a time
-and set `--max-cost` above villages plus judges: a second job beside a block caused HTTP 429s that killed a block, and the
-pinned DeepSeek endpoint throttles in bursts (`run_block.py` now retries for about 6 minutes). In this order:
-(1) **The 2-block pilot (S2-T6)**: every arm A, B, Bc, C, D, E (rate from D's measured hearsay share, `matched_rate`), G, with
-the review pass, two judges; then the numbers it sets: the margin for the true-fact guard, the number of main blocks, the
-prompt-level arm for the contrast by the rule in ADR-0011, E's rate, probe temperature (0.7 placeholder). Run a block per
-call; `run_block.py` takes `--arms A,B,Bc,C,D,E,G` (E is built by `chosen`). Then freeze `PREREGISTRATION.md` with those numbers
-(OSF needs an account the owner has not made).
-(2) A power/cost estimate from the pilot (S2-T3) and the notebook for `analyze_blocks.py`.
-(3) Storage tickets T25 to T31. Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with the
-template filled in; the owner reviews and merges.
-Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays
-`judge-fact-3` and every contrast is run under both judges; the review pass is in every arm and arm C changes only its
-prompt (ADR-0013).
+An outside review of the draft pre-registration (2026-10-20) found that arm D cannot win the primary measure by construction
+(a lone witness's first-hand entry is admitted), that ten blocks cannot detect 15 points at the spread seen (0.34 for D minus A:
+about 45 blocks), that picking the prompt arm on two blocks invites a winner's curse, and that the exact test stopped at 20 blocks.
+ADR-0014 answers them (the pilot was stopped after $1.15 so it waits for item 1). In this order:
+(1) **S1-T34, the rumor condition**: of the six false facts per block, three are rumors told by a traveler (a new `heard` event
+with its own origin, evidence of kind told, perceived and remembered like a told line, forwardable, an environment input for
+replay; `Plan` and `plant` take it; `plant` events carry `source`), alternating with the parity of the block number; metrics
+split `attack_rate` by source (`attack_rate_rumor` is the primary); the colluding variant uses two travelers. Test first, run
+the mutation check, update ADR-0004 with a dated note, and make `BlockConfig`/`run_block.py` default to it (`--no-rumors`).
+(2) **The 2-block pilot (S2-T6)** with `run_block.py --arms A,B,Bc,C,D,E,G` on blocks 5 and 6 (E's rate is set to 0.29, D's
+pooled hearsay share in blocks 1 to 4; the pilot recomputes it). It sets the guard margin, E's rate, probe temperature, checks
+that rumors spread and that D refuses write-ups, and gives a first spread; it does not choose a prompt arm. Cost about $23 a block.
+(3) Freeze `PREREGISTRATION.md` (draft 2) with the pilot's numbers; OSF needs an account the owner has not made. Then the main run
+by the block-count rule in the pre-registration, re-estimating the spread once after block eight.
+(4) Storage tickets T25 to T31. Run one job at a time; set `--max-cost` above villages plus judges (auto top-up at $5 adds $20).
+Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with the template filled in.
+Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays `judge-fact-3`
+and every contrast is run under both judges; the review pass is in every arm and arm C changes only its prompt (ADR-0013);
+the contrast is intersection-union over B, Bc and C and the block count follows the rule (ADR-0014).
 
 ## Queue
 
@@ -108,7 +106,7 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 ## Gotchas
 
 Environment
-- `gh pr create` fails in cloud sessions (GraphQL blocked); PRs are opened with the GitHub MCP tool.
+- `gh pr create` fails in cloud sessions (GraphQL blocked); PRs are opened with the GitHub MCP tool (`mcp__github__create_pull_request`), which works where `gh` does not.
 - The clone may be shallow; `git fetch origin main` then `git checkout -B <branch> origin/main`.
 - `pip install` needs `--break-system-packages`. Coverage needs `pytest-cov` (not a project
   dependency until S1-T24) and `python3 -m pytest --cov=agent_village --cov-branch`; `.coverage` is git-ignored.

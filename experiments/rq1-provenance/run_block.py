@@ -57,7 +57,7 @@ PINS = {
 }
 JUDGES = ("anthropic/claude-haiku-5.5", "openai/gpt-5.6-sol")
 BLIND_SEED = 7
-RANDOM_BLOCK_RATE = 0.5
+RANDOM_BLOCK_RATE = 0.29
 RETRY_DELAYS = (2.0, 5.0, 10.0, 20.0, 30.0, 30.0, 60.0, 60.0, 60.0, 60.0)
 LOOP = LoopConfig(max_steps=3, default_sleep=2, max_sleep=6, max_tokens=700, memory_limit=20)
 

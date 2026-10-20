@@ -22,7 +22,7 @@ Co-Authored-By: <your model name> <noreply@anthropic.com>
 ```
 
 6. Push: `git push -u origin <branch>`.
-7. Open the PR with the REST API (GraphQL is blocked in cloud sessions):
+7. Open the PR with the GitHub MCP tool (`mcp__github__create_pull_request`, same fields), or else with the REST API (GraphQL is blocked in cloud sessions):
 
 ```bash
 gh api repos/al0olo/agents-village/pulls \
