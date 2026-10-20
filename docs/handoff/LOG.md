@@ -3,6 +3,12 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-20 · Claude Sonnet 5.5 · the kernel arm decision and the rubric test
+
+- PR #30 was merged and the owner said to go with my recommendation: ADR-0012 keeps arm D as specified and G exploratory, and the pre-registration says so.
+- I tried to add a sentence to the rubric so `denies` needs an explicit conclusion (the item I had put first). Three rewordings each moved many `hedges` answers to `asserts` (72 of 472 in block 1, then 54 and 42 on a 248-answer subset), against 9 when the unchanged rubric was re-run. Opus 5.5 on the 58 disputed answers agreed with itself across both rubrics (kappa 0.84) and sided with each Haiku version about half the time. So the boundary is real, not a wording problem; I reverted the code, kept `judge-fact-3`, added `--judge 2` to `analyze_blocks.py` and reported the contrasts under both judges (same conclusions). Mistake on the way: a full re-code of three blocks at one call a second would have taken an hour; a subset with a re-run control answered the question in minutes for $1. I also nearly repeated the old `pkill -f` self-kill; it did kill the shell once.
+- Not done: arm C and the consolidator. Nothing consolidates yet; it needs a design first (HANDOFF next step 1).
+
 ## 2026-10-20 · Claude Sonnet 5.5 · replication blocks 2 and 3
 
 - PR #29 was merged; this work is PR #30. The owner said the account's auto top-up fires at $5.

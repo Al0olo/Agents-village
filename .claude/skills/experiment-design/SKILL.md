@@ -79,3 +79,9 @@ paper reports for its own setting; `docs/research/sources.md` has the reading le
 Design rules that follow: never treat one prompt wording as "the" prompt baseline; keep suspicious and naive
 citizens in the primary analysis and report both; code awareness blind with a rubric that does not count a careful
 community as suspicion; a defense that lowers assertions without lowering carrying is a confidence defense.
+
+- **Rubric edits move the boundary they do not mention.** Rewording one line of a coding rubric changed 23 to 27%
+  of a borderline class in the neighbouring line (against 7% for a re-run of the unchanged rubric). Before adopting a
+  new wording, re-code a subset that includes the borderline answers, run the unchanged rubric again as the noise
+  control, and compare both with a stronger reader. If the boundary moves for an unintended reason, keep the old
+  rubric, run the analysis under two judges and report both.
