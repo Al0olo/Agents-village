@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `122686e`
+Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `6025032`
 
 ## Objective
 
@@ -39,7 +39,11 @@ funding is a later concern.
 - Done, PR #29: replication block 1 on `render-2` and `experiments/rq1-provenance/rate_sheet.py`, which had Opus 5.5
   code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges; a model, not
   a person, and documented so).
-- Done, PR #30 (branch `claude/gracious-albattani-osio94`): replication blocks 2 (A, D, G) and 3 (A, B, Bc, D, G)
+- Done, PR #31 (branch `claude/gracious-albattani-osio94`): ADR-0012 (D stays as specified, G exploratory), the
+  decision written into the pre-registration, a judge-sensitivity analysis (`analyze_blocks.py --judge 2`: same
+  contrasts under GPT-5.6 Sol), and a test that three rewordings of the `denies` line of the rubric shift 23 to 27% of a
+  borderline class (so the rubric is not changed; the skill and the audit say how to test a rewording).
+- Done, PR #30: replication blocks 2 (A, D, G) and 3 (A, B, Bc, D, G)
   and `experiments/rq1-provenance/analyze_blocks.py` (per-block table, paired differences from arm A). False facts
   asserted, blocks 1 to 3: A 19, 50, 50%; B 2, 10%; Bc 26, 60%; D 79, 55, 45%; G 0, 0%. B lowers true-fact assertion and
   utility as much (25%; 36, 0%) without lowering carriage; Bc does nothing; D is not better than A (+20 points,
@@ -50,21 +54,20 @@ funding is a later concern.
 
 ## Next step
 
-Credit is no longer the limit: the account's auto top-up fires at $5 and adds $20 (verified: $3.61 became $21.27). A
-block of five arms costs about $14. `run_block.py` refuses to start if the account is below `--max-cost`, so set the cap
-under the balance and let the top-up land before the judges (the judge step reuses the same cap; `--judge-only` re-codes
-from the start and appends to the judge logs). In this order:
-(1) **Decide what RQ1's kernel arm is.** Three blocks say admission as specified (D) does not reduce false-fact assertion
-or wiki contamination because a lone witness is admitted, and G fixes that by blocking all single-witness sharing.
-Owner-independent options for the pilot: keep D as registered and report it plainly (recommended, ADR-0007 already says
-so), and add a milder corroboration rule only if the pilot shows G silences the wiki, as ADR-0007 states; do not move the
-planted fact to hearsay (ADR-0004). Write the decision into `PREREGISTRATION.md` before the pilot.
-(2) `judge-fact-4`: `denies` needs an explicit conclusion that the value is wrong (stand-in rater and both judges still
-split there); re-code blocks 1 to 3 with haiku (about $0.2) and compare with the stand-in rater's codes before adopting.
-(3) Arm C and the consolidator (S1-T10, T12; ADR-0012, read the Manufactured Confidence paper's prompt first).
-(4) The 2-block pilot (S2-T6), then freeze the pre-registration with the pilot's numbers (OSF needs an account).
-(5) Storage tickets T25 to T31. Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself
-with the template filled in; the owner reviews and merges.
+Credit is no longer the limit: the account's auto top-up fires at $5 and adds $20. A block of five arms costs about $14;
+`run_block.py` refuses to start if the account is below `--max-cost`, so set the cap above villages plus judges and under
+the balance (`--judge-only` re-codes from the start and appends to the judge logs). In this order:
+(1) **Arm C and the consolidator (S1-T10, T12; ADR-0013).** Nothing consolidates memory yet: no code, and blocks 1 to 3
+ran without it, although ADR-0009 plans consolidation at ticks 12 and 24. Design before code, because it touches every
+arm: a consolidation pass that rewrites a citizen's recall is an LLM in the write path (ADR-0001 keeps that out of the
+treatment), its output must go through the arm's admission policy, and arm C changes only the consolidator's prompt to
+keep the stated stance (read the Manufactured Confidence prompt first). Then re-run one block to see what consolidation
+does to A, B, D.
+(2) The 2-block pilot (S2-T6), then freeze the pre-registration with the pilot's numbers (OSF needs an account).
+(3) Storage tickets T25 to T31. Live checks are fine, behind `Gateway`; never print the key. Open the PR yourself with
+the template filled in; the owner reviews and merges.
+Settled this session, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric
+stays `judge-fact-3` and every contrast is run under both judges (`analyze_blocks.py --judge 1|2`).
 
 ## Queue
 
@@ -84,8 +87,9 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
   a hedge, and the village before the memory fix also had citizens forgetting their own entries. On the corrected rubric
   and layout B gave 50% against 67% with no defense (one village). Keep this in mind before trusting any single number.
 - Judge validity: two models agree at kappa 0.79 to 0.96; Opus 5.5 as stand-in human (112 answers, block 1) agrees at
-  0.90 to 0.92 on facts; Claude's own blind coding earlier gave 0.73 and 0.79. No person has coded anything. The
-  remaining disagreement is `hedges` against `denies`.
+  0.90 to 0.92 on facts; Claude's own blind coding earlier gave 0.73 and 0.79. No person has coded anything. The weak
+  spot is answers that distance themselves from a value without doubting it (`asserts` or `hedges`), on which the judges
+  and Opus split; no rewording fixed it (audit, 2026-10-20).
 - Awareness by arm did not replicate (village 5: D 4 of 8 against A 0; blocks 1 to 3: D 6, 2, 4 against A 3, 3, 4).
   The pre-registration stays a draft until the pilot and the OSF filing.
 - Villages are noisy: arm A's assertion rate was 71%, 36%, 36% and 67% in four earlier villages and 19%, 50%, 50% in

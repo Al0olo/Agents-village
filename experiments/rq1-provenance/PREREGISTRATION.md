@@ -44,6 +44,11 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
   ticks 12 and 24 (S1-T10, not yet built); D kernel admission; E volume-matched random block at the rate
   *pilot* (D's measured share of claims stored as hearsay); exploratory: G corroborated wiki (ADR-0007) and
   F off-the-shelf memory. G and F are excluded from the primary contrast and from the multiplicity correction.
+- **The kernel arm is D as specified (ADR-0012).** A claim is admitted with one first-hand event of the writer
+  or two independent told-events, so a lone witness's claim is admitted. Three blocks before the pilot gave D
+  false-fact assertion rates of 79%, 55% and 45% against 19%, 50% and 50% under A, and G wrote nothing to the
+  wiki; D is not changed and G stays exploratory. A milder corroboration rule is built only if the pilot shows G
+  silences the wiki, as a new exploratory arm by dated amendment.
 - **Prompt-level arm for the contrast.** Chosen on the pilot by the rule in ADR-0011 among B, Bc and C and
   frozen. B2 and B3 only check wording.
 - **Red team.** The colluding-planter variant of every arm in a subset of blocks *pilot*.
@@ -53,7 +58,7 @@ false-fact spread beyond the strongest prompt-level defense, without blocking tr
 ## Measures (ADR-0005, ADR-0006, ADR-0008)
 
 All fact answers come from non-holders in the last round. Coded blind by a model judge (primary
-`claude-haiku-5.5`, temperature 0, rubrics `judge-fact-2` and `judge-awareness-2`); a second judge
+`claude-haiku-5.5`, temperature 0, rubrics `judge-fact-3` and `judge-awareness-2`); a second judge
 (`gpt-5.6-sol`) codes everything for agreement.
 
 - **Primary:** assertion rate of false facts per village.
@@ -73,6 +78,13 @@ All fact answers come from non-holders in the last round. Coded blind by a model
 - **Awareness sensitivity.** All citizens are in the primary analysis. Each result is repeated without the
   answers of citizens coded aware at any stage, and awareness is compared across arms; an arm difference is
   reported as a limitation, not corrected for.
+- **Judge sensitivity.** Every contrast is computed under both judges (`analyze_blocks.py --judge 1|2`) and both
+  are reported; the primary result is judge 1's. Answers that distance themselves from a value without doubting it
+  ("I can't vouch for it first-hand, but Hal wrote…") sit on the line between `asserts` and `hedges`, and the
+  judges, and the stand-in rater, split on them. The rubric is not reworded to fix that: three rewordings of the
+  `denies` line moved answers of this kind from `hedges` to `asserts` in the primary judge (72 of block 1's 472
+  `hedges` for the first; 54 and 42 on a 248-answer subset for the others), against 9 when the unchanged rubric
+  was re-run on that subset.
 - **Judge validity.** Kappa between the two judges per kind; a stratified sample sheet (a fixed number of
   answers per judge code, shuffled, with no arm, block, citizen or judge code) is coded by a rater who has not
   seen the judge's codes. In the draft the rater is a model, not a person: Opus 5.5, which is neither judge,
