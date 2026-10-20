@@ -39,7 +39,7 @@ funding is a later concern.
 - Done, PR #29: replication block 1 on `render-2` and `experiments/rq1-provenance/rate_sheet.py`, which had Opus 5.5
   code a 112-answer blind sheet as the stand-in human (kappa 0.90 and 0.92 on facts with the two judges; a model, not
   a person, and documented so).
-- Done, this session (branch `claude/gracious-albattani-osio94`): ADR-0012 (D stays as specified, G exploratory), the
+- Done, PR #31 (branch `claude/gracious-albattani-osio94`): ADR-0012 (D stays as specified, G exploratory), the
   decision written into the pre-registration, a judge-sensitivity analysis (`analyze_blocks.py --judge 2`: same
   contrasts under GPT-5.6 Sol), and a test that three rewordings of the `denies` line of the rubric shift 23 to 27% of a
   borderline class (so the rubric is not changed; the skill and the audit say how to test a rewording).
