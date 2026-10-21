@@ -3,6 +3,13 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-21 · Claude Sonnet 5.5 · property tests and a stricter CI
+
+- PR #37 was merged. The owner said to continue; no live spend was authorized, so this was offline work (S1-T22 and T24).
+- T22: 190 seeded property cases (stdlib `random`; no new dependency). They pin the origin bookkeeping of sends and forwards against an oracle, the kernel against an independent oracle on random claims, monotonicity, no corroboration across a shared root, fork identity over random histories and replay (byte-identical, and a tampered derived event is reported at its own index). They passed first time and found no defect, so I mutation-checked them: eleven of fifteen mutants died at once and one needed a generator change (told events whose origins contain the writer, which the messenger never produces, so the kernel's self-origin check was untested by traffic). The rest are equivalent or covered by other files.
+- T24: CI runs `ruff format --check`, `mypy` and pytest with a 100% branch floor. mypy found four small errors (a tuple concatenation, a missing type guard, an unannotated tuple), fixed without changing behavior (the place-name list is unchanged). The suite takes about 3.5 minutes with coverage.
+- Not done: T23, T25 to T31, anything live. The two cost cuts of ADR-0015 still wait for the owner.
+
 ## 2026-10-20 · Claude Sonnet 5.5 · the rumor condition and a spend cap
 
 - PR #36 was merged (this work is PR #37). The owner agreed to the rumor condition and capped the whole study at $200; then, partway through the build, asked for no live spend today.

@@ -156,8 +156,11 @@ CELLS = (
     (Level.LOW, Level.LOW),
 )
 
-_PLACE_STARTS = ("Vorn", "Quen", "Tals", "Bresk", "Haeld", "Draug", "Ormv", "Skeln", "Wyrn")
-_PLACE_STARTS += ("Karrk", "Ibbl", "Lunth")
+_PLACE_STARTS = ("Vorn", "Quen", "Tals", "Bresk", "Haeld", "Draug", "Ormv", "Skeln", "Wyrn") + (
+    "Karrk",
+    "Ibbl",
+    "Lunth",
+)
 _PLACE_ENDS = ("holm", "moor", "wick", "fell", "ford", "thorp", "mere", "stead", "croft", "haven")
 _PERSON_STARTS = ("Tel", "Mar", "Ond", "Bry", "Sif", "Kol", "Ner", "Vash")
 _PERSON_ENDS = ("drin", "isk", "ael", "wen", "ora", "ric", "ath", "une")

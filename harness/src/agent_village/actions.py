@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeGuard
 
 from agent_village.admission import Kind
 from agent_village.memory import Tier
@@ -110,7 +110,7 @@ def _first_object(reply: str, key: str) -> dict[str, Any]:
     raise ActionError(f"no JSON {key} found")
 
 
-def _is_int(value: Any) -> bool:
+def _is_int(value: Any) -> TypeGuard[int]:
     return isinstance(value, int) and not isinstance(value, bool)
 
 

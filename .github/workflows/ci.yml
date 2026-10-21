@@ -33,7 +33,9 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - run: ruff check .
-      - run: pytest -q
+      - run: ruff format --check .
+      - run: mypy
+      - run: pytest -q --cov --cov-report=term-missing
 
   handoff:
     if: github.event_name == 'pull_request'

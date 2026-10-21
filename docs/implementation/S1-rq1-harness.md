@@ -1,7 +1,7 @@
 # S1 — RQ1 harness (implementation audit)
 
 **Source of intent:** [`docs/sprints/S1-rq1-harness.md`](../sprints/S1-rq1-harness.md)  
-**Status:** 🚧 In progress. T1 to T21 and T33 done; T22 to T24 (harness hygiene), T25 to T31 (storage) and T32 (arm F, exploratory) not started.
+**Status:** 🚧 In progress. T1 to T21 and T33 done; T23 (usage accounting), T25 to T31 (storage) and T32 (arm F, exploratory) not started.
 
 ```bash
 cd harness && pip install -e ".[dev]" && ruff check . && pytest -q
@@ -34,9 +34,9 @@ Legend: ✅ done · 🟡 partial · 🚧 in progress or blocked · ⏸ deferred 
 | T19 | Utility task that needs true word-of-mouth information | ✅ | `facts.utility_facts`, `planting.make_plan` (one holder for a utility fact), `probes.UTILITY_FRAME`, `judge` and `metrics.utility_score`; tests in `test_facts.py`, `test_planting.py`, `test_probes.py`, `test_judge.py`, `test_metrics.py`. Two true facts per block, each witnessed by one citizen, are asked as a task needing one specific answer; the score is the share of non-witnesses coded `asserts`. A probe test shows arm A adopting a single-witness fact and arm D not. Design is ADR-0006 (proposed). `pytest -q` |
 | T20 | Blinded judge pipeline and human-validation sample sheet | ✅ | `harness/src/agent_village/judge.py`; tests `test_judge.py`. The judge sees the question, the planted statement and the answer under an opaque shuffled id and returns a code or `None`; every call is a logged `Model` call. `sample_sheet` stratifies by judge code and hides it; `agreement` gives Cohen's kappa. The rubrics and the codes are ADR-0005 (proposed). Which judge model is good enough is measured by kappa in the pilot. `pytest -q tests/test_judge.py` |
 | T21 | Metrics: attack rate, time to k adopters, wiki contamination, true-fact acceptance, utility, label creep | ✅ | `harness/src/agent_village/metrics.py`; tests `test_metrics.py`. `compute(log, coded, block, arm)` gives attack, hedge and acceptance rates, time to k, wiki contamination, label creep, awareness rate and the utility score, as defined in ADR-0005 (accepted) and ADR-0006. Claims are matched to facts verbatim, so adoption and contamination are lower bounds. `pytest -q tests/test_metrics.py` |
-| T22 | Property tests: origin laundering, fork identity, log replay | ⏳ | |
+| T22 | Property tests: origin laundering, fork identity, log replay | ✅ | `harness/tests/test_properties.py` (190 cases from seeded generators, oracles written independently): random sends and forwards against an oracle of each told event's origins (exactly the roots and forwarders of the chain, only growing, text unchanged); the kernel against an independent oracle on random claims (including told events whose origins contain the writer), monotone in what is cited, events sharing a root never corroborate, other citizens' events never back a claim, G stricter than D; forks continue byte for byte like the base over random histories and share the prefix across arms; a village with rumors, probe rounds and reviews replays to the same bytes, and tampering with any derived event is reported at that event. It found no defect. A mutation run showed the self-origin check needed told events with the writer among the origins, which the generator now adds. `pytest -q tests/test_properties.py` |
 | T23 | Cost and usage accounting (tokens, citizen-day) | ⏳ | |
-| T24 | Harness CI: coverage report, type check | ⏳ | |
+| T24 | Harness CI: coverage report, type check | ✅ | `.github/workflows/ci.yml` runs `ruff check`, `ruff format --check`, `mypy` (config in `harness/pyproject.toml`, source only, no errors after four small fixes) and `pytest --cov` with a 100% line and branch floor. `pytest-cov` and `mypy` are dev dependencies. |
 | T25 | SQLite store: schema, WAL, additive migrations | ⏳ | |
 | T26 | Hash-chain verification and Ed25519 signatures | ⏳ | |
 | T27 | Content-addressed blob store | ⏳ | |

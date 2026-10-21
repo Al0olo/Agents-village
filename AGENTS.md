@@ -55,7 +55,7 @@ are deferred. Read `docs/prd.md` section 1 before changing anything experimental
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cd harness && ruff check . && pytest -q
+cd harness && ruff check . && ruff format --check . && mypy && pytest -q --cov
 scripts/check-handoff.sh        # does this branch update docs/HANDOFF.md?
 ```
 

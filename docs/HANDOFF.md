@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-20 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `b270ccb`
+Updated: 2026-10-21 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `362c040`
 
 ## Objective
 
@@ -52,9 +52,13 @@ funding is a later concern.
   to 40 blocks (`analysis.py`, meeting in the middle) with a Monte Carlo p-value beyond (`p_value`, 100,000 flips); `power.py`
   and `power_table.py` (S2-T3 in part); the pre-registration rewritten as draft 2 (rumor-planted primary, intersection-union
   contrast, block-count rule); housekeeping (audit header, duplicate bullets, PR instructions now name the MCP tool).
-- Done, PR #37 (branch `claude/gracious-albattani-osio94`): S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
+- Done, PR #37: S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
   `attack_rate_rumor` and `attack_rate_witness`, `rumors` in `BlockConfig`, `--no-rumors`), ADR-0015 (the $200 cap), a dated note
   in ADR-0004. 1022 tests, 100% coverage, every mutant killed. No live run.
+- Done, this session (branch `claude/gracious-albattani-osio94`): S1-T22 (190 property cases in `tests/test_properties.py`: origins,
+  the kernel against an independent oracle, fork identity, replay and tamper detection; no defect found) and S1-T24 (CI now also
+  runs `ruff format --check`, `mypy` and pytest with a 100% branch-coverage floor; four small type fixes). 1213 tests, 100% coverage.
+  Offline only, no live spend.
 - Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
@@ -71,7 +75,7 @@ the write-up as hearsay, does the new metric split fill.
 about $20 a block: it sets the guard margin, E's rate, probe temperature and a first spread; it does not choose a prompt arm.
 (4) Freeze `PREREGISTRATION.md` (draft 2) with the pilot's numbers; OSF needs an account the owner has not made. Then the main run by the
 block-count rule, bounded by the cap, re-estimating the spread once after block eight.
-(5) Offline work that costs nothing: storage tickets T25 to T31, harness hygiene T22 to T24, the notebook for `analyze_blocks.py`.
+(5) Offline work that costs nothing: storage tickets T25 to T31, usage accounting T23, the notebook for `analyze_blocks.py`.
 Run one job at a time; set `--max-cost` above villages plus judges. Never print the key. Open the PR yourself with the template.
 Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays `judge-fact-3` and
 every contrast is run under both judges; the review pass is in every arm and arm C changes only its prompt (ADR-0013); the contrast is
@@ -110,8 +114,8 @@ pre-registration (5 to 8), S3 main run and report (9 to 16), S4 Rust kernel in p
 Environment
 - `gh pr create` fails in cloud sessions (GraphQL blocked); PRs are opened with the GitHub MCP tool (`mcp__github__create_pull_request`), which works where `gh` does not.
 - The clone may be shallow; `git fetch origin main` then `git checkout -B <branch> origin/main`.
-- `pip install` needs `--break-system-packages`. Coverage needs `pytest-cov` (not a project
-  dependency until S1-T24) and `python3 -m pytest --cov=agent_village --cov-branch`; `.coverage` is git-ignored.
+- `pip install` needs `--break-system-packages`. `pytest-cov` and `mypy` are dev dependencies now (S1-T24); the coverage
+  floor (100%, branch) is in `harness/pyproject.toml`; `.coverage` is git-ignored. CI runs ruff, `ruff format --check`, mypy and pytest with coverage.
 - After editing a source file twice within one second, pytest can run stale bytecode; delete `__pycache__`.
 - GitHub shows the repo as `Al0olo/Agents-village`; API path `al0olo/agents-village` works. No `README.md` under `.github/`.
 
@@ -177,7 +181,7 @@ Design rules that tests depend on
 
 ```bash
 cargo fmt --all -- --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
-cd harness && ruff check . && pytest -q
+cd harness && ruff check . && ruff format --check . && mypy && pytest -q --cov
 scripts/check-handoff.sh
 ```
 
