@@ -55,7 +55,7 @@ funding is a later concern.
 - Done, PR #37: S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
   `attack_rate_rumor` and `attack_rate_witness`, `rumors` in `BlockConfig`, `--no-rumors`), ADR-0015 (the $200 cap), a dated note
   in ADR-0004. 1022 tests, 100% coverage, every mutant killed. No live run.
-- Done, this session (branch `claude/gracious-albattani-osio94`): S1-T22 (190 property cases in `tests/test_properties.py`: origins,
+- Done, PR #38 (branch `claude/gracious-albattani-osio94`): S1-T22 (190 property cases in `tests/test_properties.py`: origins,
   the kernel against an independent oracle, fork identity, replay and tamper detection; no defect found) and S1-T24 (CI now also
   runs `ruff format --check`, `mypy` and pytest with a 100% branch-coverage floor; four small type fixes). 1213 tests, 100% coverage.
   Offline only, no live spend.
