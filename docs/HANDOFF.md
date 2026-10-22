@@ -59,7 +59,7 @@ funding is a later concern.
   the kernel against an independent oracle, fork identity, replay and tamper detection; no defect found) and S1-T24 (CI now also
   runs `ruff format --check`, `mypy` and pytest with a 100% branch-coverage floor; four small type fixes). 1213 tests, 100% coverage.
   Offline only, no live spend.
-- Done, this session (branch `claude/gracious-albattani-osio94`): the storage tickets, first part: `SqliteEventLog` (T25, partial; T29; T31)
+- Done, PR #39 (branch `claude/gracious-albattani-osio94`): the storage tickets, first part: `SqliteEventLog` (T25, partial; T29; T31)
   in `sqlitelog.py`, a drop-in for the JSONL log behind the new `eventlog.Log` protocol, with a `claims` projection that rebuilds from the
   events, additive migrations, a single-writer lock and converters. 1280 tests, 100% coverage, one equivalent mutant. Blocks still write JSONL.
   Next storage PRs: T30 and T27, then T26 and T28 (below).
