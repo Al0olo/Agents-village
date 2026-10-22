@@ -24,7 +24,7 @@ from pathlib import Path
 
 from agent_village.arms import Arm
 from agent_village.consolidation import CONSOLIDATION, run_consolidation
-from agent_village.eventlog import EventLog, LogEvent
+from agent_village.eventlog import EventLog, Log, LogEvent
 from agent_village.fork import Snapshot, World, build, fork
 from agent_village.launch import RunConfig
 from agent_village.model import Backend, NotRecordedError, RecordedBackend, Request, Response
@@ -100,7 +100,7 @@ class Branch:
 
 
 def audit(
-    original: EventLog,
+    original: Log,
     dest: Path | str,
     start: int | Snapshot,
     arm: Arm,
@@ -117,7 +117,7 @@ def audit(
 
 
 def branch(
-    original: EventLog,
+    original: Log,
     cut: int,
     dest: Path | str,
     start: int | Snapshot,
@@ -161,7 +161,7 @@ def branch(
 
 
 def _start(
-    original: EventLog, dest: Path | str, start: int | Snapshot, arm: Arm, config: RunConfig
+    original: Log, dest: Path | str, start: int | Snapshot, arm: Arm, config: RunConfig
 ) -> World:
     if isinstance(start, Snapshot):
         recorded = RecordedBackend.from_log(original, start.events)
@@ -191,7 +191,7 @@ def _start(
 
 
 def _redrive(
-    world: World, original: EventLog, arm: Arm, config: RunConfig, stop: int
+    world: World, original: Log, arm: Arm, config: RunConfig, stop: int
 ) -> tuple[Divergence | None, int]:
     """Re-drive ``world`` through ``original`` until event ``stop``; return where it stopped."""
     log = world.log
@@ -255,7 +255,7 @@ def _launched_as(event: LogEvent, arm: Arm, config: RunConfig) -> bool:
     )
 
 
-def _segment_end(original: EventLog, index: int) -> int:
+def _segment_end(original: Log, index: int) -> int:
     end = index + 1
     while (
         end < len(original)
@@ -266,7 +266,7 @@ def _segment_end(original: EventLog, index: int) -> int:
     return end
 
 
-def _events(log: EventLog, start: int, end: int) -> Sequence[LogEvent]:
+def _events(log: Log, start: int, end: int) -> Sequence[LogEvent]:
     return [log[i] for i in range(start, end)]
 
 

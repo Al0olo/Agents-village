@@ -14,7 +14,7 @@ import os
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 GENESIS = "0" * 64
 
@@ -40,14 +40,33 @@ def canonical_hash(value: Any) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _digest(id: int, kind: str, writer: str, payload: Mapping[str, Any], prev: str) -> str:
+def digest(id: int, kind: str, writer: str, payload: Mapping[str, Any], prev: str) -> str:
     return canonical_hash(
         {"id": id, "kind": kind, "writer": writer, "payload": payload, "prev": prev}
     )
 
 
-def _normalise(payload: Mapping[str, Any]) -> dict[str, Any]:
+def normalise(payload: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(payload, allow_nan=False))
+
+
+class Log(Protocol):
+    """What the harness needs of an event log; ``EventLog`` and ``SqliteEventLog`` both provide it."""
+
+    @property
+    def head(self) -> str: ...
+
+    def append(self, kind: str, writer: str, payload: Mapping[str, Any]) -> LogEvent: ...
+
+    def head_at(self, count: int) -> str: ...
+
+    def fork(self, dest: Path | str, upto: int | None = None) -> Log: ...
+
+    def __len__(self) -> int: ...
+
+    def __iter__(self) -> Iterator[LogEvent]: ...
+
+    def __getitem__(self, index: int) -> LogEvent: ...
 
 
 class EventLog:
@@ -70,7 +89,7 @@ class EventLog:
                 event = LogEvent(**record)
             except (ValueError, TypeError) as exc:
                 raise LogCorruptError(f"line {number}: unreadable record") from exc
-            expected = _digest(event.id, event.kind, event.writer, event.payload, prev)
+            expected = digest(event.id, event.kind, event.writer, event.payload, prev)
             if event.id != number or event.prev != prev or event.hash != expected:
                 raise LogCorruptError(f"line {number}: hash chain broken")
             self._events.append(event)
@@ -83,12 +102,10 @@ class EventLog:
     def append(self, kind: str, writer: str, payload: Mapping[str, Any]) -> LogEvent:
         if not kind or not writer:
             raise ValueError("kind and writer must be non-empty")
-        body = _normalise(payload)
+        body = normalise(payload)
         number = len(self._events)
         prev = self.head
-        event = LogEvent(
-            number, kind, writer, body, prev, _digest(number, kind, writer, body, prev)
-        )
+        event = LogEvent(number, kind, writer, body, prev, digest(number, kind, writer, body, prev))
         line = json.dumps(event.__dict__, sort_keys=True, ensure_ascii=False) + "\n"
         with self._path.open("a", encoding="utf-8") as f:
             f.write(line)

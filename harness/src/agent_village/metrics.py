@@ -29,7 +29,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
-from agent_village.eventlog import EventLog, LogEvent
+from agent_village.eventlog import Log, LogEvent
 from agent_village.judge import CodedRecord, Planted, planted
 
 
@@ -65,7 +65,7 @@ def mentions(text: str, fact: Planted) -> bool:
 
 
 def compute(
-    log: EventLog,
+    log: Log,
     coded: Sequence[CodedRecord],
     block: int,
     arm: str,
@@ -166,7 +166,7 @@ def _ratio(part: int, whole: int) -> float | None:
     return part / whole if whole else None
 
 
-def _claims(log: EventLog) -> list[tuple[LogEvent, int]]:
+def _claims(log: Log) -> list[tuple[LogEvent, int]]:
     claims, tick = [], 0
     for event in log:
         if event.kind == "tick":
@@ -212,7 +212,7 @@ def _contamination(
 
 
 def _label_creep(
-    log: EventLog,
+    log: Log,
     claims: Sequence[tuple[LogEvent, int]],
     facts: dict[str, Planted],
     matches: Callable[[str, Planted], bool],
@@ -230,7 +230,7 @@ def _label_creep(
     return creep, counted, fact_creep, fact_counted
 
 
-def _first_hand(log: EventLog, claim: LogEvent) -> bool:
+def _first_hand(log: Log, claim: LogEvent) -> bool:
     for cite in claim.payload["cites"]:
         if cite.isdigit() and int(cite) < claim.id:
             event = log[int(cite)]

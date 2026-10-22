@@ -25,7 +25,7 @@ from agent_village.actions import (
     parse_notes,
 )
 from agent_village.admission import Kind
-from agent_village.eventlog import EventLog, LogEvent
+from agent_village.eventlog import Log, LogEvent
 from agent_village.memory import Memory, Tier
 from agent_village.messages import Messenger
 from agent_village.model import Message, Model, Request
@@ -72,7 +72,7 @@ class Runner:
     def __init__(
         self,
         village: Village,
-        log: EventLog,
+        log: Log,
         memory: Memory,
         messenger: Messenger,
         model: Model,

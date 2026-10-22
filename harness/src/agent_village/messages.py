@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agent_village.eventlog import EventLog, LogEvent
+from agent_village.eventlog import Log, LogEvent
 
 TOLD_KINDS = ("told", "heard")
 """What a citizen was told: a message from a citizen, or a rumor from a traveler."""
@@ -32,7 +32,7 @@ class Received:
 
 
 class Messenger:
-    def __init__(self, log: EventLog) -> None:
+    def __init__(self, log: Log) -> None:
         self._log = log
 
     def send(self, sender: str, recipient: str, text: str) -> Delivery:

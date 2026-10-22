@@ -13,7 +13,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from agent_village.eventlog import EventLog, canonical_hash
+from agent_village.eventlog import Log, canonical_hash
 
 
 class ModelError(Exception):
@@ -86,7 +86,7 @@ class FakeBackend:
 
 
 class Model:
-    def __init__(self, backend: Backend, log: EventLog) -> None:
+    def __init__(self, backend: Backend, log: Log) -> None:
         self._backend = backend
         self._log = log
 
@@ -122,7 +122,7 @@ class RecordedBackend:
         self._responses = responses
 
     @classmethod
-    def from_log(cls, log: EventLog, start: int = 0) -> RecordedBackend:
+    def from_log(cls, log: Log, start: int = 0) -> RecordedBackend:
         if not 0 <= start <= len(log):
             raise ValueError(f"the log has {len(log)} events, not {start}")
         responses: dict[str, deque[Response]] = defaultdict(deque)

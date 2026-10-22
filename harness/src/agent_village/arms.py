@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agent_village.admission import Admission, Claim, Event, admit, admit_corroborated
-from agent_village.eventlog import EventLog, canonical_hash
+from agent_village.eventlog import Log, canonical_hash
 from agent_village.memory import Policy
 from agent_village.prompts import (
     ANCHOR_SCRUTINY,
@@ -75,7 +75,7 @@ def random_block_arm(rate: float, salt: str) -> Arm:
     return Arm("E", RandomBlock(rate, salt), BASELINE, {"rate": rate, "salt": salt})
 
 
-def matched_rate(log: EventLog, start: int) -> float:
+def matched_rate(log: Log, start: int) -> float:
     """The share of claims written from event ``start`` on that were stored as hearsay."""
     decisions = [e.payload["admission"] for e in log if e.kind == "claim" and e.id >= start]
     if not decisions:

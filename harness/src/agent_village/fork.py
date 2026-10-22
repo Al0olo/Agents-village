@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from agent_village.eventlog import EventLog
+from agent_village.eventlog import Log
 from agent_village.memory import Memory, Policy, Tier
 from agent_village.messages import Messenger
 from agent_village.model import Backend, Model
@@ -60,7 +60,7 @@ class Snapshot:
 
 @dataclass(frozen=True)
 class World:
-    log: EventLog
+    log: Log
     village: Village
     memory: Memory
     messenger: Messenger
@@ -91,7 +91,7 @@ class World:
 
 
 def build(
-    log: EventLog,
+    log: Log,
     rng: random.Random,
     backend: Backend,
     policy: Policy,
@@ -109,7 +109,7 @@ def build(
 
 def fork(
     snapshot: Snapshot,
-    source: EventLog,
+    source: Log,
     dest: Path | str,
     backend: Backend,
     policy: Policy,

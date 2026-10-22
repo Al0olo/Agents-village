@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from agent_village.arms import Arm
-from agent_village.eventlog import EventLog, canonical_hash
+from agent_village.eventlog import Log, canonical_hash
 from agent_village.fork import Snapshot, World, fork
 from agent_village.model import Backend
 from agent_village.runner import LoopConfig, Spec
@@ -61,7 +61,7 @@ class DriftError(Exception):
 
 def launch(
     snapshot: Snapshot,
-    source: EventLog,
+    source: Log,
     directory: Path | str,
     arms: Sequence[Arm],
     make_backend: Callable[[], Backend],

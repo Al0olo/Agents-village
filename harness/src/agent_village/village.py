@@ -16,7 +16,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
-from agent_village.eventlog import EventLog, LogEvent
+from agent_village.eventlog import Log, LogEvent
 
 WRITER = "village"
 
@@ -36,7 +36,7 @@ class VillageState:
 
 
 class Village:
-    def __init__(self, log: EventLog, clock: SimClock, rng: random.Random, max_awake: int) -> None:
+    def __init__(self, log: Log, clock: SimClock, rng: random.Random, max_awake: int) -> None:
         if max_awake < 1:
             raise ValueError("max_awake must be at least 1")
         self._log = log
