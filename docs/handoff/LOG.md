@@ -3,6 +3,14 @@
 Newest first. One entry per session. State lives in [`../HANDOFF.md`](../HANDOFF.md);
 this file is history, so a future agent can see how decisions were reached.
 
+## 2026-10-22 · Claude Sonnet 5.5 · the SQLite event log (storage tickets, part one)
+
+- PR #38 was merged (this work is PR #39). The owner asked for the storage tickets T25 to T31 as the free work. They are about 28 points, so I split them: this PR is T25 (partly), T29 and T31; then T30 and T27; then T26 and T28.
+- Built test first: `SqliteEventLog` with the same contract as the JSONL log (the contract tests run against both stores), the same events and hashes (a gossip village gives identical logs on either store over six seeds), WAL, additive migrations with a version in `meta`, a `claims` projection written in the append transaction and rebuilt from the events, a single-writer `flock`, a read-only mode that sees a writer's commits, and converters in both directions that keep hashes and bytes. `eventlog.Log` is a protocol now and the modules annotate with it.
+- Decisions: the tiers are not separate tables, they are the `claims` table seen by `stored`; ledger and commitments tables wait for the ledger, as an additive migration; a malformed `claim` event (missing fields) is refused by the SQLite store, which the JSONL store would accept, because the projection needs the fields; live blocks stay on JSONL until a store choice is wired through `block.py`, `launch.py` and the scripts.
+- Mutation run: the first pass found two needed tests (a tampered `prev` column that the hash alone does not catch, a forged chain that skips an id) and a ResourceWarning for logs dropped without closing; one equivalent mutant remains (a rollback that the closing connection makes redundant). Coverage fell to 99% on first run (failure paths) and went back to 100% with tests for a failed migration, rebuild, fork and conversion.
+- Not done: T26, T27, T28, T30, T23; nothing live.
+
 ## 2026-10-21 · Claude Sonnet 5.5 · property tests and a stricter CI
 
 - PR #37 was merged (this work is PR #38). The owner said to continue; no live spend was authorized, so this was offline work (S1-T22 and T24).

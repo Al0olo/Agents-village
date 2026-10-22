@@ -25,7 +25,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent_village.eventlog import EventLog
+from agent_village.eventlog import EventLog, Log
 from agent_village.model import Backend, Message, Model, NotRecordedError, RecordedBackend, Request
 from agent_village.prompts import Prompt
 
@@ -184,7 +184,7 @@ class Agreement:
     confusion: dict[tuple[str, str], int]
 
 
-def planted(log: EventLog) -> dict[str, Planted]:
+def planted(log: Log) -> dict[str, Planted]:
     found = {}
     for event in log:
         if event.kind == "plant":
@@ -278,7 +278,7 @@ def parse_code(reply: str, allowed: Sequence[str]) -> str | None:
 def code_items(
     items: Sequence[Item],
     backend: Backend,
-    log: EventLog,
+    log: Log,
     model: str,
     fact_rubric: Prompt = FACT_RUBRIC,
     awareness_rubric: Prompt = AWARENESS_RUBRIC,
@@ -299,7 +299,7 @@ def code_items(
 
 
 def replay_codes(
-    items: Sequence[Item], recorded: EventLog, model: str, scratch: Path
+    items: Sequence[Item], recorded: Log, model: str, scratch: Path
 ) -> tuple[dict[str, str | None], tuple[Prompt, Prompt]]:
     """Read a finished judging run back from its log, whichever rubric versions it used.
 

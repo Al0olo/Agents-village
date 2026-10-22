@@ -1,6 +1,6 @@
 # Handoff
 
-Updated: 2026-10-21 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `362c040`
+Updated: 2026-10-22 by Claude Sonnet 5.5 · Branch: `claude/gracious-albattani-osio94` · Base: `main` at `a145cb4`
 
 ## Objective
 
@@ -55,10 +55,14 @@ funding is a later concern.
 - Done, PR #37: S1-T34, the rumor condition (`heard` events, `Planting.rumor`,
   `attack_rate_rumor` and `attack_rate_witness`, `rumors` in `BlockConfig`, `--no-rumors`), ADR-0015 (the $200 cap), a dated note
   in ADR-0004. 1022 tests, 100% coverage, every mutant killed. No live run.
-- Done, PR #38 (branch `claude/gracious-albattani-osio94`): S1-T22 (190 property cases in `tests/test_properties.py`: origins,
+- Done, PR #38: S1-T22 (190 property cases in `tests/test_properties.py`: origins,
   the kernel against an independent oracle, fork identity, replay and tamper detection; no defect found) and S1-T24 (CI now also
   runs `ruff format --check`, `mypy` and pytest with a 100% branch-coverage floor; four small type fixes). 1213 tests, 100% coverage.
   Offline only, no live spend.
+- Done, PR #39 (branch `claude/gracious-albattani-osio94`): the storage tickets, first part: `SqliteEventLog` (T25, partial; T29; T31)
+  in `sqlitelog.py`, a drop-in for the JSONL log behind the new `eventlog.Log` protocol, with a `claims` projection that rebuilds from the
+  events, additive migrations, a single-writer lock and converters. 1280 tests, 100% coverage, one equivalent mutant. Blocks still write JSONL.
+  Next storage PRs: T30 and T27, then T26 and T28 (below).
 - Not started: RQ1 pre-registration filing, the pilot, the real kernel (M1), the observer UI.
 
 ## Next step
@@ -75,7 +79,12 @@ the write-up as hearsay, does the new metric split fill.
 about $20 a block: it sets the guard margin, E's rate, probe temperature and a first spread; it does not choose a prompt arm.
 (4) Freeze `PREREGISTRATION.md` (draft 2) with the pilot's numbers; OSF needs an account the owner has not made. Then the main run by the
 block-count rule, bounded by the cap, re-estimating the spread once after block eight.
-(5) Offline work that costs nothing: storage tickets T25 to T31, usage accounting T23, the notebook for `analyze_blocks.py`.
+(5) Offline work that costs nothing, in this order: bi-temporal claims T30 (an additive migration 2 of the claims table: `record_tick` and
+`valid_tick`, queries as of a tick) and the blob store T27 (a directory of sha256-named files shared by forks); then signatures T26 (Ed25519 on
+messages and payments, keys derived per citizen from the seed, opt-in on `Messenger` so old logs still replay; needs the `cryptography`
+package as a dependency, which is installed here) and retrieval T28 (FTS5 over claims, an injected embedder, brute-force cosine in place of
+sqlite-vec at this size, every result logged as a `retrieval` event); usage accounting T23; the notebook for `analyze_blocks.py`; wiring a
+store choice into `block.py`, `launch.py` and the scripts.
 Run one job at a time; set `--max-cost` above villages plus judges. Never print the key. Open the PR yourself with the template.
 Settled, do not reopen without new data: arm D stays as specified and G exploratory (ADR-0012); the rubric stays `judge-fact-3` and
 every contrast is run under both judges; the review pass is in every arm and arm C changes only its prompt (ADR-0013); the contrast is
@@ -166,8 +175,9 @@ Design rules that tests depend on
   Per-citizen numbers would keep reuse alive but change the treatment; revisit only if counterfactuals become a tool.
 - A model error stops the run (no retry), leaving woken citizens awake; exclusion rules cover crashed villages.
 - Pre-fork memory entries stay as the base stored them (ADR-0003); the kernel never reclassifies them.
-- Archival memory is not implemented (T27, T28). The event log is JSONL until T25 moves it into SQLite behind
-  the same `EventLog` interface; dropping the tail of a log still verifies, so compare `head` against a recorded value.
+- Archival memory is not implemented (T27, T28). Live blocks still write the JSONL `EventLog`; `SqliteEventLog` (T25) is a
+  drop-in behind the `Log` protocol (annotate with `Log`, not `EventLog`), takes a single-writer lock, and has a rebuildable `claims`
+  projection. Dropping the tail of a log still verifies on either store, so compare `head` against a recorded value.
 - The session branch `claude/...` overrides the `S<n>/<area>/<slug>` convention; PRs still say `Closes S1-T<n>`.
 - Facts, planting and probes: a block is `generate(seed, block)`, `make_plan(...)`, `announce` before the first
   tick, `plant` between ticks (returns the snapshot to fork from), then `probes.run_round` at the end. Planted facts

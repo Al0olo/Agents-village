@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from agent_village.admission import Admission, Claim, Event, Kind
-from agent_village.eventlog import EventLog
+from agent_village.eventlog import Log
 
 Policy = Callable[[Claim, dict[str, Event]], Admission]
 
@@ -45,7 +45,7 @@ class Entry:
 
 
 class Memory:
-    def __init__(self, log: EventLog, policy: Policy) -> None:
+    def __init__(self, log: Log, policy: Policy) -> None:
         self._log = log
         self._policy = policy
         self._evidence: dict[str, Event] = {}

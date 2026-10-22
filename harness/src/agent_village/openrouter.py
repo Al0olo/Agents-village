@@ -29,7 +29,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from typing import Any
 
-from agent_village.eventlog import EventLog
+from agent_village.eventlog import Log
 from agent_village.model import Backend, ModelError, Request, Response
 
 BASE_URL = "https://openrouter.ai/api/v1"
@@ -172,7 +172,7 @@ def generation_record(
 
 
 def served_snapshots(
-    log: EventLog,
+    log: Log,
     transport: Transport,
     per_model: int = 3,
     attempts: int = 8,
