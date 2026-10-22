@@ -285,6 +285,7 @@ def code_items(
 ) -> dict[str, str | None]:
     judge = Model(backend, log)
     codes: dict[str, str | None] = {}
+    allowed: Sequence[str]
     for item in items:
         if item.kind == "awareness":
             rubric, allowed = awareness_rubric, AWARENESS_CODES

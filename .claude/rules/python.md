@@ -7,7 +7,8 @@ paths:
 # Python rules
 
 - Python 3.10+, src layout, package `agent_village`. Type-annotate everything public.
-- Gate: `ruff check .` and `pytest -q` from `harness/`. Both before every commit.
+- Gate from `harness/`, all before every commit: `ruff check .`, `ruff format --check .`, `mypy`, and
+  `pytest -q --cov` (line and branch coverage must stay at 100%). Format from `harness/` only, never the repository root.
 - Policy and analysis code is pure and deterministic: no hidden clocks, no global
   randomness. Pass a seeded `random.Random` or a clock object in.
 - Frozen dataclasses for records; `Enum` for closed sets; no mutable default arguments.
